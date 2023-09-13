@@ -14,11 +14,11 @@ public class WBS {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 	
-	@Column
+	@Column(nullable = false)
     private String wbs;
-	@Column
+	@Column(nullable = false)
     private Double valor;
-	@Column
+	@Column(nullable = false)
     private Double hh;
 	
 	@OneToOne
