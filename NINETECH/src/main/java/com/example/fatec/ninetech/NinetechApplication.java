@@ -21,7 +21,7 @@ public class NinetechApplication {
 		
 		Map<String, Object> configuracao = new HashMap<>();
 
-		configuracao.put("server.port", "3000");
+		configuracao.put("server.port", "5000");
 
 		configuracao.put("spring.datasource.url", "jdbc:mysql://localhost:3306/ninetech"); // caminho da conexão
 		

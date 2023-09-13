@@ -2,6 +2,7 @@ package com.example.fatec.ninetech.controllers;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
@@ -26,6 +27,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.example.fatec.ninetech.models.WBS;
 import com.example.fatec.ninetech.repositories.WBSInterface;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 @RestController
 @RequestMapping("/upload")
@@ -33,6 +35,8 @@ public class ExcelUploadController {
 
     @Autowired
     private WBSInterface interfaceWBS;
+    
+    private String dadosWBSRecemCriados;
 
     @PostMapping("/criarWBS")
     public ResponseEntity<String> processarExcel(@RequestParam("file") MultipartFile file) {
@@ -47,6 +51,8 @@ public class ExcelUploadController {
             if (!validadorDeCabecalho(linhaDoCabecalho)) {
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Arquivo sem o padrão necessário");
             }
+            
+            List<WBS> dadosWBSLista = new ArrayList<>();
 
             while (rowIterator.hasNext()) {
                 Row row = rowIterator.next();
@@ -65,12 +71,21 @@ public class ExcelUploadController {
                     dadosWBS.setHh(hh);
 
                     interfaceWBS.save(dadosWBS);
+                    
+                    dadosWBSLista.add(dadosWBS);
+                    
                 } else {
                     break; // Interrompe o processamento se encontrar uma linha sem dados
                 }
             }
+            
+            // Converter dadosWBS em JSON
+            ObjectMapper mapeadorDeObjeto = new ObjectMapper();
+            String dadosWBSJSON = mapeadorDeObjeto.writeValueAsString(dadosWBSLista);
+            
+            dadosWBSRecemCriados = dadosWBSJSON;
 
-            return ResponseEntity.ok("Arquivo processado com sucesso.");
+            return ResponseEntity.ok(dadosWBSRecemCriados);
         } catch (IOException e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Erro ao processar o arquivo.");
         }
