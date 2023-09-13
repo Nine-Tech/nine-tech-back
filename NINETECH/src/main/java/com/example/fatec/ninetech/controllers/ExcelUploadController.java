@@ -38,7 +38,7 @@ public class ExcelUploadController {
     public ResponseEntity<String> processarExcel(@RequestParam("file") MultipartFile file) {
         try (InputStream is = file.getInputStream()) {
             XSSFWorkbook workbook = new XSSFWorkbook(is);
-            XSSFSheet sheet = workbook.getSheetAt(1); // Use a primeira planilha (índice 0)
+            XSSFSheet sheet = workbook.getSheetAt(1); // Use a segunda planilha (índice 0)
 
             Iterator<Row> rowIterator = sheet.iterator();
 
