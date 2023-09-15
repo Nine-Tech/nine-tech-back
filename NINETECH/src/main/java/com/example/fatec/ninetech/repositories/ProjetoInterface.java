@@ -4,6 +4,9 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 import com.example.fatec.ninetech.models.Projeto;
 
-public interface ProjetoInterface extends JpaRepository<Projeto, Long>{
+import java.util.Optional;
 
+public interface ProjetoInterface extends JpaRepository<Projeto, Long> {
+
+    Optional<Projeto> findById(Long id);
 }
