@@ -26,7 +26,7 @@ $ cd NINETECH
 $ docker-compose up -d
 
 # Abra o projeto utilizando sua IDE preferida (Eclipse, VS Code, IntelliJ, etc.), espere o Maven
-carregar as dependências do projeto (são listadas no arquivo pom.xml) e execute!
+# carregar as dependências do projeto (são listadas no arquivo pom.xml) e execute!
 ```
 
 
