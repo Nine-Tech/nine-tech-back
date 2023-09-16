@@ -20,21 +20,12 @@ Para rodar o projeto, é preciso seguir o passo a passo abaixo
 $ git clone https://github.com/Nine-Tech/nine-tech-back.git
 
 # Acesse a pasta do projeto
-$ 
-
-# criar um arquivo chamado ".env" e copiar a estrutura do arquivo ".env.example" e colocar seus respectivos dados
-
-# instale as dependencias
-$ 
+$ cd NINETECH
 
 # Utilize o docker-compose para criar o banco de dados
-$ 
+$ docker-compose up -d
 
-# Utilize o comando do Prisma para sincronizar a estrutura do banco de dados
-$ 
-
-# Inicie o Projeto
-$
+# Abra o projeto utilizando sua IDE preferida (Eclipse, VS Code, IntelliJ, etc.), espere o Maven carregar as dependências do projeto (são listadas no arquivo pom.xml) e execute!
 ```
 
 
