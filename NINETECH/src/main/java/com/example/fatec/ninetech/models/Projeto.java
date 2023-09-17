@@ -12,7 +12,7 @@ import jakarta.persistence.ManyToOne;
 public class Projeto {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	private Long id;
+	private Long projeto_id;
 	
 	@Column
 	private String nome;

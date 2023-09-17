@@ -10,7 +10,7 @@ import jakarta.persistence.Id;
 public class LiderDeProjeto {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	private Long id;
+	private Long lider_de_projeto_id;
 	
 	@Column
 	private String nome;
@@ -21,7 +21,11 @@ public class LiderDeProjeto {
 	public void setNome(String nome) {
 		this.nome = nome;
 	}
-	public Long getId() {
-		return id;
+	public Long getLider_de_projeto_id() {
+		return lider_de_projeto_id;
 	}
+	public void setLider_de_projeto_id(Long lider_de_projeto_id) {
+		this.lider_de_projeto_id = lider_de_projeto_id;
+	}
+
 }
