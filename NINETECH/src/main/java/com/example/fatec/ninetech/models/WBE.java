@@ -6,6 +6,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToOne;
 
 
@@ -24,7 +25,7 @@ public class WBE {
 	@Column
 	private String lider_de_projeto_nome;
 
-	@OneToOne
+	@ManyToOne
 	@JoinColumn(name = "projeto_id")
 	private Projeto projeto;
 	
@@ -76,6 +77,9 @@ public class WBE {
 	
 	public WBE() {} // Para funcionar o a função delete
 	
-	
+
+    public void setProjeto(Projeto projeto) {
+        this.projeto = projeto;
+    }
 
 }

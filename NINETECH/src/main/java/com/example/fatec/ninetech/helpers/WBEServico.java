@@ -3,7 +3,9 @@ package com.example.fatec.ninetech.helpers;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.example.fatec.ninetech.models.Projeto;
 import com.example.fatec.ninetech.models.WBE;
+import com.example.fatec.ninetech.repositories.ProjetoInterface;
 import com.example.fatec.ninetech.repositories.WBSInterface;
 
 import jakarta.persistence.EntityNotFoundException;
@@ -17,6 +19,9 @@ public class WBEServico {
 	@Autowired
 	private WBSInterface wbeInterface;
 	
+	@Autowired
+	private ProjetoInterface projetoInterface;
+	
 	public void atualizarLiderProjetoNome(Long wbeId, String novoNome) {
 		WBE wbe = wbeInterface.findById(wbeId).orElse(null);
 		if (wbe != null) {
@@ -25,12 +30,21 @@ public class WBEServico {
 		}
 	}
 	
-	public void adicionarWBE(String wbe, Double valor, Double hh, String lider_de_projeto_nome) {
-        
-        WBE novoWBE = new WBE(wbe, valor, hh, lider_de_projeto_nome);
-        
-        wbeInterface.save(novoWBE);
-    }
+	public void adicionarWBE(String wbe, Double valor, Double hh, String lider_de_projeto_nome, Long projeto_id) {
+	    Optional<Projeto> optionalProjeto = projetoInterface.findById(projeto_id);
+
+	    if (!optionalProjeto.isPresent()) {
+	        throw new EntityNotFoundException("Projeto não encontrado com ID: " + projeto_id);
+	    }
+
+	    Projeto projeto = optionalProjeto.get();
+
+	    // Crie um novo WBE com os dados fornecidos
+	    WBE novoWBE = new WBE(wbe, valor, hh, lider_de_projeto_nome);
+	    novoWBE.setProjeto(projeto);
+
+	    wbeInterface.save(novoWBE);
+	}
 	
 	@Transactional
 	 public void excluirWBEPorId(Long wbeId) {
@@ -41,8 +55,8 @@ public class WBEServico {
         });
     }
 	
-	public WBE atualizarWBE(Long wbeId, Double novoHH, Double novoValor, String novoWbe) {
-        Optional<WBE> optionalWBE = wbeInterface.findById(wbeId);
+	public WBE atualizarWBE(Long wbeId, Double novoHH, Double novoValor, String novoWbe, Long projetoId) {
+	    Optional<WBE> optionalWBE = wbeInterface.findById(wbeId);
 
         if (optionalWBE.isPresent()) {
             WBE wbe = optionalWBE.get();
@@ -51,6 +65,8 @@ public class WBEServico {
             wbe.setHh(novoHH);
             wbe.setValor(novoValor);
             wbe.setWbe(novoWbe);
+            wbe.setLider_de_projeto_nome(novoWbe);
+            
 
             // Salva a entidade atualizada
             return wbeInterface.save(wbe);
