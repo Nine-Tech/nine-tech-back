@@ -2,6 +2,7 @@ package com.example.fatec.ninetech.controllers;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
@@ -26,6 +27,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.example.fatec.ninetech.models.WBE;
 import com.example.fatec.ninetech.repositories.WBSInterface;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 @RestController
 @RequestMapping("/upload")
@@ -33,15 +35,23 @@ public class ExcelUploadController {
 
 	@Autowired
 	private WBSInterface interfaceWBS;
+    private String dadosWBSRecemCriados;
 
 	@PostMapping("/criarWBS")
 
 	public ResponseEntity<String> processarExcel(@RequestParam("file") MultipartFile file) {
 		try (InputStream is = file.getInputStream()) {
 			XSSFWorkbook workbook = new XSSFWorkbook(is);
-			XSSFSheet sheet = workbook.getSheetAt(1); // Use a segunda planilha (índice 0)
+			XSSFSheet sheet = workbook.getSheetAt(1); // Use a segunda planilha (índice 0)]
 
 			Iterator<Row> rowIterator = sheet.iterator();
+            // Verificando se a primeira linha contém os cabeçalhos esperados
+            Row linhaDoCabecalho = rowIterator.next();
+            if (!validadorDeCabecalho(linhaDoCabecalho)) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Arquivo sem o padrão necessário");
+            }
+            
+            List<WBS> dadosWBSLista = new ArrayList<>();
 
 			// Verificando se a primeira linha contém os cabeçalhos esperados
 			Row linhaDoCabecalho = rowIterator.next();
@@ -60,19 +70,27 @@ public class ExcelUploadController {
 					double valor = colunaDoValor.getNumericCellValue();
 					double hh = colunaDoHH.getNumericCellValue();
 
-					WBE dadosWBS = new WBE(wbs, valor, hh, ""); // Aqui estamos criando uma nova instância de WBE com os
+					WBE dadosWBS = new WBE(wbs, valor, hh); // Aqui estamos criando uma nova instância de WBE com os
 																// valores recebidos
 					interfaceWBS.save(dadosWBS);
+
+					dadosWBSLista.add(dadosWBS);
 				} else {
 					break; // Interrompe o processamento se encontrar uma linha sem dados
 				}
 			}
 
-			return ResponseEntity.ok("Arquivo processado com sucesso.");
-		} catch (IOException e) {
-			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Erro ao processar o arquivo.");
-		}
-	}
+			// Converter dadosWBS em JSON
+            ObjectMapper mapeadorDeObjeto = new ObjectMapper();
+            String dadosWBSJSON = mapeadorDeObjeto.writeValueAsString(dadosWBSLista);
+            
+            dadosWBSRecemCriados = dadosWBSJSON;
+
+            return ResponseEntity.ok(dadosWBSRecemCriados);
+        } catch (IOException e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Erro ao processar o arquivo.");
+        }
+    }
 
 	@GetMapping("/listarWBS")
 	public ResponseEntity<List<WBE>> listarTodosWBS() {
