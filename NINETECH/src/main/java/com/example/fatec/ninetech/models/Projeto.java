@@ -34,11 +34,11 @@ public class Projeto {
 	private LiderDeProjeto liderDeProjeto;
 
 	public Long getId() {
-		return id;
+		return projeto_id;
 	}
 
 	public void setId(Long id) {
-		this.id = id;
+		this.projeto_id = id;
 	}
 
 	public String getNome() {

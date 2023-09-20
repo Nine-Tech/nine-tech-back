@@ -51,13 +51,9 @@ public class ExcelUploadController {
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Arquivo sem o padrão necessário");
             }
             
-            List<WBS> dadosWBSLista = new ArrayList<>();
+            List<WBE> dadosWBSLista = new ArrayList<>();
 
-			// Verificando se a primeira linha contém os cabeçalhos esperados
-			Row linhaDoCabecalho = rowIterator.next();
-			if (!validadorDeCabecalho(linhaDoCabecalho)) {
-				return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Arquivo sem o padrão necessário");
-			}
+			
 
 			while (rowIterator.hasNext()) {
 				Row row = rowIterator.next();
@@ -66,15 +62,19 @@ public class ExcelUploadController {
 				Cell colunaDoHH = row.getCell(6);
 
 				if (colunaDoWBS != null && colunaDoValor != null && colunaDoHH != null) {
-					String wbs = colunaDoWBS.getStringCellValue();
+					String wbe = colunaDoWBS.getStringCellValue();
 					double valor = colunaDoValor.getNumericCellValue();
 					double hh = colunaDoHH.getNumericCellValue();
 
-					WBE dadosWBS = new WBE(wbs, valor, hh); // Aqui estamos criando uma nova instância de WBE com os
-																// valores recebidos
-					interfaceWBS.save(dadosWBS);
+					WBE dadosWBE = new WBE();
+					dadosWBE.setHh(hh);
+					dadosWBE.setValor(valor);
+					dadosWBE.setWbe(wbe);
+							
+							
+					interfaceWBS.save(dadosWBE);
 
-					dadosWBSLista.add(dadosWBS);
+					dadosWBSLista.add(dadosWBE);
 				} else {
 					break; // Interrompe o processamento se encontrar uma linha sem dados
 				}

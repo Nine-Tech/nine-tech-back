@@ -27,5 +27,9 @@ public class LiderDeProjeto {
 	public void setLider_de_projeto_id(Long lider_de_projeto_id) {
 		this.lider_de_projeto_id = lider_de_projeto_id;
 	}
+	public LiderDeProjeto findByNome(String novoNome) {
+		// TODO Auto-generated method stub
+		return null;
+	}
 
 }

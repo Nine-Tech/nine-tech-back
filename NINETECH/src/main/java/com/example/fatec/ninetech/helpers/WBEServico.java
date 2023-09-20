@@ -11,6 +11,7 @@ import com.example.fatec.ninetech.repositories.WBSInterface;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -25,10 +26,12 @@ public class WBEServico {
 	public void atualizarLiderProjetoNome(Long wbeId, String novoNome) {
 		WBE wbe = wbeInterface.findById(wbeId).orElse(null);
 		if (wbe != null) {
-			wbe.setLider_de_projeto_nome(novoNome);
 			wbeInterface.save(wbe);
 		}
 	}
+	
+	
+    
 	
 	public void adicionarWBE(String wbe, Double valor, Double hh, String lider_de_projeto_nome, Long projeto_id) {
 	    Optional<Projeto> optionalProjeto = projetoInterface.findById(projeto_id);
@@ -40,7 +43,11 @@ public class WBEServico {
 	    Projeto projeto = optionalProjeto.get();
 
 	    // Crie um novo WBE com os dados fornecidos
-	    WBE novoWBE = new WBE(wbe, valor, hh, lider_de_projeto_nome);
+	    WBE novoWBE = new WBE();
+	    novoWBE.setHh(hh);
+	    novoWBE.setValor(valor);
+	    novoWBE.setWbe(wbe);
+	    
 	    novoWBE.setProjeto(projeto);
 
 	    wbeInterface.save(novoWBE);
@@ -65,7 +72,7 @@ public class WBEServico {
             wbe.setHh(novoHH);
             wbe.setValor(novoValor);
             wbe.setWbe(novoWbe);
-            wbe.setLider_de_projeto_nome(novoWbe);
+          
             
 
             // Salva a entidade atualizada
@@ -74,5 +81,54 @@ public class WBEServico {
             throw new EntityNotFoundException("WBE não encontrado com ID: " + wbeId);
         }
     }
+
+	public Optional<WBE> findById(Long wbeId) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	public void save(WBE wbe) {
+		// TODO Auto-generated method stub
+		
+	}
+
+
+	public WBE atualizarProjetoId(Long wbeId, Long novoProjetoId) {
+	    Optional<WBE> optionalWBE = wbeInterface.findById(wbeId);
+
+	    if (optionalWBE.isPresent()) {
+	        WBE wbe = optionalWBE.get();
+
+	        // Obtenha o projeto correspondente ao novoProjetoId
+	        Optional<Projeto> optionalProjeto = projetoInterface.findById(novoProjetoId);
+	        if (optionalProjeto.isPresent()) {
+	            Projeto novoProjeto = optionalProjeto.get();
+
+	            // Atualize o projeto_id no objeto WBE
+	            wbe.setProjeto(novoProjeto);
+	            return wbeInterface.save(wbe);
+	        } else {
+	            throw new EntityNotFoundException("Projeto não encontrado com ID: " + novoProjetoId);
+	        }
+	    } else {
+	        throw new EntityNotFoundException("WBE não encontrado com ID: " + wbeId);
+	    }
+	}
+	
+	 public WBEServico(WBSInterface wbeInterface) {
+	        this.wbeInterface = wbeInterface;
+	    }
+
+	public List<WBE> obterTodosOsWBE() {
+        return wbeInterface.findAll();
+    }
+
+
+
+	public void adicionarWBE(String wbe, Double valor, Double hh, Long projetoId) {
+		// TODO Auto-generated method stub
+		
+	}
+
 	
 }

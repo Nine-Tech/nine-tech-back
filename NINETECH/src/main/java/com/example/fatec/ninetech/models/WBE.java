@@ -22,16 +22,24 @@ public class WBE {
 	private Double valor;
 	@Column
 	private Double hh;
-	@Column
-	private String lider_de_projeto_nome;
+
+
+	public Long getWbe_id() {
+		return wbe_id;
+	}
+
+	public void setWbe_id(Long wbe_id) {
+		this.wbe_id = wbe_id;
+	}
+
+	public Projeto getProjeto() {
+		return projeto;
+	}
+
 
 	@ManyToOne
 	@JoinColumn(name = "projeto_id")
 	private Projeto projeto;
-	
-	public void autualizarLiderProjetoNome(String novoNome) {
-		this.lider_de_projeto_nome = novoNome;
-	}
 	
 	public Long getId() {
 		return wbe_id;
@@ -60,20 +68,8 @@ public class WBE {
 	public void setHh(Double hh) {
 		this.hh = hh;
 	}
+	
 
-	public String getLider_de_projeto_nome() {
-		return lider_de_projeto_nome;
-	}
-
-	public void setLider_de_projeto_nome(String lider_de_projeto_nome) {
-		this.lider_de_projeto_nome = lider_de_projeto_nome;
-	}
-	public WBE(String wbe, Double valor, Double hh, String lider_de_projeto_nome) {
-        this.wbe = wbe;
-        this.valor = valor;
-        this.hh = hh;
-        this.lider_de_projeto_nome = lider_de_projeto_nome;
-	}
 	
 	public WBE() {} // Para funcionar o a função delete
 	
