@@ -1,3 +1,4 @@
+/* Descomentar quando o PR da Feature 45 for aprovado.
 package com.example.fatec.ninetech.config;
 
 import javax.sql.DataSource;
@@ -21,3 +22,4 @@ public class PersistenceConfig {
             .build();
     }
 }
+*/
