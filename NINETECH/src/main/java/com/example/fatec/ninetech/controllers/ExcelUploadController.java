@@ -25,7 +25,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
-import com.example.fatec.ninetech.models.WBS;
+import com.example.fatec.ninetech.models.WBE;
 import com.example.fatec.ninetech.repositories.WBSInterface;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -33,53 +33,54 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 @RequestMapping("/upload")
 public class ExcelUploadController {
 
-    @Autowired
-    private WBSInterface interfaceWBS;
-    
+	@Autowired
+	private WBSInterface interfaceWBS;
     private String dadosWBSRecemCriados;
 
-    @PostMapping("/criarWBS")
-    public ResponseEntity<String> processarExcel(@RequestParam("file") MultipartFile file) {
-        try (InputStream is = file.getInputStream()) {
-            XSSFWorkbook workbook = new XSSFWorkbook(is);
-            XSSFSheet sheet = workbook.getSheetAt(1); // Use a segunda planilha (índice 0)
+	@PostMapping("/criarWBS")
 
-            Iterator<Row> rowIterator = sheet.iterator();
+	public ResponseEntity<String> processarExcel(@RequestParam("file") MultipartFile file) {
+		try (InputStream is = file.getInputStream()) {
+			XSSFWorkbook workbook = new XSSFWorkbook(is);
+			XSSFSheet sheet = workbook.getSheetAt(1); // Use a segunda planilha (índice 0)]
 
+			Iterator<Row> rowIterator = sheet.iterator();
             // Verificando se a primeira linha contém os cabeçalhos esperados
             Row linhaDoCabecalho = rowIterator.next();
             if (!validadorDeCabecalho(linhaDoCabecalho)) {
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Arquivo sem o padrão necessário");
             }
             
-            List<WBS> dadosWBSLista = new ArrayList<>();
+            List<WBE> dadosWBSLista = new ArrayList<>();
 
-            while (rowIterator.hasNext()) {
-                Row row = rowIterator.next();
-                Cell colunaDoWBS = row.getCell(1);
-                Cell colunaDoValor = row.getCell(4);
-                Cell colunaDoHH = row.getCell(6);
+			
 
-                if (colunaDoWBS != null && colunaDoValor != null && colunaDoHH != null) {
-                    String wbs = colunaDoWBS.getStringCellValue();
-                    double valor = colunaDoValor.getNumericCellValue();
-                    double hh = colunaDoHH.getNumericCellValue();
+			while (rowIterator.hasNext()) {
+				Row row = rowIterator.next();
+				Cell colunaDoWBS = row.getCell(1);
+				Cell colunaDoValor = row.getCell(4);
+				Cell colunaDoHH = row.getCell(6);
 
-                    WBS dadosWBS = new WBS();
-                    dadosWBS.setWbs(wbs);
-                    dadosWBS.setValor(valor);
-                    dadosWBS.setHh(hh);
+				if (colunaDoWBS != null && colunaDoValor != null && colunaDoHH != null) {
+					String wbe = colunaDoWBS.getStringCellValue();
+					double valor = colunaDoValor.getNumericCellValue();
+					double hh = colunaDoHH.getNumericCellValue();
 
-                    interfaceWBS.save(dadosWBS);
-                    
-                    dadosWBSLista.add(dadosWBS);
-                    
-                } else {
-                    break; // Interrompe o processamento se encontrar uma linha sem dados
-                }
-            }
-            
-            // Converter dadosWBS em JSON
+					WBE dadosWBE = new WBE();
+					dadosWBE.setHh(hh);
+					dadosWBE.setValor(valor);
+					dadosWBE.setWbe(wbe);
+							
+							
+					interfaceWBS.save(dadosWBE);
+
+					dadosWBSLista.add(dadosWBE);
+				} else {
+					break; // Interrompe o processamento se encontrar uma linha sem dados
+				}
+			}
+
+			// Converter dadosWBS em JSON
             ObjectMapper mapeadorDeObjeto = new ObjectMapper();
             String dadosWBSJSON = mapeadorDeObjeto.writeValueAsString(dadosWBSLista);
             
@@ -90,71 +91,69 @@ public class ExcelUploadController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Erro ao processar o arquivo.");
         }
     }
-    
-    @GetMapping("/listarWBS")
-    public ResponseEntity<List<WBS>> listarTodosWBS() {
-        List<WBS> listaDeWBS = interfaceWBS.findAll();
-        return ResponseEntity.ok(listaDeWBS);
-    }
-    
-    // Isolar as variáveis e salvar apenas as que mudaram, se não ele seta para nulo
-    @PutMapping("/atualizarWBS/{id}")
-    public ResponseEntity<String> atualizarWBS(@PathVariable Long id, @RequestBody WBS atualizadoWBS) {
-    	// Trecho repetitivo, criar Helper?
-        Optional<WBS> encontrarPorIdWBS = interfaceWBS.findById(id);
-        
-        if (encontrarPorIdWBS.isEmpty()) {
-        	return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Tabela não encontrada.");
-        }
-        // Fim do trecho repetitivo
 
-        WBS atualizandoWBS = encontrarPorIdWBS.get();
-        
-        if (atualizadoWBS.getWbs() != null)
-        {
-        	atualizandoWBS.setWbs(atualizadoWBS.getWbs());
-        } 
-        if (atualizadoWBS.getValor() != null)
-        {
-        	atualizandoWBS.setValor(atualizadoWBS.getValor());
-        }
-        if (atualizadoWBS.getHh() != null)
-        {
-        	atualizandoWBS.setHh(atualizadoWBS.getHh());
-        }
+	@GetMapping("/listarWBS")
+	public ResponseEntity<List<WBE>> listarTodosWBS() {
+		List<WBE> listaDeWBS = interfaceWBS.findAll();
+		return ResponseEntity.ok(listaDeWBS);
+	}
 
-        interfaceWBS.save(atualizandoWBS);
+	// Isolar as variáveis e salvar apenas as que mudaram, se não ele seta para nulo
+	@PutMapping("/atualizarWBS/{id}")
+	public ResponseEntity<String> atualizarWBS(@PathVariable Long id, @RequestBody WBE atualizadoWBS) {
+		// Trecho repetitivo, criar Helper?
+		Optional<WBE> encontrarPorIdWBS = interfaceWBS.findById(id);
 
-        return ResponseEntity.ok("WBS atualizado com sucesso.");
-    }
-    
-    @DeleteMapping("/apagarWBS/{id}")
-    public ResponseEntity<String> apagarWBS(@PathVariable Long id) {
-    	// Trecho repetitivo, criar Helper?
-        Optional<WBS> encontrarPorIdWBS = interfaceWBS.findById(id);
-        
-        if (encontrarPorIdWBS.isEmpty()) {
-        	return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Id não encontrado.");
-        }
-        // Fim do trecho repetitivo
+		if (encontrarPorIdWBS.isEmpty()) {
+			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Tabela não encontrada.");
+		}
+		// Fim do trecho repetitivo
 
-        interfaceWBS.delete(encontrarPorIdWBS.get());
+		WBE atualizandoWBS = encontrarPorIdWBS.get();
 
-        return ResponseEntity.ok("WBS excluído com sucesso.");
-    }
+		if (atualizadoWBS.getWbe() != null) {
+			atualizandoWBS.setWbe(atualizadoWBS.getWbe());
+		}
+		if (atualizadoWBS.getValor() != null) {
+			atualizandoWBS.setValor(atualizadoWBS.getValor());
+		}
+		if (atualizadoWBS.getHh() != null) {
+			atualizandoWBS.setHh(atualizadoWBS.getHh());
+		}
 
-    private boolean validadorDeCabecalho(Row linhaDoCabecalho) {
-        if (linhaDoCabecalho == null) {
-            return false;
-        }
+		interfaceWBS.save(atualizandoWBS);
 
-        // Verifique se as células nas colunas 1, 4 e 7 contêm os cabeçalhos esperados (coluna 1 = 0, coluna 2 = 1, etc...)
-        Cell coluna1 = linhaDoCabecalho.getCell(1);
-        Cell coluna4 = linhaDoCabecalho.getCell(4);
-        Cell coluna7 = linhaDoCabecalho.getCell(6);
+		return ResponseEntity.ok("WBS atualizado com sucesso.");
+	}
 
-        return coluna1 != null && coluna1.getStringCellValue().equals("WBS") &&
-        		coluna4 != null && coluna4.getStringCellValue().equals("Valor") &&
-        		coluna7 != null && coluna7.getStringCellValue().equals("HH");
-    }
+	@DeleteMapping("/apagarWBS/{id}")
+	public ResponseEntity<String> apagarWBS(@PathVariable Long id) {
+		// Trecho repetitivo, criar Helper?
+		Optional<WBE> encontrarPorIdWBS = interfaceWBS.findById(id);
+
+		if (encontrarPorIdWBS.isEmpty()) {
+			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Id não encontrado.");
+		}
+		// Fim do trecho repetitivo
+
+		interfaceWBS.delete(encontrarPorIdWBS.get());
+
+		return ResponseEntity.ok("WBS excluído com sucesso.");
+	}
+
+	private boolean validadorDeCabecalho(Row linhaDoCabecalho) {
+		if (linhaDoCabecalho == null) {
+			return false;
+		}
+
+		// Verifique se as células nas colunas 1, 4 e 7 contêm os cabeçalhos esperados
+		// (coluna 1 = 0, coluna 2 = 1, etc...)
+		Cell coluna1 = linhaDoCabecalho.getCell(1);
+		Cell coluna4 = linhaDoCabecalho.getCell(4);
+		Cell coluna7 = linhaDoCabecalho.getCell(6);
+
+		return coluna1 != null && coluna1.getStringCellValue().equals("WBS") && coluna4 != null
+				&& coluna4.getStringCellValue().equals("Valor") && coluna7 != null
+				&& coluna7.getStringCellValue().equals("HH");
+	}
 }

@@ -9,4 +9,6 @@ import java.util.Optional;
 public interface ProjetoInterface extends JpaRepository<Projeto, Long> {
 
     Optional<Projeto> findById(Long id);
+
+	Projeto findByNome(String novoNomeLider);
 }

@@ -19,7 +19,7 @@ import jakarta.persistence.Table;
 public class Projeto {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	private Long id;
+	private Long projeto_id;
 	
 	@Column
 	private String nome;
@@ -39,11 +39,11 @@ public class Projeto {
 	private LiderDeProjeto liderDeProjeto;
 
 	public Long getId() {
-		return id;
+		return projeto_id;
 	}
 
 	public void setId(Long id) {
-		this.id = id;
+		this.projeto_id = id;
 	}
 
 	public String getNome() {
