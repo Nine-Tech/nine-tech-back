@@ -8,10 +8,11 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
-import jakarta.persistence.OneToOne;
-import jakarta.persistence.ForeignKey;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
 
 @Entity
+@Table(name = "cronograma_estimado")
 public class CronogramaEstimado {
 	@Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -23,7 +24,7 @@ public class CronogramaEstimado {
 	@Column
     private List<Integer> porcentagem;
 	
-	@OneToOne
+	@ManyToOne
 	@JoinColumn(name = "projeto_id")
 	private Projeto projeto;
 
