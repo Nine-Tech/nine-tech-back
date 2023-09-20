@@ -1,6 +1,9 @@
 package com.example.fatec.ninetech.models;
 
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+
+import com.fasterxml.jackson.annotation.JsonGetter;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -67,10 +70,40 @@ public class Projeto {
 		this.liderDeProjeto = liderDeProjeto;
 	}
 
-	public LocalDate getData_inicio() {
-		return data_inicio;
-	}
+    public LocalDate getData_inicio() {
+        return data_inicio;
+    }
 
+    @Override
+    public String toString() {
+        StringBuilder stringBuilder = new StringBuilder();
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+        
+        if (data_inicio != null) {
+            stringBuilder.append("data_inicio: ").append(data_inicio.format(formatter)).append("\n");
+        } else {
+            stringBuilder.append("data_inicio: ").append("null").append("\n"); // Or handle the case where data_inicio is null
+        }
+        
+        if (data_final != null) {
+            stringBuilder.append("data_final: ").append(data_final.format(formatter)).append("\n");
+        } else {
+            stringBuilder.append("data_final: ").append("null").append("\n"); // Or handle the case where data_final is null
+        }
+
+        return stringBuilder.toString();
+    }
+
+    @JsonGetter("data_inicio")
+    public String getDataInicioAsString() {
+        return getData_inicio().toString();
+    }
+
+    @JsonGetter("data_final")
+    public String getDataFinalAsString() {
+        return getData_final().toString();
+    }
+    
 	public void setData_inicio(LocalDate data_inicio) {
 		this.data_inicio = data_inicio;
 	}
