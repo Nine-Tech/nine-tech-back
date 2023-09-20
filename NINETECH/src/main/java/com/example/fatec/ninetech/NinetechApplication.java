@@ -67,7 +67,7 @@ public class NinetechApplication {
 	        Projeto projeto = new Projeto();
 	        projeto.setNome("Carro");
 	        projeto.setData_inicio(LocalDate.of(2023, 9, 14));
-	        projeto.setData_final(LocalDate.of(2023, 9, 14)); 
+	        projeto.setData_final(LocalDate.of(2024, 9, 14)); 
 	        projeto.setEngenheiroChefe(engenheiroChefe);
 	        projeto.setLiderDeProjeto(liderDeProjeto2);
 	        servicoProjeto.criarProjeto(projeto);
