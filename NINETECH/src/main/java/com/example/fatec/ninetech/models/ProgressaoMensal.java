@@ -15,8 +15,11 @@ public class ProgressaoMensal {
 	private Long id;
 	@Column
 	private String peso;
+	
 	@Column
-	private String execucao;
+    private boolean execucao;
+	//@Column
+	//private String execucao;
 	@Column
 	private Date data;
 	public Long getId() {
@@ -31,10 +34,10 @@ public class ProgressaoMensal {
 	public void setPeso(String peso) {
 		this.peso = peso;
 	}
-	public String getExecucao() {
+	public boolean getExecucao() {
 		return execucao;
 	}
-	public void setExecucao(String execucao) {
+	public void setExecucao(boolean execucao) {
 		this.execucao = execucao;
 	}
 	public Date getData() {
