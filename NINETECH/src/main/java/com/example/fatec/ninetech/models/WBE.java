@@ -6,44 +6,62 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
-import jakarta.persistence.OneToOne;
+import jakarta.persistence.ManyToOne;
+
 
 @Entity
-public class WBS {
+public class WBE {
 	@Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-	private Long id;
-	
-	@Column(nullable = false)
-    private String wbs;
-	@Column(nullable = false)
-    private Double valor;
-	@Column(nullable = false)
-    private Double hh;
-	
-	@OneToOne
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	private Long wbe_id;
+
+	@Column
+	private String wbe;
+	@Column
+	private Double valor;
+	@Column
+	private Double hh;
+
+	@ManyToOne
 	@JoinColumn(name = "projeto_id")
 	private Projeto projeto;
 	
+	public Projeto getProjeto() {
+		return projeto;
+	}
+
+	public void setProjeto(Projeto projeto) {
+		this.projeto = projeto;
+	}
+
 	public Long getId() {
-		return id;
+		return wbe_id;
 	}
-	public String getWbs() {
-		return wbs;
+
+	public String getWbe() {
+		return wbe;
 	}
-	public void setWbs(String wbs) {
-		this.wbs = wbs;
+
+	public void setWbe(String wbs) {
+		this.wbe = wbs;
 	}
+
 	public Double getValor() {
 		return valor;
 	}
+
 	public void setValor(Double valor) {
 		this.valor = valor;
 	}
+
 	public Double getHh() {
 		return hh;
 	}
+
 	public void setHh(Double hh) {
 		this.hh = hh;
 	}
+	
+	public WBE() {} // Para funcionar o a função delete
+
 }
