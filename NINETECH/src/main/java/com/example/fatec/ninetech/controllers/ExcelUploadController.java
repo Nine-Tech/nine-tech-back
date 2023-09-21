@@ -163,6 +163,9 @@ public class ExcelUploadController {
 		if (atualizadoWBS.getHh() != null) {
 			atualizandoWBS.setHh(atualizadoWBS.getHh());
 		}
+		if (atualizandoWBS.getProjeto() != null){
+			atualizandoWBS.setProjeto(atualizadoWBS.getProjeto());
+		}
 
 		interfaceWBS.save(atualizandoWBS);
 
