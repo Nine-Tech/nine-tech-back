@@ -2,6 +2,7 @@ package com.example.fatec.ninetech.controllers;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -25,7 +26,11 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.example.fatec.ninetech.models.EngenheiroChefe;
+import com.example.fatec.ninetech.models.Projeto;
 import com.example.fatec.ninetech.models.WBE;
+import com.example.fatec.ninetech.repositories.EngenheiroChefeInterface;
+import com.example.fatec.ninetech.repositories.ProjetoInterface;
 import com.example.fatec.ninetech.repositories.WBSInterface;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -35,13 +40,20 @@ public class ExcelUploadController {
 
 	@Autowired
 	private WBSInterface interfaceWBS;
+	
+	@Autowired
+	private EngenheiroChefeInterface interfaceEngenheiroChefe;
+	
+	@Autowired
+	private ProjetoInterface interfaceProjeto;
+	
     private String dadosWBSRecemCriados;
+    
 
 	@PostMapping("/criarWBS")
-
 	public ResponseEntity<String> processarExcel(@RequestParam("file") MultipartFile file) {
-		try (InputStream is = file.getInputStream()) {
-			XSSFWorkbook workbook = new XSSFWorkbook(is);
+		try (InputStream is = file.getInputStream();
+				XSSFWorkbook workbook = new XSSFWorkbook(is)) {
 			XSSFSheet sheet = workbook.getSheetAt(1); // Use a segunda planilha (índice 0)]
 
 			Iterator<Row> rowIterator = sheet.iterator();
@@ -53,31 +65,57 @@ public class ExcelUploadController {
             
             List<WBE> dadosWBSLista = new ArrayList<>();
 
-			
-
+            int linhaAtual = 0;
+            Projeto projetoRecemCriado = null;
+            
 			while (rowIterator.hasNext()) {
 				Row row = rowIterator.next();
 				Cell colunaDoWBS = row.getCell(1);
 				Cell colunaDoValor = row.getCell(4);
 				Cell colunaDoHH = row.getCell(6);
-
+				
+				
 				if (colunaDoWBS != null && colunaDoValor != null && colunaDoHH != null) {
 					String wbe = colunaDoWBS.getStringCellValue();
 					double valor = colunaDoValor.getNumericCellValue();
 					double hh = colunaDoHH.getNumericCellValue();
-
-					WBE dadosWBE = new WBE();
-					dadosWBE.setHh(hh);
-					dadosWBE.setValor(valor);
-					dadosWBE.setWbe(wbe);
-							
-							
-					interfaceWBS.save(dadosWBE);
-
-					dadosWBSLista.add(dadosWBE);
+					
+					if (linhaAtual == 0) {
+						//Iniciando o Projeto
+						EngenheiroChefe idEngenheiroChefe = interfaceEngenheiroChefe.findById(1L).orElse(null);
+						Projeto dadosProjeto = new Projeto();
+						dadosProjeto.setNome(wbe);
+						dadosProjeto.setEngenheiroChefe(idEngenheiroChefe);
+						
+						LocalDate dataInicioAgora = LocalDate.now();
+					    dadosProjeto.setData_inicio(dataInicioAgora);
+					    
+					    LocalDate dataFinalSomado11Meses = dataInicioAgora.plusMonths(12);
+					    dadosProjeto.setData_final(dataFinalSomado11Meses);
+						
+						projetoRecemCriado = interfaceProjeto.save(dadosProjeto);
+					}
+					
+					if (linhaAtual != 0) {
+						//Iniciando os Pacotes
+						
+						WBE dadosWBE = new WBE();
+						dadosWBE.setHh(hh);
+						dadosWBE.setValor(valor);
+						dadosWBE.setWbe(wbe);
+						
+						if (projetoRecemCriado != null) {
+			                dadosWBE.setProjeto(projetoRecemCriado); // Define o projeto no WBE
+			            }
+						
+						interfaceWBS.save(dadosWBE);
+						dadosWBSLista.add(dadosWBE);
+					}
+					
 				} else {
 					break; // Interrompe o processamento se encontrar uma linha sem dados
 				}
+				linhaAtual++;
 			}
 
 			// Converter dadosWBS em JSON
@@ -92,11 +130,16 @@ public class ExcelUploadController {
         }
     }
 
-	@GetMapping("/listarWBS")
-	public ResponseEntity<List<WBE>> listarTodosWBS() {
-		List<WBE> listaDeWBS = interfaceWBS.findAll();
-		return ResponseEntity.ok(listaDeWBS);
-	}
+	@GetMapping("/listarWBS/{id}")
+	public ResponseEntity<WBE> lerWBEPorID(@PathVariable Long id) {
+        try {
+            return interfaceWBS.findById(id)
+                .map(wbe -> new ResponseEntity<>(wbe, HttpStatus.OK))
+                .orElse(new ResponseEntity<>(HttpStatus.NOT_FOUND));
+        } catch (Exception e) {
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
 
 	// Isolar as variáveis e salvar apenas as que mudaram, se não ele seta para nulo
 	@PutMapping("/atualizarWBS/{id}")

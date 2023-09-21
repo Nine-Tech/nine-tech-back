@@ -34,7 +34,7 @@ public class ProjetoController {
         return new ResponseEntity<>(projetos, HttpStatus.OK);
     }
 
-    @GetMapping("/{id}")
+    @GetMapping("/listar/{id}")
     public ResponseEntity<Projeto> lerProjeto(@PathVariable Long id) {
         try {
             return projetoInterface.findById(id)
@@ -45,7 +45,7 @@ public class ProjetoController {
         }
     }
 
-    @PutMapping("/{id}")
+    @PutMapping("/atualizar/{id}")
     public ResponseEntity<Projeto> atualizarProjeto(@PathVariable Long id, @RequestBody Projeto projetoAtualizado) {
         try {
             return projetoInterface.findById(id)
@@ -63,7 +63,7 @@ public class ProjetoController {
         }
     }
 
-    @DeleteMapping("/{id}")
+    @DeleteMapping("/deletar/{id}")
     public ResponseEntity<Void> deletarProjeto(@PathVariable Long id) {
         try {
             projetoInterface.deleteById(id);

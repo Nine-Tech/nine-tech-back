@@ -9,7 +9,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -20,11 +19,8 @@ import org.springframework.web.bind.annotation.RestController;
 import com.example.fatec.ninetech.repositories.WBSInterface;
 import com.example.fatec.ninetech.helpers.ProjetoServico;
 import com.example.fatec.ninetech.helpers.WBEServico;
-import com.example.fatec.ninetech.models.LiderDeProjeto;
 import com.example.fatec.ninetech.models.WBE;
-import com.example.fatec.ninetech.repositories.LiderDeProjetoInterface;
 import com.example.fatec.ninetech.repositories.ProjetoInterface;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.example.fatec.ninetech.models.Projeto;
 import jakarta.persistence.EntityNotFoundException;
 
@@ -61,16 +57,12 @@ public class WBEController {
 		if (wbe != null) {
 			// Obter informações do projeto atualizado
 			Long projetoId = wbe.getProjeto().getId();
-			Long liderDeProjetoId = wbe.getProjeto().getLiderDeProjeto().getLider_de_projeto_id();
-			String nomeLiderProjeto = wbe.getProjeto().getLiderDeProjeto().getNome();
 			System.out.println("Chegando aqui");
 
 			// Montar a resposta JSON
 			Map<String, Object> response = new HashMap<>();
 			response.put("projetoId", projetoId);
-			response.put("liderDeProjetoId", liderDeProjetoId);
-			response.put("nomeLiderProjeto", nomeLiderProjeto);
-
+			
 			return ResponseEntity.ok().body(response);
 		} else {
 			return ResponseEntity.notFound().build();

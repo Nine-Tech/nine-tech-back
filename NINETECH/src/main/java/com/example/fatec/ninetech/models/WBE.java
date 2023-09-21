@@ -7,7 +7,6 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
-import jakarta.persistence.OneToOne;
 
 
 @Entity
@@ -23,24 +22,18 @@ public class WBE {
 	@Column
 	private Double hh;
 
-
-	public Long getWbe_id() {
-		return wbe_id;
-	}
-
-	public void setWbe_id(Long wbe_id) {
-		this.wbe_id = wbe_id;
-	}
-
-	public Projeto getProjeto() {
-		return projeto;
-	}
-
-
 	@ManyToOne
 	@JoinColumn(name = "projeto_id")
 	private Projeto projeto;
 	
+	public Projeto getProjeto() {
+		return projeto;
+	}
+
+	public void setProjeto(Projeto projeto) {
+		this.projeto = projeto;
+	}
+
 	public Long getId() {
 		return wbe_id;
 	}
@@ -69,13 +62,6 @@ public class WBE {
 		this.hh = hh;
 	}
 	
-
-	
 	public WBE() {} // Para funcionar o a função delete
-	
-
-    public void setProjeto(Projeto projeto) {
-        this.projeto = projeto;
-    }
 
 }
