@@ -33,10 +33,6 @@ public class Projeto {
 	@ManyToOne
 	@JoinColumn(name = "engenheiro_chefe_id")
 	private EngenheiroChefe engenheiroChefe;
-	
-	@ManyToOne
-	@JoinColumn(name = "lider_de_projeto_id")
-	private LiderDeProjeto liderDeProjeto;
 
 	public Long getId() {
 		return projeto_id;
@@ -60,14 +56,6 @@ public class Projeto {
 
 	public void setEngenheiroChefe(EngenheiroChefe engenheiroChefe) {
 		this.engenheiroChefe = engenheiroChefe;
-	}
-
-	public LiderDeProjeto getLiderDeProjeto() {
-		return liderDeProjeto;
-	}
-
-	public void setLiderDeProjeto(LiderDeProjeto liderDeProjeto) {
-		this.liderDeProjeto = liderDeProjeto;
 	}
 
     public LocalDate getData_inicio() {

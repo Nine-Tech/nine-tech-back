@@ -1,6 +1,5 @@
 package com.example.fatec.ninetech;
 
-import java.time.LocalDate;
 import java.util.HashMap;
 
 import org.springframework.boot.SpringApplication;
@@ -31,7 +30,7 @@ public class NinetechApplication {
 		configuracao.put("spring.datasource.username", "root"); // usuario
 		configuracao.put("spring.datasource.password", "123456"); // senha
 		
-		configuracao.put("spring.jpa.show-sql", "true"); // mostrar comandos
+		//configuracao.put("spring.jpa.show-sql", "true"); // mostrar comandos
 		configuracao.put("spring.jpa.hibernate.ddl-auto", "update"); // criar editar
 		
 		SpringApplication app = new SpringApplication(NinetechApplication.class);
@@ -62,15 +61,6 @@ public class NinetechApplication {
 	        LiderDeProjeto liderDeProjeto2 = new LiderDeProjeto();
 	        liderDeProjeto2.setNome("Líder de Projeto 2");
 	        servicoLiderDeProjeto.criarLiderDeProjeto(liderDeProjeto2);
-	        
-	        // Criar e salvar um projeto
-	        Projeto projeto = new Projeto();
-	        projeto.setNome("Carro");
-	        projeto.setData_inicio(LocalDate.of(2023, 9, 14));
-	        projeto.setData_final(LocalDate.of(2024, 9, 14)); 
-	        projeto.setEngenheiroChefe(engenheiroChefe);
-	        projeto.setLiderDeProjeto(liderDeProjeto2);
-	        servicoProjeto.criarProjeto(projeto);
 		} 
 	}
 }
