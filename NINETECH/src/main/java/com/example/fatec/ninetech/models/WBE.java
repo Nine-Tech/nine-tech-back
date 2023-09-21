@@ -26,6 +26,18 @@ public class WBE {
 	@JoinColumn(name = "projeto_id")
 	private Projeto projeto;
 	
+	@ManyToOne
+	@JoinColumn(name = "lider_de_projeto_id")
+	private LiderDeProjeto liderDeProjeto;
+	
+	public LiderDeProjeto getLiderDeProjeto() {
+		return liderDeProjeto;
+	}
+
+	public void setLiderDeProjeto(LiderDeProjeto liderDeProjeto) {
+		this.liderDeProjeto = liderDeProjeto;
+	}
+
 	public Projeto getProjeto() {
 		return projeto;
 	}
