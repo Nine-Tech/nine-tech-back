@@ -17,7 +17,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.example.fatec.ninetech.repositories.WBSInterface;
-import com.example.fatec.ninetech.helpers.ProjetoServico;
 import com.example.fatec.ninetech.helpers.WBEServico;
 import com.example.fatec.ninetech.models.WBE;
 import com.example.fatec.ninetech.repositories.LiderDeProjetoInterface;
