@@ -45,6 +45,14 @@ public class CronogramaEstimadoController {
 
         Projeto projetoExistente = projetoOptional.get();
 
+        // Verificar se já existe um cronograma para o projeto
+        List<CronogramaEstimado> cronogramasExistente = cronogramaEstimadoInterface.findByProjeto(projetoExistente);
+
+        if (!cronogramasExistente.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body("Já existe um cronograma para este projeto.");
+        }
+        
         // Calcula a quantidade de meses
         int meses = calcularQuantidadeMeses(projetoExistente.getData_inicio(), projetoExistente.getData_final());
 
