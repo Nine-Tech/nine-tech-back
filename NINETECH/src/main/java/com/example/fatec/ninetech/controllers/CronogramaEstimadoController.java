@@ -43,10 +43,16 @@ public class CronogramaEstimadoController {
         }
 
         Projeto projetoExistente = projetoOptional.get();
-
+        
         // Verificar se já existe um cronograma para o projeto
         List<CronogramaEstimado> cronogramasExistente = cronogramaEstimadoInterface.findByProjeto(projetoExistente);
 
+<<<<<<< Updated upstream
+        // Verificar se já existe um cronograma para o projeto
+        List<CronogramaEstimado> cronogramasExistente = cronogramaEstimadoInterface.findByProjeto(projetoExistente);
+
+=======
+>>>>>>> Stashed changes
         if (!cronogramasExistente.isEmpty()) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                 .body("Já existe um cronograma para este projeto.");
@@ -144,7 +150,7 @@ public class CronogramaEstimadoController {
         if (!projetoOptional.isPresent()) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Projeto não encontrado.");
         }
-
+        
         Projeto projetoExistente = projetoOptional.get();
 
         // Deletar todos os cronogramas associados ao projeto
@@ -170,6 +176,14 @@ public class CronogramaEstimadoController {
 
         Projeto projetoExistente = projetoOptional.get();
 
+        // Verificar se já existe um cronograma para o projeto
+        List<CronogramaEstimado> cronogramasExistente = cronogramaEstimadoInterface.findByProjeto(projetoExistente);
+
+        if (cronogramasExistente.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body("Não foi possível atualizar o cronograma pois ele ainda não foi criado.");
+        }
+        
         // Calcula a quantidade de meses
         int meses = calcularQuantidadeMeses(projetoExistente.getData_inicio(), projetoExistente.getData_final());
 
@@ -193,15 +207,20 @@ public class CronogramaEstimadoController {
             }
         }
 
-        // Obtenha os cronogramas existentes para atualização
-        List<CronogramaEstimado> cronogramasExistente = cronogramaEstimadoInterface.findByProjeto(projetoExistente);
+     // Obtenha os cronogramas existentes para atualização
+        List<CronogramaEstimado> cronogramasExistenteUpdate = cronogramaEstimadoInterface.findByProjeto(projetoExistente);
 
-        // Atualize os cronogramas existentes com as novas porcentagens
-        for (int i = 0; i < meses; i++) {
-            CronogramaEstimado cronogramaExistente = cronogramasExistente.get(i);
-            cronogramaExistente.setPorcentagens(Collections.singletonList(porcentagensAtualizadas.get(i)));
-            cronogramaEstimadoInterface.save(cronogramaExistente);
+        if (cronogramasExistenteUpdate.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body("Não foi possível atualizar o cronograma pois ele ainda não foi criado.");
         }
+
+     // Atualize os cronogramas existentes com as novas porcentagens
+     for (int i = 0; i < meses; i++) {
+         CronogramaEstimado cronogramaExistenteUpdate = cronogramasExistenteUpdate.get(i);
+         cronogramaExistenteUpdate.setPorcentagens(Collections.singletonList(porcentagensAtualizadas.get(i)));
+         cronogramaEstimadoInterface.save(cronogramaExistenteUpdate);
+     }
 
         return ResponseEntity.ok("Cronograma atualizado com sucesso!");
     }
