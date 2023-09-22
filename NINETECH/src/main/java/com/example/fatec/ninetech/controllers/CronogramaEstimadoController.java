@@ -47,12 +47,6 @@ public class CronogramaEstimadoController {
         // Verificar se já existe um cronograma para o projeto
         List<CronogramaEstimado> cronogramasExistente = cronogramaEstimadoInterface.findByProjeto(projetoExistente);
 
-<<<<<<< Updated upstream
-        // Verificar se já existe um cronograma para o projeto
-        List<CronogramaEstimado> cronogramasExistente = cronogramaEstimadoInterface.findByProjeto(projetoExistente);
-
-=======
->>>>>>> Stashed changes
         if (!cronogramasExistente.isEmpty()) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                 .body("Já existe um cronograma para este projeto.");

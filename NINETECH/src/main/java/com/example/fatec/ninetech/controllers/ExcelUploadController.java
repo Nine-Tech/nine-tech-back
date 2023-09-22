@@ -131,15 +131,18 @@ public class ExcelUploadController {
     }
 
 	@GetMapping("/listarWBS/{id}")
-	public ResponseEntity<WBE> lerWBEPorID(@PathVariable Long id) {
-        try {
-            return interfaceWBS.findById(id)
-                .map(wbe -> new ResponseEntity<>(wbe, HttpStatus.OK))
-                .orElse(new ResponseEntity<>(HttpStatus.NOT_FOUND));
-        } catch (Exception e) {
-            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
-        }
-    }
+	public ResponseEntity<List<WBE>> listarWBEsPorProjetoId(@PathVariable Long id) {
+	    try {
+	        List<WBE> wbes = interfaceWBS.findByProjetoId(id);
+	        if (!wbes.isEmpty()) {
+	            return new ResponseEntity<>(wbes, HttpStatus.OK);
+	        } else {
+	            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+	        }
+	    } catch (Exception e) {
+	        return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+	    }
+	}
 
 	// Isolar as variáveis e salvar apenas as que mudaram, se não ele seta para nulo
 	@PutMapping("/atualizarWBS/{id}")
