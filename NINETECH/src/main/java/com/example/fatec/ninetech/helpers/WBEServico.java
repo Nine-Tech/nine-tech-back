@@ -166,13 +166,6 @@ public class WBEServico {
                 wbe.setWbe(novoWbe);
             }
 
-            // Verifique se o novo projeto_id existe
-            Optional<Projeto> optionalNovoProjeto = projetoInterface.findById(wbeId);
-            if (!optionalNovoProjeto.isPresent()) {
-                throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Projeto não encontrado com o novo projeto_id fornecido");
-            }
-            wbe.setProjeto(optionalNovoProjeto.get());
-
             // Verifique se o novo líder de projeto existe
             Optional<LiderDeProjeto> optionalNovoLiderDeProjeto = liderdeprojetoInterface.findById(novoLiderDeProjetoId);
             if (!optionalNovoLiderDeProjeto.isPresent()) {
