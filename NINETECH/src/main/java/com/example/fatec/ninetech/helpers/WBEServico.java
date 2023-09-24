@@ -37,9 +37,6 @@ public class WBEServico {
 		}
 	}
 	
-	
-    
-	
 	public WBE adicionarWBE(String wbe, Double valor, Double hh, Long projetoId, Long liderDeProjetoId) {
 	    Optional<Projeto> optionalProjeto = projetoInterface.findById(projetoId);
 

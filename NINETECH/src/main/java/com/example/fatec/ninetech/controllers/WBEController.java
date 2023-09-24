@@ -121,8 +121,6 @@ public class WBEController {
 	    String novoWbe = (String) requestBody.get("novoWbe");
 	    Long novoLiderDeProjetoId = convertToLong(requestBody.get("novoLiderDeProjetoId"));
 
-	    // Resto do seu código...
-
 	    try {
 	        // Atualizar os dados do WBE
 	        WBE wbeAtualizado = wbeServico.atualizarDadosWBE(wbeId, novoHH, novoValor, novoWbe, novoLiderDeProjetoId);

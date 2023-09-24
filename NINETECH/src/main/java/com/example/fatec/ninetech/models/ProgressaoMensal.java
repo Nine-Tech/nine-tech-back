@@ -7,6 +7,8 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 
 @Entity
 public class ProgressaoMensal {
@@ -18,10 +20,20 @@ public class ProgressaoMensal {
 	
 	@Column
     private boolean execucao;
-	//@Column
-	//private String execucao;
+	
 	@Column
 	private Date data;
+	
+	@ManyToOne
+	@JoinColumn(name = "wbe_id")
+	private WBE wbe;
+	
+	public WBE getWbe() {
+		return wbe;
+	}
+	public void setWbe(WBE wbe) {
+		this.wbe = wbe;
+	}
 	public Long getId() {
 		return id;
 	}

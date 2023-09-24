@@ -37,7 +37,6 @@ public class ProgressaoMensalController {
 	public ResponseEntity<ProgressaoMensal> cadastrar(@RequestBody ProgressaoMensal progressaomensal) {
 		ProgressaoMensal salvarProgressaoMensal = repoProgressaoMensal.save(progressaomensal);
         return ResponseEntity.ok(salvarProgressaoMensal);
-
 	}
 	
 	@DeleteMapping("/{id}")

@@ -30,8 +30,10 @@ import com.example.fatec.ninetech.models.EngenheiroChefe;
 import com.example.fatec.ninetech.models.Projeto;
 import com.example.fatec.ninetech.models.WBE;
 import com.example.fatec.ninetech.repositories.EngenheiroChefeInterface;
+import com.example.fatec.ninetech.repositories.LiderDeProjetoInterface;
 import com.example.fatec.ninetech.repositories.ProjetoInterface;
 import com.example.fatec.ninetech.repositories.WBSInterface;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 @RestController
@@ -46,6 +48,9 @@ public class ExcelUploadController {
 	
 	@Autowired
 	private ProjetoInterface interfaceProjeto;
+	
+	@Autowired
+	private LiderDeProjetoInterface interfaceLiderDeProjeto;
 	
     private String dadosWBSRecemCriados;
     
@@ -131,6 +136,7 @@ public class ExcelUploadController {
     }
 
 	@GetMapping("/listarWBS/{id}")
+	@JsonIgnoreProperties({"wbes"})
 	public ResponseEntity<List<WBE>> listarWBEsPorProjetoId(@PathVariable Long id) {
 	    try {
 	        List<WBE> wbes = interfaceWBS.findByProjetoId(id);
@@ -143,7 +149,22 @@ public class ExcelUploadController {
 	        return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
 	    }
 	}
-
+	
+//	@GetMapping("/listarWBSLider/{idLider}")
+//	@JsonIgnoreProperties({"wbes"})
+//	public ResponseEntity<List<WBE>> listarWBEsPorLiderId(@PathVariable Long idLider) {
+//	    try {
+//	        List<WBE> wbes = interfaceWBS.findByLiderDeProjeto_Id(idLider);
+//	        if (!wbes.isEmpty()) {
+//	            return new ResponseEntity<>(wbes, HttpStatus.OK);
+//	        } else {
+//	            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+//	        }
+//	    } catch (Exception e) {
+//	        return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+//	    }
+//	}
+	
 	// Isolar as variáveis e salvar apenas as que mudaram, se não ele seta para nulo
 	@PutMapping("/atualizarWBS/{id}")
 	public ResponseEntity<String> atualizarWBS(@PathVariable Long id, @RequestBody WBE atualizadoWBS) {
