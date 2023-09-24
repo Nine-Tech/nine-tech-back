@@ -4,8 +4,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import org.apache.poi.ss.usermodel.Cell;
@@ -55,85 +57,75 @@ public class ExcelUploadController {
     private String dadosWBSRecemCriados;
     
 
-	@PostMapping("/criarWBS")
-	public ResponseEntity<String> processarExcel(@RequestParam("file") MultipartFile file) {
-		try (InputStream is = file.getInputStream();
-				XSSFWorkbook workbook = new XSSFWorkbook(is)) {
-			XSSFSheet sheet = workbook.getSheetAt(1); // Use a segunda planilha (índice 0)]
+    @PostMapping("/criarWBS")
+    public ResponseEntity<String> processarExcel(@RequestParam("file") MultipartFile file) {
+        try (InputStream is = file.getInputStream();
+                XSSFWorkbook workbook = new XSSFWorkbook(is)) {
+            XSSFSheet sheet = workbook.getSheetAt(1);
 
-			Iterator<Row> rowIterator = sheet.iterator();
-            // Verificando se a primeira linha contém os cabeçalhos esperados
+            Iterator<Row> rowIterator = sheet.iterator();
+            
             Row linhaDoCabecalho = rowIterator.next();
             if (!validadorDeCabecalho(linhaDoCabecalho)) {
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Arquivo sem o padrão necessário");
             }
-            
-            List<WBE> dadosWBSLista = new ArrayList<>();
 
-            int linhaAtual = 0;
+            List<Map<String, Object>> dadosProjetoEListaWBS = new ArrayList<>();
             Projeto projetoRecemCriado = null;
-            
-			while (rowIterator.hasNext()) {
-				Row row = rowIterator.next();
-				Cell colunaDoWBS = row.getCell(1);
-				Cell colunaDoValor = row.getCell(4);
-				Cell colunaDoHH = row.getCell(6);
-				
-				
-				if (colunaDoWBS != null && colunaDoValor != null && colunaDoHH != null) {
-					String wbe = colunaDoWBS.getStringCellValue();
-					double valor = colunaDoValor.getNumericCellValue();
-					double hh = colunaDoHH.getNumericCellValue();
-					
-					if (linhaAtual == 0) {
-						//Iniciando o Projeto
-						EngenheiroChefe idEngenheiroChefe = interfaceEngenheiroChefe.findById(1L).orElse(null);
-						Projeto dadosProjeto = new Projeto();
-						dadosProjeto.setNome(wbe);
-						dadosProjeto.setEngenheiroChefe(idEngenheiroChefe);
-						
-						LocalDate dataInicioAgora = LocalDate.now();
-					    dadosProjeto.setData_inicio(dataInicioAgora);
-					    
-					    LocalDate dataFinalSomado11Meses = dataInicioAgora.plusMonths(12);
-					    dadosProjeto.setData_final(dataFinalSomado11Meses);
-						
-						projetoRecemCriado = interfaceProjeto.save(dadosProjeto);
-					}
-					
-					if (linhaAtual != 0) {
-						//Iniciando os Pacotes
-						
-						WBE dadosWBE = new WBE();
-						dadosWBE.setHh(hh);
-						dadosWBE.setValor(valor);
-						dadosWBE.setWbe(wbe);
-						
-						if (projetoRecemCriado != null) {
-			                dadosWBE.setProjeto(projetoRecemCriado); // Define o projeto no WBE
-			            }
-						
-						interfaceWBS.save(dadosWBE);
-						dadosWBSLista.add(dadosWBE);
-					}
-					
-				} else {
-					break; // Interrompe o processamento se encontrar uma linha sem dados
-				}
-				linhaAtual++;
-			}
 
-			// Converter dadosWBS em JSON
+            while (rowIterator.hasNext()) {
+                Row row = rowIterator.next();
+                Cell colunaDoWBS = row.getCell(1);
+                Cell colunaDoValor = row.getCell(4);
+                Cell colunaDoHH = row.getCell(6);
+
+                if (colunaDoWBS != null && colunaDoValor != null && colunaDoHH != null) {
+                    String wbe = colunaDoWBS.getStringCellValue();
+                    double valor = colunaDoValor.getNumericCellValue();
+                    double hh = colunaDoHH.getNumericCellValue();
+
+                    if (projetoRecemCriado == null) {
+                        EngenheiroChefe idEngenheiroChefe = interfaceEngenheiroChefe.findById(1L).orElse(null);
+                        Projeto dadosProjeto = new Projeto();
+                        dadosProjeto.setNome(wbe);
+                        dadosProjeto.setEngenheiroChefe(idEngenheiroChefe);
+
+                        LocalDate dataInicioAgora = LocalDate.now();
+                        dadosProjeto.setData_inicio(dataInicioAgora);
+
+                        LocalDate dataFinalSomado11Meses = dataInicioAgora.plusMonths(12);
+                        dadosProjeto.setData_final(dataFinalSomado11Meses);
+
+                        projetoRecemCriado = interfaceProjeto.save(dadosProjeto);
+                    } else {
+                        WBE dadosWBE = new WBE();
+                        dadosWBE.setHh(hh);
+                        dadosWBE.setValor(valor);
+                        dadosWBE.setWbe(wbe);
+                        dadosWBE.setProjeto(projetoRecemCriado);
+
+                        interfaceWBS.save(dadosWBE);
+
+                        Map<String, Object> dadosWBSMap = new HashMap<>();
+                        dadosWBSMap.put("projeto", projetoRecemCriado);
+                        dadosWBSMap.put("wbe", dadosWBE);
+
+                        dadosProjetoEListaWBS.add(dadosWBSMap);
+                    }
+                } else {
+                    break;
+                }
+            }
+
             ObjectMapper mapeadorDeObjeto = new ObjectMapper();
-            String dadosWBSJSON = mapeadorDeObjeto.writeValueAsString(dadosWBSLista);
-            
-            dadosWBSRecemCriados = dadosWBSJSON;
+            String dadosWBSJSON = mapeadorDeObjeto.writeValueAsString(dadosProjetoEListaWBS);
 
-            return ResponseEntity.ok(dadosWBSRecemCriados);
+            return ResponseEntity.ok(dadosWBSJSON);
         } catch (IOException e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Erro ao processar o arquivo.");
         }
     }
+
 
 	@GetMapping("/listarWBS/{id}")
 	@JsonIgnoreProperties({"wbes"})
