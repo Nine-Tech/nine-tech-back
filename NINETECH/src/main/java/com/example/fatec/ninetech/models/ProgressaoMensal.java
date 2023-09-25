@@ -1,6 +1,7 @@
 package com.example.fatec.ninetech.models;
 
-import java.util.Date;
+import com.fasterxml.jackson.annotation.JsonFormat;
+import java.sql.Timestamp;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -34,6 +35,7 @@ public class ProgressaoMensal {
 	public void setWbe(WBE wbe) {
 		this.wbe = wbe;
 	}
+
 	public Long getId() {
 		return id;
 	}
@@ -52,10 +54,10 @@ public class ProgressaoMensal {
 	public void setExecucao(boolean execucao) {
 		this.execucao = execucao;
 	}
-	public Date getData() {
+	public Timestamp getData() {
 		return data;
 	}
-	public void setData(Date data) {
+	public void setData(Timestamp data) {
 		this.data = data;
 	}
 	
