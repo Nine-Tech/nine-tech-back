@@ -51,15 +51,9 @@ public class ProgressaoMensalController {
 	}
 	
 	@PostMapping("/cadastrar")
-	public ResponseEntity<Object> cadastrar(@RequestBody ProgressaoMensal progressaomensal) {
-	    // Verifica se o campo 'peso' foi fornecido na requisição
-	    if (progressaomensal.getPeso() == null) {
-	        return ResponseEntity.badRequest().body("Campo 'peso' é obrigatório.");
-	    }
-
-	    // Se todos os campos necessários foram fornecidos, salva a progressão mensal
-	    ProgressaoMensal salvarProgressaoMensal = repoProgressaoMensal.save(progressaomensal);
-	    return ResponseEntity.ok(salvarProgressaoMensal);
+	public ResponseEntity<ProgressaoMensal> cadastrar(@RequestBody ProgressaoMensal progressaomensal) {
+		ProgressaoMensal salvarProgressaoMensal = repoProgressaoMensal.save(progressaomensal);
+        return ResponseEntity.ok(salvarProgressaoMensal);
 	}
 	
 	@DeleteMapping("/{id}")

@@ -1,5 +1,6 @@
 package com.example.fatec.ninetech;
 
+import java.time.LocalDate;
 import java.util.HashMap;
 
 import org.springframework.boot.SpringApplication;
@@ -23,15 +24,13 @@ public class NinetechApplication {
 		
 		Map<String, Object> configuracao = new HashMap<>();
 
-		configuracao.put("server.port", "5000");
-
+		configuracao.put("server.port", "5000"); // porta do backend
 		configuracao.put("spring.datasource.url", "jdbc:mysql://localhost:3306/ninetech"); // caminho da conexão
-		
 		configuracao.put("spring.datasource.username", "root"); // usuario
 		configuracao.put("spring.datasource.password", "123456"); // senha
-		
-		//configuracao.put("spring.jpa.show-sql", "true"); // mostrar comandos
-		configuracao.put("spring.jpa.hibernate.ddl-auto", "update"); // criar editar
+        configuracao.put("spring.datasource.driver-class-name", "com.mysql.cj.jdbc.Driver"); // driver mysql
+        configuracao.put("spring.jpa.hibernate.ddl-auto", "update"); // criar - atualizar
+        configuracao.put("spring.jpa.properties.hibernate.dialect", "org.hibernate.dialect.MySQLDialect"); // dialeto mysql
 		
 		SpringApplication app = new SpringApplication(NinetechApplication.class);
 		app.setDefaultProperties(configuracao);
@@ -61,6 +60,7 @@ public class NinetechApplication {
 	        LiderDeProjeto liderDeProjeto2 = new LiderDeProjeto();
 	        liderDeProjeto2.setNome("Líder de Projeto 2");
 	        servicoLiderDeProjeto.criarLiderDeProjeto(liderDeProjeto2);
+
 		} 
 	}
 }
