@@ -25,6 +25,16 @@ public class WBE {
 	private Double valor;
 	@Column
 	private Double hh;
+	@Column
+	private Double material;
+
+	public Double getMaterial() {
+		return material;
+	}
+
+	public void setMaterial(Double material) {
+		this.material = material;
+	}
 
 	@ManyToOne
 	@JoinColumn(name = "projeto_id")
