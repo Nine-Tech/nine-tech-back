@@ -105,7 +105,7 @@ public class WBE {
 
 	@Override
 	public String toString() {
-		return "WBE [id=" + wbe_id + ", wbe=" + wbe + ", valor=" + valor + ", hh=" + hh + "]";
+		return "WBE [id=" + wbe_id + ", wbe=" + wbe + ", valor=" + valor + ", material=" + material + ", hh=" + hh + "]";
 	}
 
 }

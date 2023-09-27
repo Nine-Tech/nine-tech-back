@@ -37,7 +37,7 @@ public class WBEServico {
 		}
 	}
 	
-	public WBE adicionarWBE(String wbe, Double valor, Double hh, Long projetoId, Long liderDeProjetoId) {
+	public WBE adicionarWBE(String wbe, Double valor, Double hh, Double hh2, Long projetoId, Long liderDeProjetoId) {
 	    Optional<Projeto> optionalProjeto = projetoInterface.findById(projetoId);
 
 	    if (!optionalProjeto.isPresent()) {
@@ -137,16 +137,12 @@ public class WBEServico {
     }
 
 
-
-	public void adicionarWBE(String wbe, Double valor, Double hh, Long projetoId) {
-		// TODO Auto-generated method stub
-		
-	}
+	
 
 
 
 
-	public WBE atualizarDadosWBE(Long wbeId, Double novoHH, Double novoValor, String novoWbe, Long novoLiderDeProjetoId) {
+	public WBE atualizarDadosWBE(Long wbeId, Double novoHH, Double novoValor, Double novoMaterial, String novoWbe, Long novoLiderDeProjetoId) {
         // Verifique se o WBE com o ID fornecido existe
         Optional<WBE> optionalWBE = wbeInterface.findById(wbeId);
         if (optionalWBE.isPresent()) {
@@ -158,6 +154,9 @@ public class WBEServico {
             }
             if (novoValor != null) {
                 wbe.setValor(novoValor);
+            }
+            if (novoMaterial != null) {
+                wbe.setMaterial(novoMaterial);
             }
             if (novoWbe != null) {
                 wbe.setWbe(novoWbe);

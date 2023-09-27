@@ -49,11 +49,12 @@ public class WBEController {
 		String wbe = (String) requestBody.get("wbe");
 		Double valor = (Double) requestBody.get("valor");
 		Double hh = (Double) requestBody.get("hh");
+		Double material = (Double) requestBody.get("material");
 		Long projetoId = ((Number) requestBody.get("projeto_id")).longValue();
 		Long liderDeProjetoId = ((Number) requestBody.get("lider_de_projeto_id")).longValue();
 
 		// Verificar se todos os campos são fornecidos
-		if (wbe == null || valor == null || hh == null || projetoId == null || liderDeProjetoId == null) {
+		if (wbe == null || valor == null || hh == null || material == null || projetoId == null || liderDeProjetoId == null) {
 			Map<String, String> response = new HashMap<>();
 			response.put("error", "Todos os campos são obrigatórios.");
 			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
@@ -77,7 +78,7 @@ public class WBEController {
 			}
 
 			// Todos os campos são fornecidos e os IDs existem, podemos adicionar o WBE
-			WBE wbeAdicionado = wbeServico.adicionarWBE(wbe, valor, hh, projetoId, liderDeProjetoId);
+			WBE wbeAdicionado = wbeServico.adicionarWBE(wbe, valor, material, hh, projetoId, liderDeProjetoId);
 
 			// Retornar o WBE criado em JSON
 			return ResponseEntity.ok(wbeAdicionado);
@@ -118,12 +119,13 @@ public class WBEController {
 	    // Extrair os novos valores dos campos
 	    Double novoHH = convertToDouble(requestBody.get("novoHH"));
 	    Double novoValor = convertToDouble(requestBody.get("novoValor"));
+	    Double novoMaterial = convertToDouble(requestBody.get("novoMaterial"));
 	    String novoWbe = (String) requestBody.get("novoWbe");
 	    Long novoLiderDeProjetoId = convertToLong(requestBody.get("novoLiderDeProjetoId"));
 
 	    try {
 	        // Atualizar os dados do WBE
-	        WBE wbeAtualizado = wbeServico.atualizarDadosWBE(wbeId, novoHH, novoValor, novoWbe, novoLiderDeProjetoId);
+	        WBE wbeAtualizado = wbeServico.atualizarDadosWBE(wbeId, novoHH, novoValor, novoMaterial, novoWbe, novoLiderDeProjetoId);
 	        return ResponseEntity.ok(wbeAtualizado);
 	    } catch (EntityNotFoundException e) {
 	        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);

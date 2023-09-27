@@ -79,7 +79,7 @@ public class ExcelUploadController {
                 Cell colunaDoValor = row.getCell(4);
                 Cell colunaDoHH = row.getCell(6);
                 Cell colunaDoMaterial = row.getCell(7);
-
+                
                 if (colunaDoWBS != null && colunaDoValor != null && colunaDoHH != null && colunaDoMaterial != null) {
                     String wbe = colunaDoWBS.getStringCellValue();
                     double valor = colunaDoValor.getNumericCellValue();
@@ -178,6 +178,9 @@ public class ExcelUploadController {
 		}
 		if (atualizadoWBS.getValor() != null) {
 			atualizandoWBS.setValor(atualizadoWBS.getValor());
+		}
+		if (atualizadoWBS.getMaterial() != null) {
+			atualizandoWBS.setMaterial(atualizadoWBS.getMaterial());
 		}
 		if (atualizadoWBS.getHh() != null) {
 			atualizandoWBS.setHh(atualizadoWBS.getHh());
