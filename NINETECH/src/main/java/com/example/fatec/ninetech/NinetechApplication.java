@@ -60,27 +60,6 @@ public class NinetechApplication {
 	        LiderDeProjeto liderDeProjeto2 = new LiderDeProjeto();
 	        liderDeProjeto2.setNome("Líder de Projeto 2");
 	        servicoLiderDeProjeto.criarLiderDeProjeto(liderDeProjeto2);
-	        
-	        Projeto projeto = new Projeto();
-	        projeto.setNome("Carro");
-	        projeto.setData_inicio(LocalDate.of(2023, 9, 14));
-	        projeto.setData_final(LocalDate.of(2024, 9, 14)); 
-	        projeto.setEngenheiroChefe(engenheiroChefe);
-	        servicoProjeto.criarProjeto(projeto);
-
-	        Projeto projeto2 = new Projeto();
-	        projeto2.setNome("Barco");
-	        projeto2.setData_inicio(LocalDate.of(2023, 9, 14));
-	        projeto2.setData_final(LocalDate.of(2024, 6, 25)); 
-	        projeto2.setEngenheiroChefe(engenheiroChefe);
-	        servicoProjeto.criarProjeto(projeto2);
-
-	        Projeto projeto3 = new Projeto();
-	        projeto3.setNome("Avião");
-	        projeto3.setData_inicio(LocalDate.of(2023, 9, 14));
-	        projeto3.setData_final(LocalDate.of(2025, 6, 25)); 
-	        projeto3.setEngenheiroChefe(engenheiroChefe);
-	        servicoProjeto.criarProjeto(projeto3);
 
 		} 
 	}

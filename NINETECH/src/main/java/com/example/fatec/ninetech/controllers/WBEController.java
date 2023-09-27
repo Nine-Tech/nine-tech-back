@@ -114,38 +114,50 @@ public class WBEController {
 	// ATUALIZAR A LINHA WBE_ID E QUE O PROJETO_ID EXISTA NA PLANILHA PROJETO.
 
 	@PutMapping("/atualizar/{wbeId}")
-	public ResponseEntity<WBE> atualizarDadosWBE(@PathVariable Long wbeId,
-			@RequestBody Map<String, Object> requestBody) {
-		// Extrair os novos valores dos campos
-		Double novoHH = (Double) requestBody.get("novoHH");
-		Double novoValor = (Double) requestBody.get("novoValor");
-		String novoWbe = (String) requestBody.get("novoWbe");
-		Long novoProjetoId = ((Number) requestBody.get("novoProjetoId")).longValue();
-		Long novoLiderDeProjetoId = ((Number) requestBody.get("novoLiderDeProjetoId")).longValue();
+	public ResponseEntity<WBE> atualizarDadosWBE(@PathVariable Long wbeId, @RequestBody Map<String, Object> requestBody) {
+	    // Extrair os novos valores dos campos
+	    Double novoHH = convertToDouble(requestBody.get("novoHH"));
+	    Double novoValor = convertToDouble(requestBody.get("novoValor"));
+	    String novoWbe = (String) requestBody.get("novoWbe");
+	    Long novoLiderDeProjetoId = convertToLong(requestBody.get("novoLiderDeProjetoId"));
 
-		// Verificar se o projeto com o ID fornecido existe
-		Optional<Projeto> optionalProjeto = interfaceProjeto.findById(novoProjetoId);
-		if (!optionalProjeto.isPresent()) {
-			return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
-		}
-
-		// Verificar se o líder de projeto com o ID fornecido existe
-		Optional<LiderDeProjeto> optionalLiderDeProjeto = liderdeprojetoInterface.findById(novoLiderDeProjetoId);
-		if (!optionalLiderDeProjeto.isPresent()) {
-			return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
-		}
-
-		try {
-			// Atualizar os dados do WBE
-			WBE wbeAtualizado = wbeServico.atualizarDadosWBE(wbeId, novoHH, novoValor, novoWbe, novoProjetoId,
-					novoLiderDeProjetoId);
-			return ResponseEntity.ok(wbeAtualizado);
-		} catch (EntityNotFoundException e) {
-			return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
-		} catch (Exception e) {
-			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
-		}
+	    try {
+	        // Atualizar os dados do WBE
+	        WBE wbeAtualizado = wbeServico.atualizarDadosWBE(wbeId, novoHH, novoValor, novoWbe, novoLiderDeProjetoId);
+	        return ResponseEntity.ok(wbeAtualizado);
+	    } catch (EntityNotFoundException e) {
+	        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+	    } catch (Exception e) {
+	        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+	    }
 	}
+
+	private Double convertToDouble(Object value) {
+	    if (value instanceof Number) {
+	        return ((Number) value).doubleValue();
+	    } else if (value instanceof String) {
+	        try {
+	            return Double.parseDouble((String) value);
+	        } catch (NumberFormatException e) {
+	            return null; // Valor não é um número válido
+	        }
+	    }
+	    return null; // Valor não é um número válido
+	}
+
+	private Long convertToLong(Object value) {
+	    if (value instanceof Number) {
+	        return ((Number) value).longValue();
+	    } else if (value instanceof String) {
+	        try {
+	            return Long.parseLong((String) value);
+	        } catch (NumberFormatException e) {
+	            return null; // Valor não é um número válido
+	        }
+	    }
+	    return null; // Valor não é um número válido
+	}
+
 
 	// LER TODA A TABELA WBE DE ACORDO COM O PROJETO_ID INFORMADO
 
