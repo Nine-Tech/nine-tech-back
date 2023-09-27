@@ -78,11 +78,13 @@ public class ExcelUploadController {
                 Cell colunaDoWBS = row.getCell(1);
                 Cell colunaDoValor = row.getCell(4);
                 Cell colunaDoHH = row.getCell(6);
+                Cell colunaDoMaterial = row.getCell(7);
 
-                if (colunaDoWBS != null && colunaDoValor != null && colunaDoHH != null) {
+                if (colunaDoWBS != null && colunaDoValor != null && colunaDoHH != null && colunaDoMaterial != null) {
                     String wbe = colunaDoWBS.getStringCellValue();
                     double valor = colunaDoValor.getNumericCellValue();
                     double hh = colunaDoHH.getNumericCellValue();
+                    double material = colunaDoMaterial.getNumericCellValue();
 
                     if (projetoRecemCriado == null) {
                         EngenheiroChefe idEngenheiroChefe = interfaceEngenheiroChefe.findById(1L).orElse(null);
@@ -103,6 +105,7 @@ public class ExcelUploadController {
                         dadosWBE.setValor(valor);
                         dadosWBE.setWbe(wbe);
                         dadosWBE.setProjeto(projetoRecemCriado);
+                        dadosWBE.setMaterial(material);
 
                         interfaceWBS.save(dadosWBE);
 

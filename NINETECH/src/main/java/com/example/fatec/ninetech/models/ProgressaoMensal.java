@@ -23,7 +23,7 @@ public class ProgressaoMensal {
     private boolean execucao;
 	
 	@Column
-	private Date data;
+	private Timestamp data;
 	
 	@ManyToOne
 	@JoinColumn(name = "wbe_id")
