@@ -1,13 +1,17 @@
 package com.example.fatec.ninetech.models;
 
+import java.util.List;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToMany;
 import jakarta.persistence.ManyToOne;
-
 
 @Entity
 public class WBE {
@@ -21,11 +25,45 @@ public class WBE {
 	private Double valor;
 	@Column
 	private Double hh;
+	@Column
+	private Double material;
+
+	public Double getMaterial() {
+		return material;
+	}
+
+	public void setMaterial(Double material) {
+		this.material = material;
+	}
 
 	@ManyToOne
 	@JoinColumn(name = "projeto_id")
 	private Projeto projeto;
-	
+
+	@ManyToOne
+	@JoinColumn(name = "lider_de_projeto_id")
+	private LiderDeProjeto liderDeProjeto;
+
+	@ManyToMany(mappedBy = "wbes")
+	@JsonIgnore
+	private List<CronogramaEstimado> cronogramasEstimados;
+
+	public LiderDeProjeto getLiderDeProjeto() {
+		return liderDeProjeto;
+	}
+
+	public void setLiderDeProjeto(LiderDeProjeto liderDeProjeto) {
+		this.liderDeProjeto = liderDeProjeto;
+	}
+
+	public List<CronogramaEstimado> getCronogramasEstimados() {
+		return cronogramasEstimados;
+	}
+
+	public void setCronogramasEstimados(List<CronogramaEstimado> cronogramasEstimados) {
+		this.cronogramasEstimados = cronogramasEstimados;
+	}
+
 	public Projeto getProjeto() {
 		return projeto;
 	}
@@ -61,7 +99,13 @@ public class WBE {
 	public void setHh(Double hh) {
 		this.hh = hh;
 	}
-	
-	public WBE() {} // Para funcionar o a função delete
+
+	public WBE() {
+	} // Para funcionar o a função delete
+
+	@Override
+	public String toString() {
+		return "WBE [id=" + wbe_id + ", wbe=" + wbe + ", valor=" + valor + ", material=" + material + ", hh=" + hh + "]";
+	}
 
 }
