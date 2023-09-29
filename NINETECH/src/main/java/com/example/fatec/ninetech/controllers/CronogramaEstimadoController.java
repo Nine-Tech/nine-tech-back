@@ -36,76 +36,90 @@ public class CronogramaEstimadoController {
 	@Autowired
 	private WBSInterface wbeInterface;
 
-	  @PostMapping("/criar")
-	    public ResponseEntity<String> criarCronogramaEstimado(@Validated @RequestBody CronogramaEstimado request) {
-	        // Validações iniciais
-	        if (request == null || request.getProjeto() == null) {
-	            return ResponseEntity.badRequest().body("CronogramaEstimado não está associado a nenhum projeto.");
-	        }
-
-	        Projeto projeto = request.getProjeto();
-	        Long projetoId = projeto.getId();
-
-	        Optional<Projeto> projetoOptional = projetoInterface.findById(projetoId);
-
-	        Projeto projetoExistente = projetoOptional.orElse(null);
-
-	        if (projetoExistente == null) {
-	            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Projeto não encontrado.");
-	        }
-
-	        List<List<Integer>> porcentagens = request.getPorcentagens();
-
-	        // Validação: Verificar se a quantidade de porcentagens corresponde à duração do projeto
-	        int meses = calcularQuantidadeMeses(projetoExistente.getData_inicio(), projetoExistente.getData_final());
-
-	        for (List<Integer> porcentagensDoWBE : porcentagens) {
-	            if (porcentagensDoWBE.size() != meses) {
-	                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-	                        .body("A quantidade de porcentagens não corresponde à duração do projeto.");
-	            }
-	        }
-
-	        // Validação: Verificar se a quantidade de listas corresponde à quantidade de WBE IDs encontrados
-	        List<WBE> wbesDoProjeto = wbeInterface.findByProjetoId(projetoId);
-
-	        if (wbesDoProjeto.isEmpty() || wbesDoProjeto.size() != porcentagens.size()) {
-	            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-	                    .body("A quantidade de listas de porcentagens não corresponde à quantidade de WBE IDs encontrados.");
-	        }
-
-	        // Validação: Verificar se as porcentagens estão ordenadas
-	        for (List<Integer> porcentagensDoWBE : porcentagens) {
-	            if (!isPorcentagensOrdenadas(porcentagensDoWBE)) {
-	                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-	                        .body("As porcentagens devem estar em ordem crescente.");
-	            }
-	        }
-
-	        for (WBE wbe : wbesDoProjeto) {
-	            int wbeIndex = wbesDoProjeto.indexOf(wbe);
-
-	            List<Integer> porcentagensDoWBE = porcentagens.get(wbeIndex);
-
-	            if (porcentagensDoWBE.size() != meses) {
-	                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-	                        .body("A quantidade de porcentagens para o WBE " + wbe.getId() + " não corresponde à duração do projeto.");
-	            }
-
-	            for (int i = 0; i < meses; i++) {
-	                CronogramaEstimado novoCronograma = new CronogramaEstimado();
-	                novoCronograma.setProjeto(projeto);
-	                novoCronograma.getWBE().add(wbe);
-	                novoCronograma.setMes(i + 1);
-	                novoCronograma.setWbeId(wbe.getId());
-	                novoCronograma.setPorcentagem(porcentagensDoWBE.get(i));
-
-	                cronogramaEstimadoInterface.save(novoCronograma);
-	            }
-	        }
-
-	        return ResponseEntity.ok("Cronograma criado com sucesso!");
+	@PostMapping("/criar")
+	public ResponseEntity<String> criarCronogramaEstimado(@Validated @RequestBody CronogramaEstimado request) {
+	    // Validações iniciais
+	    if (request == null || request.getProjeto() == null) {
+	        return ResponseEntity.badRequest().body("CronogramaEstimado não está associado a nenhum projeto.");
 	    }
+
+	    Projeto projeto = request.getProjeto();
+	    Long projetoId = projeto.getId();
+
+	    Optional<Projeto> projetoOptional = projetoInterface.findById(projetoId);
+
+	    Projeto projetoExistente = projetoOptional.orElse(null);
+
+	    if (projetoExistente == null) {
+	        return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Projeto não encontrado.");
+	    }
+
+	    // Verifique se o projeto já possui cronogramas associados
+	    List<CronogramaEstimado> cronogramasExistente = cronogramaEstimadoInterface.findByProjetoId(projetoId);
+	    
+	    if (!cronogramasExistente.isEmpty()) {
+	        return ResponseEntity.badRequest().body("O projeto já possui cronogramas associados.");
+	    }
+
+        List<List<Integer>> porcentagens = request.getPorcentagens();
+
+        // Validação: Verificar se a quantidade de porcentagens corresponde à duração do projeto
+        int meses = calcularQuantidadeMeses(projetoExistente.getData_inicio(), projetoExistente.getData_final());
+
+        for (List<Integer> porcentagensDoWBE : porcentagens) {
+            if (porcentagensDoWBE.size() != meses) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                        .body("A quantidade de porcentagens não corresponde à duração do projeto.");
+            }
+        }
+
+        // Validação: Verificar se a quantidade de listas corresponde à quantidade de WBE IDs encontrados
+        List<WBE> wbesDoProjeto = wbeInterface.findByProjetoId(projetoId);
+
+        if (wbesDoProjeto.isEmpty() || wbesDoProjeto.size() != porcentagens.size()) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body("A quantidade de listas de porcentagens não corresponde à quantidade de WBE IDs encontrados.");
+        }
+
+        // Validação: Verificar se as porcentagens estão ordenadas
+        for (List<Integer> porcentagensDoWBE : porcentagens) {
+            if (!isPorcentagensOrdenadas(porcentagensDoWBE)) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                        .body("As porcentagens devem estar em ordem crescente.");
+            }
+        }
+        
+        // Verifique se o projeto já possui cronogramas associados
+        List<CronogramaEstimado> cronogramasExistenteAtualizar = cronogramaEstimadoInterface.findByProjetoId(projetoId);
+        
+        if (!cronogramasExistente.isEmpty()) {
+            return ResponseEntity.badRequest().body("O projeto já possui cronogramas associados.");
+        }
+
+        for (WBE wbe : wbesDoProjeto) {
+            int wbeIndex = wbesDoProjeto.indexOf(wbe);
+
+            List<Integer> porcentagensDoWBE = porcentagens.get(wbeIndex);
+
+            if (porcentagensDoWBE.size() != meses) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                        .body("A quantidade de porcentagens para o WBE " + wbe.getId() + " não corresponde à duração do projeto.");
+            }
+
+            for (int i = 0; i < meses; i++) {
+                CronogramaEstimado novoCronograma = new CronogramaEstimado();
+                novoCronograma.setProjeto(projeto);
+                novoCronograma.getWBE().add(wbe);
+                novoCronograma.setMes(i + 1);
+                novoCronograma.setWbeId(wbe.getId());
+                novoCronograma.setPorcentagem(porcentagensDoWBE.get(i));
+
+                cronogramaEstimadoInterface.save(novoCronograma);
+            }
+        }
+
+        return ResponseEntity.ok("Cronograma criado com sucesso!");
+    }
 
     private boolean isPorcentagensOrdenadas(List<Integer> porcentagens) {
         for (int i = 1; i < porcentagens.size(); i++) {
@@ -183,6 +197,7 @@ public class CronogramaEstimadoController {
         return ResponseEntity.ok("Cronogramas do projeto foram deletados com sucesso.");
     }
 
+    @Transactional
     @PutMapping("/atualizar")
     public ResponseEntity<String> atualizarCronogramaEstimado(@Validated @RequestBody CronogramaEstimado request) {
         // Validações iniciais
@@ -229,7 +244,12 @@ public class CronogramaEstimadoController {
             }
         }
         
-        // Atualizando as porcentagens do WBE
+        
+        
+        // Excluir os cronogramas antigos associados ao projeto
+        cronogramaEstimadoInterface.deleteByProjeto(projetoExistente);
+
+        // Criar os novos cronogramas atualizados
         for (WBE wbe : wbesDoProjeto) {
             int wbeIndex = wbesDoProjeto.indexOf(wbe);
 
