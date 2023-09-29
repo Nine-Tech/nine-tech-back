@@ -50,20 +50,49 @@ public class ProgressaoMensalController {
 	    }
 	}
 	
-	@PostMapping("/cadastrar")
-	public ResponseEntity<ProgressaoMensal> cadastrar(@RequestBody ProgressaoMensal progressaomensal) {
-		ProgressaoMensal salvarProgressaoMensal = repoProgressaoMensal.save(progressaomensal);
-        return ResponseEntity.ok(salvarProgressaoMensal);
+	@PostMapping
+	public ResponseEntity<Object> cadastrar(@RequestBody ProgressaoMensal progressaomensal) {
+	    // Verifica se o campo 'peso' foi fornecido na requisição
+	    if (progressaomensal.getPeso() == null) {
+	        return ResponseEntity.badRequest().body("Campo 'peso' é obrigatório.");
+	    }
+	    
+	    String[] fibonacciValidador = {"0","1","2","3","5","8","13","20","40","100"};
+	    
+	    String peso = progressaomensal.getPeso();
+	    boolean pesoValido = false;
+	    
+	    for (String pes: fibonacciValidador) {
+	    	if(peso.equals(pes)) {
+	    		pesoValido = true;
+	    		break;
+	    	}
+	    }
+	    
+	    if (!pesoValido) {
+	        return ResponseEntity.badRequest().body("Valor fornecido não é válido.");
+	    }
+
+	    // Se todos os campos necessários foram fornecidos, salva a progressão mensal
+	    ProgressaoMensal salvarProgressaoMensal = repoProgressaoMensal.save(progressaomensal);
+	    return ResponseEntity.ok(salvarProgressaoMensal);
 	}
 	
 	@DeleteMapping("/{id}")
 	// Verificar pelo id e excluir 
-	public void deletar(@PathVariable Long id) {
-		repoProgressaoMensal.deleteById(id);
+	public ResponseEntity<ProgressaoMensal> deletar(@PathVariable Long id) {
+		ProgressaoMensal progressao = repoProgressaoMensal.findById(id).orElse(null);
+		if (progressao != null) {
+			repoProgressaoMensal.deleteById(id);
+			return ResponseEntity.ok(progressao);
+		} else {
+			return ResponseEntity.notFound().build();
+		}
+		
 	}
 	
 	@PutMapping("/{id}")
-	public ResponseEntity<ProgressaoMensal> alterar(@PathVariable Long id, @RequestBody ProgressaoMensal progressaomensal) {
+	public ResponseEntity<Object> alterar(@PathVariable Long id, @RequestBody ProgressaoMensal progressaomensal) {
 	    // Verificar se o registro com o ID fornecido existe no banco de dados
 	    if (repoProgressaoMensal.existsById(id)) {
 	        ProgressaoMensal progressao = repoProgressaoMensal.findById(id).get();
@@ -71,6 +100,21 @@ public class ProgressaoMensalController {
 	        // Verificar se o campo "peso" foi fornecido no corpo da requisição
 	        if (progressaomensal.getPeso() != null) {
 	            progressao.setPeso(progressaomensal.getPeso());
+		        String[] fibonacciValidador = {"0","1","2","3","5","8","13","20","40","100"};
+		        
+			    String peso = progressaomensal.getPeso();
+			    boolean pesoValido = false;
+			    
+			    for (String pes: fibonacciValidador) {
+			    	if(peso.equals(pes)) {
+			    		pesoValido = true;
+			    		break;
+			    	}
+			    }
+			    
+			    if (!pesoValido) {
+			        return ResponseEntity.badRequest().body("Valor fornecido não é válido.");
+			    }
 	        }
 	        
 	        // Verificar se o campo "execucao" foi fornecido no corpo da requisição
