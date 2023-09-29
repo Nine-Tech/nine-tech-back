@@ -34,12 +34,85 @@ public class CronogramaEstimadoController {
 	@Autowired
 	private WBSInterface wbeInterface;
 
+<<<<<<< Updated upstream
 	@PostMapping("/criar")
 	public ResponseEntity<String> criarCronogramaEstimado(@Validated @RequestBody CronogramaEstimado request) {
 	    // Validações iniciais
 	    if (request == null || request.getProjeto() == null) {
 	        return ResponseEntity.badRequest().body("CronogramaEstimado não está associado a nenhum projeto.");
 	    }
+=======
+  @PostMapping("/criar")
+    public ResponseEntity<String> criarCronogramaEstimado(@Validated @RequestBody CronogramaEstimado request) {
+        // Validações iniciais
+        if (request == null || request.getProjeto() == null) {
+            return ResponseEntity.badRequest().body("CronogramaEstimado não está associado a nenhum projeto.");
+        }
+
+        Projeto projeto = request.getProjeto();
+        Long projetoId = projeto.getId();
+
+        Optional<Projeto> projetoOptional = projetoInterface.findById(projetoId);
+
+        Projeto projetoExistente = projetoOptional.orElse(null);
+
+        if (projetoExistente == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Projeto não encontrado.");
+        }
+
+        List<List<Integer>> porcentagens = request.getPorcentagens();
+
+        // Validação: Verificar se a quantidade de porcentagens corresponde à duração do projeto
+        int meses = calcularQuantidadeMeses(projetoExistente.getData_inicio(), projetoExistente.getData_final());
+
+        for (List<Integer> porcentagensDoWBE : porcentagens) {
+            if (porcentagensDoWBE.size() != meses) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                        .body("A quantidade de porcentagens não corresponde à duração do projeto.");
+            }
+        }
+
+        // Validação: Verificar se a quantidade de listas corresponde à quantidade de WBE IDs encontrados
+        List<WBE> wbesDoProjeto = wbeInterface.findByProjetoId(projetoId);
+
+        if (wbesDoProjeto.isEmpty() || wbesDoProjeto.size() != porcentagens.size()) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body("A quantidade de listas de porcentagens não corresponde à quantidade de WBE IDs encontrados.");
+        }
+
+        // Validação: Verificar se as porcentagens estão ordenadas
+        for (List<Integer> porcentagensDoWBE : porcentagens) {
+            if (!isPorcentagensOrdenadas(porcentagensDoWBE)) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                        .body("As porcentagens devem estar em ordem crescente.");
+            }
+        }
+
+        for (WBE wbe : wbesDoProjeto) {
+            int wbeIndex = wbesDoProjeto.indexOf(wbe);
+
+            List<Integer> porcentagensDoWBE = porcentagens.get(wbeIndex);
+
+            if (porcentagensDoWBE.size() != meses) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                        .body("A quantidade de porcentagens para o WBE " + wbe.getId() + " não corresponde à duração do projeto.");
+            }
+
+            for (int i = 0; i < meses; i++) {
+                CronogramaEstimado novoCronograma = new CronogramaEstimado();
+                novoCronograma.setProjeto(projeto);
+                novoCronograma.getWBE().add(wbe);
+                novoCronograma.setMes(i + 1);
+                novoCronograma.setWbeId(wbe.getId());
+                novoCronograma.setPorcentagem(porcentagensDoWBE.get(i));
+
+                cronogramaEstimadoInterface.save(novoCronograma);
+            }
+        }
+
+        return ResponseEntity.ok("Cronograma criado com sucesso!");
+    }
+>>>>>>> Stashed changes
 
 	    Projeto projeto = request.getProjeto();
 	    Long projetoId = projeto.getId();
@@ -144,9 +217,14 @@ public class CronogramaEstimadoController {
 	}
 	
 	@GetMapping("/cronograma-por-wbe/{projetoId}")
-	public Map<Long, Map<String, Object>> getCronogramaPorWBE(@PathVariable Long projetoId) {
+	public ResponseEntity<Object> getCronogramaPorWBE(@PathVariable Long projetoId) {
 	    // Consulta ao banco de dados para recuperar os registros com base no projetoId
 	    List<CronogramaEstimado> cronogramas = cronogramaEstimadoInterface.findByProjetoId(projetoId);
+
+	    if (cronogramas.isEmpty()) {
+	        // Se não existirem cronogramas, retorne o código do modelo com porcentagens zeradas
+	        return ResponseEntity.status(HttpStatus.OK).body(getModeloCronograma(projetoId));
+	    }
 
 	    // Processamento para agrupar as porcentagens por wbe_id e obter o nome do wbe
 	    Map<Long, Map<String, Object>> cronogramaPorWBE = new HashMap<>();
@@ -175,7 +253,45 @@ public class CronogramaEstimadoController {
 	        }
 	    }
 
-	    return cronogramaPorWBE;
+	    return ResponseEntity.status(HttpStatus.OK).body(cronogramaPorWBE);
+	}
+
+	// Método para obter o modelo com porcentagens zeradas, se o projeto não tiver nenhum cronograma ainda
+	private Map<Long, Map<String, Object>> getModeloCronograma(Long projetoId) {
+	    // Verifique se o projeto existe (você pode adicionar essa validação)
+	    Projeto projeto = projetoInterface.findById(projetoId).orElse(null);
+
+	    if (projeto == null) {
+	        // Se o projeto não for encontrado, retorne um modelo com uma mensagem de erro
+	        Map<Long, Map<String, Object>> erroModelo = new HashMap<>();
+	        Map<String, Object> erroInfo = new HashMap<>();
+	        erroInfo.put("erro", "Projeto não encontrado.");
+	        erroModelo.put(projetoId, erroInfo);
+	        return erroModelo;
+	    }
+
+	    // Crie um modelo com porcentagens zeradas com base no número de meses e WBEs do projeto
+	    int meses = calcularQuantidadeMeses(projeto.getData_inicio(), projeto.getData_final());
+	    List<WBE> wbesDoProjeto = wbeInterface.findByProjetoId(projetoId);
+
+	    Map<Long, Map<String, Object>> modeloCronograma = new HashMap<>();
+
+	    // Para cada WBE, crie um modelo com o nome do WBE e porcentagens zeradas
+	    for (WBE wbe : wbesDoProjeto) {
+	        Map<String, Object> wbeInfo = new HashMap<>();
+	        wbeInfo.put("nome", wbe.getWbe());
+
+	        // Crie uma lista de porcentagens zeradas para cada mês
+	        List<Integer> porcentagens = new ArrayList<>();
+	        for (int j = 0; j < meses; j++) {
+	            porcentagens.add(0);
+	        }
+	        wbeInfo.put("porcentagens", porcentagens);
+
+	        modeloCronograma.put(wbe.getId(), wbeInfo);
+	    }
+
+	    return modeloCronograma;
 	}
 	
     @Transactional
