@@ -29,6 +29,9 @@ public class Projeto {
 	
 	@Column
 	private LocalDate data_final;
+
+	@Column
+	private Double hh;
 	
 	@ManyToOne
 	@JoinColumn(name = "engenheiro_chefe_id")
@@ -62,6 +65,14 @@ public class Projeto {
         return data_inicio;
     }
 
+	public Double getHh() {
+		return hh;
+	}
+
+	public void setHh(Double hh) {
+		this.hh = hh;
+	}
+    
     @Override
     public String toString() {
         StringBuilder stringBuilder = new StringBuilder();

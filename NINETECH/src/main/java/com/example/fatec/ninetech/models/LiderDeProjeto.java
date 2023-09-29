@@ -12,13 +12,13 @@ import jakarta.persistence.Table;
 public class LiderDeProjeto {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	private Long lider_de_projeto_id;
+	private Long id;
 
-	public Long getLider_de_projeto_id() {
-		return lider_de_projeto_id;
+	public Long getId() {
+		return id;
 	}
-	public void setLider_de_projeto_id(Long lider_de_projeto_id) {
-		this.lider_de_projeto_id = lider_de_projeto_id;
+	public void setId(Long id) {
+		this.id = id;
 	}
 
 	@Column

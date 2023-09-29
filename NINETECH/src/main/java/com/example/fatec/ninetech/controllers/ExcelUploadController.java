@@ -101,7 +101,6 @@ public class ExcelUploadController {
                         projetoRecemCriado = interfaceProjeto.save(dadosProjeto);
                     } else {
                         WBE dadosWBE = new WBE();
-                        dadosWBE.setHh(hh);
                         dadosWBE.setValor(valor);
                         dadosWBE.setWbe(wbe);
                         dadosWBE.setProjeto(projetoRecemCriado);
@@ -128,7 +127,6 @@ public class ExcelUploadController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Erro ao processar o arquivo.");
         }
     }
-
 
 	@GetMapping("/listarWBS/{id}")
 	@JsonIgnoreProperties({"wbes"})
@@ -181,9 +179,6 @@ public class ExcelUploadController {
 		}
 		if (atualizadoWBS.getMaterial() != null) {
 			atualizandoWBS.setMaterial(atualizadoWBS.getMaterial());
-		}
-		if (atualizadoWBS.getHh() != null) {
-			atualizandoWBS.setHh(atualizadoWBS.getHh());
 		}
 		if (atualizandoWBS.getProjeto() != null){
 			atualizandoWBS.setProjeto(atualizadoWBS.getProjeto());

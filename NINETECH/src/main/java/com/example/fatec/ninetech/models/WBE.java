@@ -21,10 +21,10 @@ public class WBE {
 
 	@Column
 	private String wbe;
+	
 	@Column
 	private Double valor;
-	@Column
-	private Double hh;
+
 	@Column
 	private Double material;
 
@@ -41,19 +41,19 @@ public class WBE {
 	private Projeto projeto;
 
 	@ManyToOne
-	@JoinColumn(name = "lider_de_projeto_id")
-	private LiderDeProjeto liderDeProjeto;
+	@JoinColumn(name = "lider_id")
+	private LiderDeProjeto lider;
 
 	@ManyToMany(mappedBy = "wbes")
 	@JsonIgnore
 	private List<CronogramaEstimado> cronogramasEstimados;
 
 	public LiderDeProjeto getLiderDeProjeto() {
-		return liderDeProjeto;
+		return lider;
 	}
 
-	public void setLiderDeProjeto(LiderDeProjeto liderDeProjeto) {
-		this.liderDeProjeto = liderDeProjeto;
+	public void setLiderDeProjeto(LiderDeProjeto lider) {
+		this.lider = lider;
 	}
 
 	public List<CronogramaEstimado> getCronogramasEstimados() {
@@ -92,20 +92,12 @@ public class WBE {
 		this.valor = valor;
 	}
 
-	public Double getHh() {
-		return hh;
-	}
-
-	public void setHh(Double hh) {
-		this.hh = hh;
-	}
-
 	public WBE() {
 	} // Para funcionar o a função delete
 
 	@Override
 	public String toString() {
-		return "WBE [id=" + wbe_id + ", wbe=" + wbe + ", valor=" + valor + ", material=" + material + ", hh=" + hh + "]";
+		return "WBE [id=" + wbe_id + ", wbe=" + wbe + ", valor=" + valor + ", material=" + material + ",]";
 	}
 
 }

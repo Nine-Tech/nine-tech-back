@@ -37,17 +37,17 @@ public class WBEServico {
 		}
 	}
 	
-	public WBE adicionarWBE(String wbe, Double valor, Double hh, Double hh2, Long projetoId, Long liderDeProjetoId) {
+	public WBE adicionarWBE(String wbe, Double valor, Double material, Long projetoId, Long liderId) {
 	    Optional<Projeto> optionalProjeto = projetoInterface.findById(projetoId);
 
 	    if (!optionalProjeto.isPresent()) {
 	        throw new EntityNotFoundException("Projeto não encontrado com ID: " + projetoId);
 	    }
 
-	    Optional<LiderDeProjeto> optionalLiderDeProjeto = liderdeprojetoInterface.findById(liderDeProjetoId);
+	    Optional<LiderDeProjeto> optionalLiderDeProjeto = liderdeprojetoInterface.findById(liderId);
 
 	    if (!optionalLiderDeProjeto.isPresent()) {
-	        throw new EntityNotFoundException("Líder de Projeto não encontrado com ID: " + liderDeProjetoId);
+	        throw new EntityNotFoundException("Líder de Projeto não encontrado com ID: " + liderId);
 	    }
 
 	    Projeto projeto = optionalProjeto.get();
@@ -55,9 +55,9 @@ public class WBEServico {
 
 	    // Crie um novo WBE com os dados fornecidos
 	    WBE novoWBE = new WBE();
-	    novoWBE.setHh(hh);
 	    novoWBE.setValor(valor);
 	    novoWBE.setWbe(wbe);
+	    novoWBE.setMaterial(material);
 	    novoWBE.setProjeto(projeto);
 	    novoWBE.setLiderDeProjeto(liderDeProjeto);
 
@@ -75,19 +75,16 @@ public class WBEServico {
 	    }).orElseThrow(() -> new EntityNotFoundException("WBE não encontrado com ID: " + wbeId));
 	}
 	
-	public WBE atualizarWBE(Long wbeId, Double novoHH, Double novoValor, String novoWbe, Long projetoId) {
+	public WBE atualizarWBE(Long wbeId, Double novoValor, String novoWbe, Long projetoId) {
 	    Optional<WBE> optionalWBE = wbeInterface.findById(wbeId);
 
         if (optionalWBE.isPresent()) {
             WBE wbe = optionalWBE.get();
 
             // Atualiza os campos com os novos valores
-            wbe.setHh(novoHH);
             wbe.setValor(novoValor);
             wbe.setWbe(novoWbe);
           
-            
-
             // Salva a entidade atualizada
             return wbeInterface.save(wbe);
         } else {
@@ -136,22 +133,12 @@ public class WBEServico {
         return wbeInterface.findAll();
     }
 
-
-	
-
-
-
-
-	public WBE atualizarDadosWBE(Long wbeId, Double novoHH, Double novoValor, Double novoMaterial, String novoWbe, Long novoLiderDeProjetoId) {
+	public WBE atualizarDadosWBE(Long wbeId, Double novoValor, Double novoMaterial, String novoWbe, Long novoLiderDeProjetoId) {
         // Verifique se o WBE com o ID fornecido existe
         Optional<WBE> optionalWBE = wbeInterface.findById(wbeId);
         if (optionalWBE.isPresent()) {
             WBE wbe = optionalWBE.get();
 
-            // Atualize os campos
-            if (novoHH != null) {
-                wbe.setHh(novoHH);
-            }
             if (novoValor != null) {
                 wbe.setValor(novoValor);
             }
