@@ -1,6 +1,5 @@
 package com.example.fatec.ninetech;
 
-import java.time.LocalDate;
 import java.util.HashMap;
 
 import org.springframework.boot.SpringApplication;

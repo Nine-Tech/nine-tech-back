@@ -17,7 +17,7 @@ import jakarta.persistence.ManyToOne;
 public class WBE {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	private Long wbe_id;
+	private Long id;
 
 	@Column
 	private String wbe;
@@ -27,14 +27,6 @@ public class WBE {
 	private Double hh;
 	@Column
 	private Double material;
-
-	public Double getMaterial() {
-		return material;
-	}
-
-	public void setMaterial(Double material) {
-		this.material = material;
-	}
 
 	@ManyToOne
 	@JoinColumn(name = "projeto_id")
@@ -47,6 +39,14 @@ public class WBE {
 	@ManyToMany(mappedBy = "wbes")
 	@JsonIgnore
 	private List<CronogramaEstimado> cronogramasEstimados;
+	
+	public Double getMaterial() {
+		return material;
+	}
+
+	public void setMaterial(Double material) {
+		this.material = material;
+	}
 
 	public LiderDeProjeto getLiderDeProjeto() {
 		return liderDeProjeto;
@@ -73,7 +73,7 @@ public class WBE {
 	}
 
 	public Long getId() {
-		return wbe_id;
+		return id;
 	}
 
 	public String getWbe() {
@@ -98,14 +98,6 @@ public class WBE {
 
 	public void setHh(Double hh) {
 		this.hh = hh;
-	}
-
-	public WBE() {
-	} // Para funcionar o a função delete
-
-	@Override
-	public String toString() {
-		return "WBE [id=" + wbe_id + ", wbe=" + wbe + ", valor=" + valor + ", material=" + material + ", hh=" + hh + "]";
 	}
 
 }

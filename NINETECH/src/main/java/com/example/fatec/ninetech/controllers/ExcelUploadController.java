@@ -4,10 +4,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.time.LocalDate;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 
 import org.apache.poi.ss.usermodel.Cell;
@@ -32,11 +30,9 @@ import com.example.fatec.ninetech.models.EngenheiroChefe;
 import com.example.fatec.ninetech.models.Projeto;
 import com.example.fatec.ninetech.models.WBE;
 import com.example.fatec.ninetech.repositories.EngenheiroChefeInterface;
-import com.example.fatec.ninetech.repositories.LiderDeProjetoInterface;
 import com.example.fatec.ninetech.repositories.ProjetoInterface;
 import com.example.fatec.ninetech.repositories.WBSInterface;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 @RestController
 @RequestMapping("/upload")
@@ -50,15 +46,9 @@ public class ExcelUploadController {
 	
 	@Autowired
 	private ProjetoInterface interfaceProjeto;
-	
-	@Autowired
-	private LiderDeProjetoInterface interfaceLiderDeProjeto;
-	
-    private String dadosWBSRecemCriados;
     
-
-    @PostMapping("/criarWBS")
-    public ResponseEntity<String> processarExcel(@RequestParam("file") MultipartFile file) {
+    @PostMapping()
+    public ResponseEntity<List<WBE>> processarExcel(@RequestParam("file") MultipartFile file) {
         try (InputStream is = file.getInputStream();
                 XSSFWorkbook workbook = new XSSFWorkbook(is)) {
             XSSFSheet sheet = workbook.getSheetAt(1);
@@ -67,10 +57,10 @@ public class ExcelUploadController {
             
             Row linhaDoCabecalho = rowIterator.next();
             if (!validadorDeCabecalho(linhaDoCabecalho)) {
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Arquivo sem o padrão necessário");
+                return ResponseEntity.badRequest().build();
             }
 
-            List<Map<String, Object>> dadosProjetoEListaWBS = new ArrayList<>();
+            List<WBE> wbes = new ArrayList<>();
             Projeto projetoRecemCriado = null;
 
             while (rowIterator.hasNext()) {
@@ -107,30 +97,23 @@ public class ExcelUploadController {
                         dadosWBE.setProjeto(projetoRecemCriado);
                         dadosWBE.setMaterial(material);
 
-                        interfaceWBS.save(dadosWBE);
-
-                        Map<String, Object> dadosWBSMap = new HashMap<>();
-                        dadosWBSMap.put("projeto", projetoRecemCriado);
-                        dadosWBSMap.put("wbe", dadosWBE);
-
-                        dadosProjetoEListaWBS.add(dadosWBSMap);
+                        WBE wbeSalvo = interfaceWBS.save(dadosWBE);
+                        wbes.add(wbeSalvo);
                     }
                 } else {
                     break;
                 }
             }
 
-            ObjectMapper mapeadorDeObjeto = new ObjectMapper();
-            String dadosWBSJSON = mapeadorDeObjeto.writeValueAsString(dadosProjetoEListaWBS);
-
-            return ResponseEntity.ok(dadosWBSJSON);
+            return ResponseEntity.ok(wbes);
         } catch (IOException e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Erro ao processar o arquivo.");
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
 
 
-	@GetMapping("/listarWBS/{id}")
+
+	@GetMapping("/{id}")
 	@JsonIgnoreProperties({"wbes"})
 	public ResponseEntity<List<WBE>> listarWBEsPorProjetoId(@PathVariable Long id) {
 	    try {
@@ -161,52 +144,49 @@ public class ExcelUploadController {
 //	}
 	
 	// Isolar as variáveis e salvar apenas as que mudaram, se não ele seta para nulo
-	@PutMapping("/atualizarWBS/{id}")
-	public ResponseEntity<String> atualizarWBS(@PathVariable Long id, @RequestBody WBE atualizadoWBS) {
-		// Trecho repetitivo, criar Helper?
-		Optional<WBE> encontrarPorIdWBS = interfaceWBS.findById(id);
+	@PutMapping("/{id}")
+	public ResponseEntity<WBE> atualizarWBS(@PathVariable Long id, @RequestBody WBE atualizadoWBS) {
+	    Optional<WBE> encontrarPorIdWBS = interfaceWBS.findById(id);
 
-		if (encontrarPorIdWBS.isEmpty()) {
-			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Tabela não encontrada.");
-		}
-		// Fim do trecho repetitivo
+	    if (encontrarPorIdWBS.isEmpty()) {
+	        return ResponseEntity.notFound().build();
+	    }
 
-		WBE atualizandoWBS = encontrarPorIdWBS.get();
+	    WBE atualizandoWBS = encontrarPorIdWBS.get();
 
-		if (atualizadoWBS.getWbe() != null) {
-			atualizandoWBS.setWbe(atualizadoWBS.getWbe());
-		}
-		if (atualizadoWBS.getValor() != null) {
-			atualizandoWBS.setValor(atualizadoWBS.getValor());
-		}
-		if (atualizadoWBS.getMaterial() != null) {
-			atualizandoWBS.setMaterial(atualizadoWBS.getMaterial());
-		}
-		if (atualizadoWBS.getHh() != null) {
-			atualizandoWBS.setHh(atualizadoWBS.getHh());
-		}
-		if (atualizandoWBS.getProjeto() != null){
-			atualizandoWBS.setProjeto(atualizadoWBS.getProjeto());
-		}
+	    if (atualizadoWBS.getWbe() != null) {
+	        atualizandoWBS.setWbe(atualizadoWBS.getWbe());
+	    }
+	    if (atualizadoWBS.getValor() != null) {
+	        atualizandoWBS.setValor(atualizadoWBS.getValor());
+	    }
+	    if (atualizadoWBS.getMaterial() != null) {
+	        atualizandoWBS.setMaterial(atualizadoWBS.getMaterial());
+	    }
+	    if (atualizadoWBS.getHh() != null) {
+	        atualizandoWBS.setHh(atualizadoWBS.getHh());
+	    }
+	    if (atualizadoWBS.getProjeto() != null) {
+	        atualizandoWBS.setProjeto(atualizadoWBS.getProjeto());
+	    }
 
-		interfaceWBS.save(atualizandoWBS);
+	    WBE wbeAtualizado = interfaceWBS.save(atualizandoWBS);
 
-		return ResponseEntity.ok("WBS atualizado com sucesso.");
+	    return ResponseEntity.ok(wbeAtualizado);
 	}
 
-	@DeleteMapping("/apagarWBS/{id}")
-	public ResponseEntity<String> apagarWBS(@PathVariable Long id) {
-		// Trecho repetitivo, criar Helper?
-		Optional<WBE> encontrarPorIdWBS = interfaceWBS.findById(id);
 
-		if (encontrarPorIdWBS.isEmpty()) {
-			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Id não encontrado.");
-		}
-		// Fim do trecho repetitivo
+	@DeleteMapping("/{id}")
+	public ResponseEntity<WBE> apagarWBS(@PathVariable Long id) {
+	    Optional<WBE> encontrarPorIdWBS = interfaceWBS.findById(id);
 
-		interfaceWBS.delete(encontrarPorIdWBS.get());
+	    if (encontrarPorIdWBS.isEmpty()) {
+	        return ResponseEntity.notFound().build();
+	    }
 
-		return ResponseEntity.ok("WBS excluído com sucesso.");
+	    interfaceWBS.delete(encontrarPorIdWBS.get());
+
+	    return ResponseEntity.ok().build();
 	}
 
 	private boolean validadorDeCabecalho(Row linhaDoCabecalho) {
