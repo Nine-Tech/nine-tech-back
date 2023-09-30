@@ -3,13 +3,13 @@ package com.example.fatec.ninetech.models;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import java.sql.Timestamp;
 
+import org.hibernate.mapping.ForeignKey;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
 
 @Entity
 public class ProgressaoMensal {
@@ -21,21 +21,19 @@ public class ProgressaoMensal {
 	
 	@Column
     private boolean execucao;
-	
+	//@Column
+	//private String execucao;
+	@JsonFormat(pattern = "yyyy-MM-dd", timezone = "America/Sao_Paulo")
 	@Column
 	private Timestamp data;
 	
+	/**
 	@ManyToOne
 	@JoinColumn(name = "wbe_id")
-	private WBE wbe;
+	*/
+	private ForeignKey id_wbe;
 	
-	public WBE getWbe() {
-		return wbe;
-	}
-	public void setWbe(WBE wbe) {
-		this.wbe = wbe;
-	}
-
+	
 	public Long getId() {
 		return id;
 	}
