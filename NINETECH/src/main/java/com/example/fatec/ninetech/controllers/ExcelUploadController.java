@@ -27,9 +27,11 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.example.fatec.ninetech.models.EngenheiroChefe;
+import com.example.fatec.ninetech.models.LiderDeProjeto;
 import com.example.fatec.ninetech.models.Projeto;
 import com.example.fatec.ninetech.models.WBE;
 import com.example.fatec.ninetech.repositories.EngenheiroChefeInterface;
+import com.example.fatec.ninetech.repositories.LiderDeProjetoInterface;
 import com.example.fatec.ninetech.repositories.ProjetoInterface;
 import com.example.fatec.ninetech.repositories.WBSInterface;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
@@ -46,8 +48,11 @@ public class ExcelUploadController {
 	
 	@Autowired
 	private ProjetoInterface interfaceProjeto;
+	
+	@Autowired
+	private LiderDeProjetoInterface interfaceLiderDeProjeto;
     
-    @PostMapping()
+    @PostMapping
     public ResponseEntity<List<WBE>> processarExcel(@RequestParam("file") MultipartFile file) {
         try (InputStream is = file.getInputStream();
                 XSSFWorkbook workbook = new XSSFWorkbook(is)) {
@@ -62,6 +67,7 @@ public class ExcelUploadController {
 
             List<WBE> wbes = new ArrayList<>();
             Projeto projetoRecemCriado = null;
+            Long idPai = null;
 
             while (rowIterator.hasNext()) {
                 Row row = rowIterator.next();
@@ -76,30 +82,51 @@ public class ExcelUploadController {
                     double hh = colunaDoHH.getNumericCellValue();
                     double material = colunaDoMaterial.getNumericCellValue();
 
-                    if (projetoRecemCriado == null) {
-                        EngenheiroChefe idEngenheiroChefe = interfaceEngenheiroChefe.findById(1L).orElse(null);
-                        Projeto dadosProjeto = new Projeto();
-                        dadosProjeto.setNome(wbe);
-                        dadosProjeto.setEngenheiroChefe(idEngenheiroChefe);
+                    int espacosIniciais = 0;
 
-                        LocalDate dataInicioAgora = LocalDate.now();
-                        dadosProjeto.setData_inicio(dataInicioAgora);
+                    // Contar os espaços no início da string
+                    while (espacosIniciais < wbe.length() && wbe.charAt(espacosIniciais) == ' ') {
+                        espacosIniciais++;
+                    }
 
-                        LocalDate dataFinalSomado11Meses = dataInicioAgora.plusMonths(12);
-                        dadosProjeto.setData_final(dataFinalSomado11Meses);
+                    WBE dadosWBE = new WBE();
+                    dadosWBE.setHh(hh);
+                    dadosWBE.setValor(valor);
+                    dadosWBE.setWbe(wbe);
+                    dadosWBE.setProjeto(projetoRecemCriado);
+                    dadosWBE.setMaterial(material);
 
-                        projetoRecemCriado = interfaceProjeto.save(dadosProjeto);
-                    } else {
-                        WBE dadosWBE = new WBE();
-                        dadosWBE.setHh(hh);
-                        dadosWBE.setValor(valor);
-                        dadosWBE.setWbe(wbe);
-                        dadosWBE.setProjeto(projetoRecemCriado);
-                        dadosWBE.setMaterial(material);
+                    if (espacosIniciais == 0) {
+                        // Se for 0, salvar no projetoRecemCriado
+                        if (projetoRecemCriado == null) {
+                            EngenheiroChefe idEngenheiroChefe = interfaceEngenheiroChefe.findById(1L).orElse(null);
+                            Projeto dadosProjeto = new Projeto();
+                            dadosProjeto.setNome(wbe);
+                            dadosProjeto.setEngenheiroChefe(idEngenheiroChefe);
 
+                            LocalDate dataInicioAgora = LocalDate.now();
+                            dadosProjeto.setData_inicio(dataInicioAgora);
+
+                            LocalDate dataFinalSomado11Meses = dataInicioAgora.plusMonths(12);
+                            dadosProjeto.setData_final(dataFinalSomado11Meses);
+
+                            projetoRecemCriado = interfaceProjeto.save(dadosProjeto);
+                        }
+                    } else if (espacosIniciais == 1) {
+                        // Se for 1, salvar normalmente
+                    	dadosWBE.setFilho(false);
+                        WBE wbeSalvo = interfaceWBS.save(dadosWBE);
+                        wbes.add(wbeSalvo);
+                        idPai = wbeSalvo.getId();
+                    } else if (espacosIniciais == 4) {
+                        // Se for 4, adicionar filho = true e salvar
+                        dadosWBE.setFilho(true);
+                        Optional<WBE> encontrarWBSPai = interfaceWBS.findById(idPai);
+                        dadosWBE.setWbePai(encontrarWBSPai.get());
                         WBE wbeSalvo = interfaceWBS.save(dadosWBE);
                         wbes.add(wbeSalvo);
                     }
+
                 } else {
                     break;
                 }
@@ -146,7 +173,10 @@ public class ExcelUploadController {
 	// Isolar as variáveis e salvar apenas as que mudaram, se não ele seta para nulo
 	@PutMapping("/{id}")
 	public ResponseEntity<WBE> atualizarWBS(@PathVariable Long id, @RequestBody WBE atualizadoWBS) {
+		//Verificando se WBE, Projeto e LiderDeProjeto existem
 	    Optional<WBE> encontrarPorIdWBS = interfaceWBS.findById(id);
+	    Optional<Projeto> projetoOptional = interfaceProjeto.findById(atualizadoWBS.getProjeto().getId());
+	    Optional<LiderDeProjeto> liderDeProjetoOptional = interfaceLiderDeProjeto.findById(atualizadoWBS.getLiderDeProjeto().getId());
 
 	    if (encontrarPorIdWBS.isEmpty()) {
 	        return ResponseEntity.notFound().build();
@@ -166,8 +196,12 @@ public class ExcelUploadController {
 	    if (atualizadoWBS.getHh() != null) {
 	        atualizandoWBS.setHh(atualizadoWBS.getHh());
 	    }
-	    if (atualizadoWBS.getProjeto() != null) {
-	        atualizandoWBS.setProjeto(atualizadoWBS.getProjeto());
+	    if (projetoOptional.isPresent()) {
+	        atualizandoWBS.setProjeto(projetoOptional.get());
+	    }
+
+	    if (liderDeProjetoOptional.isPresent()) {
+	        atualizandoWBS.setLiderDeProjeto(liderDeProjetoOptional.get());
 	    }
 
 	    WBE wbeAtualizado = interfaceWBS.save(atualizandoWBS);
@@ -177,7 +211,7 @@ public class ExcelUploadController {
 
 
 	@DeleteMapping("/{id}")
-	public ResponseEntity<WBE> apagarWBS(@PathVariable Long id) {
+	public ResponseEntity<List<WBE>> apagarWBS(@PathVariable Long id) {
 	    Optional<WBE> encontrarPorIdWBS = interfaceWBS.findById(id);
 
 	    if (encontrarPorIdWBS.isEmpty()) {
@@ -185,9 +219,12 @@ public class ExcelUploadController {
 	    }
 
 	    interfaceWBS.delete(encontrarPorIdWBS.get());
+	    
+	    List<WBE> wbesRestantes = interfaceWBS.findAll();
 
-	    return ResponseEntity.ok().build();
+	    return ResponseEntity.ok(wbesRestantes);
 	}
+
 
 	private boolean validadorDeCabecalho(Row linhaDoCabecalho) {
 		if (linhaDoCabecalho == null) {
