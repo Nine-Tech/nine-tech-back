@@ -153,20 +153,20 @@ public class ExcelUploadController {
 	    }
 	}
 	
-//	@GetMapping("/listarWBSLider/{idLider}")
-//	@JsonIgnoreProperties({"wbes"})
-//	public ResponseEntity<List<WBE>> listarWBEsPorLiderId(@PathVariable Long idLider) {
-//	    try {
-//	        List<WBE> wbes = interfaceWBS.findByLiderDeProjeto_Id(idLider);
-//	        if (!wbes.isEmpty()) {
-//	            return new ResponseEntity<>(wbes, HttpStatus.OK);
-//	        } else {
-//	            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-//	        }
-//	    } catch (Exception e) {
-//	        return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
-//	    }
-//	}
+	@GetMapping("/lideres/{idLider}")
+	@JsonIgnoreProperties({"wbes"})
+	public ResponseEntity<List<WBE>> listarWBEsPorLiderId(@PathVariable Long idLider) {
+	    try {
+	        List<WBE> wbes = interfaceWBS.findByLiderDeProjetoId(idLider);
+	        if (!wbes.isEmpty()) {
+	            return new ResponseEntity<>(wbes, HttpStatus.OK);
+	        } else {
+	            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+	        }
+	    } catch (Exception e) {
+	        return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+	    }
+	}
 	
 	// Isolar as variáveis e salvar apenas as que mudaram, se não ele seta para nulo
 	@PutMapping("/{id}")

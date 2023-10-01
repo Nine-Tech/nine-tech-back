@@ -30,10 +30,5 @@ public class LiderDeProjeto {
 	public void setNome(String nome) {
 		this.nome = nome;
 	}
-	
-	public LiderDeProjeto findByNome(String novoNome) {
-		// TODO Auto-generated method stub
-		return null;
-	}
 
 }
