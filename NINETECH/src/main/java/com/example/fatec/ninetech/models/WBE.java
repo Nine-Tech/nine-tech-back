@@ -17,7 +17,30 @@ import jakarta.persistence.ManyToOne;
 public class WBE {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	private Long wbe_id;
+	private Long id;
+
+	@Column
+	private Boolean filho;
+	
+	public Boolean getFilho() {
+		return filho;
+	}
+
+	public void setFilho(Boolean filho) {
+		this.filho = filho;
+	}
+	
+	@ManyToOne
+	@JoinColumn(name = "wbe_pai_id")
+	private WBE wbePai;
+
+	public WBE getWbePai() {
+		return wbePai;
+	}
+
+	public void setWbePai(WBE wbePai) {
+		this.wbePai = wbePai;
+	}
 
 	@Column
 	private String wbe;
@@ -28,6 +51,18 @@ public class WBE {
 	@Column
 	private Double material;
 
+	@ManyToOne
+	@JoinColumn(name = "projeto_id")
+	private Projeto projeto;
+
+	@ManyToOne
+	@JoinColumn(name = "lider_de_projeto_id")
+	private LiderDeProjeto lider_de_projeto;
+
+	@ManyToMany(mappedBy = "wbes")
+	@JsonIgnore
+	private List<CronogramaEstimado> cronogramas_estimados;
+
 	public Double getMaterial() {
 		return material;
 	}
@@ -36,32 +71,20 @@ public class WBE {
 		this.material = material;
 	}
 
-	@ManyToOne
-	@JoinColumn(name = "projeto_id")
-	private Projeto projeto;
-
-	@ManyToOne
-	@JoinColumn(name = "lider_de_projeto_id")
-	private LiderDeProjeto liderDeProjeto;
-
-	@ManyToMany(mappedBy = "wbes")
-	@JsonIgnore
-	private List<CronogramaEstimado> cronogramasEstimados;
-
 	public LiderDeProjeto getLiderDeProjeto() {
-		return liderDeProjeto;
+		return lider_de_projeto;
 	}
 
-	public void setLiderDeProjeto(LiderDeProjeto liderDeProjeto) {
-		this.liderDeProjeto = liderDeProjeto;
+	public void setLiderDeProjeto(LiderDeProjeto lider_de_projeto) {
+		this.lider_de_projeto = lider_de_projeto;
 	}
 
 	public List<CronogramaEstimado> getCronogramasEstimados() {
-		return cronogramasEstimados;
+		return cronogramas_estimados;
 	}
 
-	public void setCronogramasEstimados(List<CronogramaEstimado> cronogramasEstimados) {
-		this.cronogramasEstimados = cronogramasEstimados;
+	public void setCronogramasEstimados(List<CronogramaEstimado> cronogramas_estimados) {
+		this.cronogramas_estimados = cronogramas_estimados;
 	}
 
 	public Projeto getProjeto() {
@@ -73,7 +96,7 @@ public class WBE {
 	}
 
 	public Long getId() {
-		return wbe_id;
+		return id;
 	}
 
 	public String getWbe() {
@@ -98,14 +121,6 @@ public class WBE {
 
 	public void setHh(Double hh) {
 		this.hh = hh;
-	}
-
-	public WBE() {
-	} // Para funcionar o a função delete
-
-	@Override
-	public String toString() {
-		return "WBE [id=" + wbe_id + ", wbe=" + wbe + ", valor=" + valor + ", material=" + material + ", hh=" + hh + "]";
 	}
 
 }
