@@ -19,7 +19,7 @@ import java.util.Map;
 public class NinetechApplication {
 
 	public static void main(String[] args) {
-		ApplicationContext context =SpringApplication.run(NinetechApplication.class, args);
+		ApplicationContext context = SpringApplication.run(NinetechApplication.class, args);
 		
 		Map<String, Object> configuracao = new HashMap<>();
 
