@@ -1,6 +1,5 @@
 package com.example.fatec.ninetech.models;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
 import java.sql.Timestamp;
 
 import org.hibernate.mapping.ForeignKey;
