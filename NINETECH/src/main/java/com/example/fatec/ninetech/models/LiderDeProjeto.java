@@ -23,7 +23,16 @@ public class LiderDeProjeto {
 
 	@Column
 	private String nome;
+	
+	@Column
+	private String senha;
 
+	public String getSenha() {
+		return senha;
+	}
+	public void setSenha(String senha) {
+		this.senha = senha;
+	}
 	public String getNome() {
 		return nome;
 	}
