@@ -57,7 +57,7 @@ public class WBE {
 
 	@ManyToOne
 	@JoinColumn(name = "lider_de_projeto_id")
-	private LiderDeProjeto lider_de_projeto;
+	private LiderDeProjeto liderDeProjeto;
 
 	public Double getMaterial() {
 		return material;
@@ -68,11 +68,11 @@ public class WBE {
 	}
 
 	public LiderDeProjeto getLiderDeProjeto() {
-		return lider_de_projeto;
+		return liderDeProjeto;
 	}
 
-	public void setLiderDeProjeto(LiderDeProjeto lider_de_projeto) {
-		this.lider_de_projeto = lider_de_projeto;
+	public void setLiderDeProjeto(LiderDeProjeto liderDeProjeto) {
+		this.liderDeProjeto = liderDeProjeto;
 	}
 
 	public Projeto getProjeto() {
