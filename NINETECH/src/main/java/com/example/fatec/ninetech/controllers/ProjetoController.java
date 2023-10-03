@@ -18,7 +18,7 @@ public class ProjetoController {
     @Autowired
     private ProjetoInterface projetoInterface;
 
-    @PostMapping("/criar")
+    @PostMapping
     public ResponseEntity<Projeto> criarProjeto(@RequestBody Projeto projeto) {
         try {
             Projeto novoProjeto = projetoInterface.save(projeto);
@@ -28,13 +28,13 @@ public class ProjetoController {
         }
     }
 
-    @GetMapping("/listar")
+    @GetMapping
     public ResponseEntity<List<Projeto>> listarProjetos() {
         List<Projeto> projetos = projetoInterface.findAll();
         return new ResponseEntity<>(projetos, HttpStatus.OK);
     }
 
-    @GetMapping("/listar/{id}")
+    @GetMapping("/{id}")
     public ResponseEntity<Projeto> lerProjeto(@PathVariable Long id) {
         try {
             return projetoInterface.findById(id)
@@ -45,7 +45,7 @@ public class ProjetoController {
         }
     }
 
-    @PutMapping("/atualizar/{id}")
+    @PutMapping("/{id}")
     public ResponseEntity<Projeto> atualizarProjeto(@PathVariable Long id, @RequestBody Projeto projetoAtualizado) {
         try {
             return projetoInterface.findById(id)
@@ -63,7 +63,7 @@ public class ProjetoController {
         }
     }
 
-    @DeleteMapping("/deletar/{id}")
+    @DeleteMapping("/{id}")
     public ResponseEntity<Void> deletarProjeto(@PathVariable Long id) {
         try {
             projetoInterface.deleteById(id);

@@ -17,7 +17,30 @@ import jakarta.persistence.ManyToOne;
 public class WBE {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	private Long wbe_id;
+	private Long id;
+
+	@Column
+	private Boolean filho;
+	
+	public Boolean getFilho() {
+		return filho;
+	}
+
+	public void setFilho(Boolean filho) {
+		this.filho = filho;
+	}
+	
+	@ManyToOne
+	@JoinColumn(name = "wbe_pai_id")
+	private WBE wbePai;
+
+	public WBE getWbePai() {
+		return wbePai;
+	}
+
+	public void setWbePai(WBE wbePai) {
+		this.wbePai = wbePai;
+	}
 
 	@Column
 	private String wbe;
@@ -25,6 +48,8 @@ public class WBE {
 	private Double valor;
 	@Column
 	private Double hh;
+	@Column
+	private Double material;
 
 	@ManyToOne
 	@JoinColumn(name = "projeto_id")
@@ -34,9 +59,13 @@ public class WBE {
 	@JoinColumn(name = "lider_de_projeto_id")
 	private LiderDeProjeto liderDeProjeto;
 
-	@ManyToMany(mappedBy = "wbes")
-	@JsonIgnore
-	private List<CronogramaEstimado> cronogramasEstimados;
+	public Double getMaterial() {
+		return material;
+	}
+
+	public void setMaterial(Double material) {
+		this.material = material;
+	}
 
 	public LiderDeProjeto getLiderDeProjeto() {
 		return liderDeProjeto;
@@ -44,14 +73,6 @@ public class WBE {
 
 	public void setLiderDeProjeto(LiderDeProjeto liderDeProjeto) {
 		this.liderDeProjeto = liderDeProjeto;
-	}
-
-	public List<CronogramaEstimado> getCronogramasEstimados() {
-		return cronogramasEstimados;
-	}
-
-	public void setCronogramasEstimados(List<CronogramaEstimado> cronogramasEstimados) {
-		this.cronogramasEstimados = cronogramasEstimados;
 	}
 
 	public Projeto getProjeto() {
@@ -63,7 +84,7 @@ public class WBE {
 	}
 
 	public Long getId() {
-		return wbe_id;
+		return id;
 	}
 
 	public String getWbe() {
@@ -88,14 +109,6 @@ public class WBE {
 
 	public void setHh(Double hh) {
 		this.hh = hh;
-	}
-
-	public WBE() {
-	} // Para funcionar o a função delete
-
-	@Override
-	public String toString() {
-		return "WBE [id=" + wbe_id + ", wbe=" + wbe + ", valor=" + valor + ", hh=" + hh + "]";
 	}
 
 }
