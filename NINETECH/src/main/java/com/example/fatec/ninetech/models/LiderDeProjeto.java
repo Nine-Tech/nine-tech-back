@@ -28,6 +28,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @EqualsAndHashCode(of = "id")
 @Table(name = "lider_de_projeto")
+
 public class LiderDeProjeto implements UserDetails {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
