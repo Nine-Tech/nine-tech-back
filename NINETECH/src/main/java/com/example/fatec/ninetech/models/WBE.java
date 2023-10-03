@@ -59,10 +59,6 @@ public class WBE {
 	@JoinColumn(name = "lider_de_projeto_id")
 	private LiderDeProjeto liderDeProjeto;
 
-	@ManyToMany(mappedBy = "wbes")
-	@JsonIgnore
-	private List<CronogramaEstimado> cronogramas_estimados;
-
 	public Double getMaterial() {
 		return material;
 	}
@@ -77,14 +73,6 @@ public class WBE {
 
 	public void setLiderDeProjeto(LiderDeProjeto liderDeProjeto) {
 		this.liderDeProjeto = liderDeProjeto;
-	}
-
-	public List<CronogramaEstimado> getCronogramasEstimados() {
-		return cronogramas_estimados;
-	}
-
-	public void setCronogramasEstimados(List<CronogramaEstimado> cronogramas_estimados) {
-		this.cronogramas_estimados = cronogramas_estimados;
 	}
 
 	public Projeto getProjeto() {
