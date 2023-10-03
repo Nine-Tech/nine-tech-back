@@ -8,6 +8,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.ApplicationContext;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
+import com.example.fatec.ninetech.config.UsuarioRole;
 import com.example.fatec.ninetech.helpers.EngenheiroChefeServico;
 import com.example.fatec.ninetech.helpers.LiderDeProjetoServico;
 import com.example.fatec.ninetech.helpers.ProjetoServico;
@@ -55,14 +56,16 @@ public class NinetechApplication {
 	        
 	        // Criar e salvar dois LiderDeProjeto
 	        LiderDeProjeto liderDeProjeto = new LiderDeProjeto();
-	        liderDeProjeto.setNome("Líder de Projeto 1");
+	        liderDeProjeto.setNome("Lider de Projeto 1");
 			String senhaEncriptada = new BCryptPasswordEncoder().encode("123");
+			liderDeProjeto.setRole(UsuarioRole.LIDER_DE_PROJETO_1);
 	        liderDeProjeto.setSenha(senhaEncriptada);
 	        servicoLiderDeProjeto.criarLiderDeProjeto(liderDeProjeto);
 	        
 	        LiderDeProjeto liderDeProjeto2 = new LiderDeProjeto();
 	        liderDeProjeto2.setNome("Líder de Projeto 2");
 	        liderDeProjeto2.setSenha(senhaEncriptada);
+	        liderDeProjeto2.setRole(UsuarioRole.LIDER_DE_PROJETO_2);
 	        servicoLiderDeProjeto.criarLiderDeProjeto(liderDeProjeto2);
 
 		} 

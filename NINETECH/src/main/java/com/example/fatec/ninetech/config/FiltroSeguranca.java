@@ -35,22 +35,20 @@ public class FiltroSeguranca extends OncePerRequestFilter {
 	protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
 		var token = this.recoverToken(request);
 		if (token != null) {
-			var login = tokenServico.validarToken(token);
-			UserDetails usuario = liderDeProjetoInterface.findByLogin(login);
+			var subject = tokenServico.validarToken(token);
+			UserDetails liderdeprojeto = liderDeProjetoInterface.findByNome(subject);
 			
-			if (usuario != null) {
-				var authentication = new UsernamePasswordAuthenticationToken(usuario, null, usuario.getAuthorities());
-				SecurityContextHolder.getContext().setAuthentication(authentication);
-			}
+			var authentication = new UsernamePasswordAuthenticationToken(liderdeprojeto, null, liderdeprojeto.getAuthorities());
+			SecurityContextHolder.getContext().setAuthentication(authentication);
 		}
 		filterChain.doFilter(request, response);
 	}
 
 	private String recoverToken(HttpServletRequest request) {
-		var authHeader = request.getHeader("Authorization");
-		if (authHeader == null || !authHeader.startsWith("Bearer ")) {
-			return null;
-		}
-		return authHeader.substring(7); // Remove o prefixo "Bearer " para obter o token JWT
+	    var authHeader = request.getHeader("Authorization");
+	    if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+	        return null;
+	    }
+	    return authHeader.substring(7); // Remove o prefixo "Bearer " para obter o token JWT
 	}
 }
