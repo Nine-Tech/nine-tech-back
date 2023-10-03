@@ -30,8 +30,6 @@ public class SegurancaConfig{
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(authorize -> authorize
                     .requestMatchers(HttpMethod.POST, "/auth/login").permitAll()
-                    .requestMatchers(HttpMethod.GET, "/progressaomensal").hasRole(UsuarioRole.LIDER_DE_PROJETO_1.getRole())
-                    .requestMatchers(HttpMethod.POST, "/progressaomensal").hasRole(UsuarioRole.LIDER_DE_PROJETO_1.getRole())
                     .anyRequest().authenticated()
             )
             .addFilterBefore(filtroSeguranca, UsernamePasswordAuthenticationFilter.class)
