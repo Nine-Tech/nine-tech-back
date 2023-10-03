@@ -46,18 +46,23 @@ public class NinetechApplication {
 		ProjetoServico servicoProjeto = context.getBean(ProjetoServico.class);
 
 		// Criando apenas se não houver um projeto no BD
+		EngenheiroChefe engenheiroExistente = servicoEngenheiroChefe.obterEngenheiroPorId(1L);
 		Projeto projetoExistente = servicoProjeto.obterProjetoPorId(1L);
+				
 		
-		if (projetoExistente == null) {
+		
+		if (engenheiroExistente == null) {
 	        // Criar e salvar um EngenheiroChefe
 	        EngenheiroChefe engenheiroChefe = new EngenheiroChefe();
 	        engenheiroChefe.setNome("Engenheiro Chefe 1");
+			String senhaEncriptada = new BCryptPasswordEncoder().encode("123");
+			engenheiroChefe.setRole(UsuarioRole.ENGENHEIRO_CHEFE);
+	        engenheiroChefe.setSenha(senhaEncriptada);
 	        servicoEngenheiroChefe.criarEngenheiroChefe(engenheiroChefe);
 	        
 	        // Criar e salvar dois LiderDeProjeto
 	        LiderDeProjeto liderDeProjeto = new LiderDeProjeto();
 	        liderDeProjeto.setNome("Lider de Projeto 1");
-			String senhaEncriptada = new BCryptPasswordEncoder().encode("123");
 			liderDeProjeto.setRole(UsuarioRole.LIDER_DE_PROJETO_1);
 	        liderDeProjeto.setSenha(senhaEncriptada);
 	        servicoLiderDeProjeto.criarLiderDeProjeto(liderDeProjeto);

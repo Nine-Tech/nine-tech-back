@@ -80,12 +80,6 @@ public class LiderDeProjeto implements UserDetails {
         return null;
     }
 
-    public LiderDeProjeto(String nome, String senha, UsuarioRole role) {
-        this.nome = nome;
-        this.senha = senha;
-        this.role = role;
-    }
-
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         // Use os valores do enum em letras maiúsculas

@@ -16,14 +16,14 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.example.fatec.ninetech.config.UsuarioRole;
 import com.example.fatec.ninetech.helpers.AutenticacaoDTOServico;
 import com.example.fatec.ninetech.helpers.LoginResponseDTOServico;
-import com.example.fatec.ninetech.helpers.RegistroDTOServico;
 import com.example.fatec.ninetech.helpers.TokenServico;
+import com.example.fatec.ninetech.models.EngenheiroChefe;
 import com.example.fatec.ninetech.models.LiderDeProjeto;
-import com.example.fatec.ninetech.models.Usuario;
+import com.example.fatec.ninetech.repositories.EngenheiroChefeInterface;
 import com.example.fatec.ninetech.repositories.LiderDeProjetoInterface;
-import com.example.fatec.ninetech.repositories.UsuarioInterface;
 
 import jakarta.validation.Valid;
 @RestController
@@ -40,28 +40,28 @@ public class AutenticacaoController {
     private LiderDeProjetoInterface repository;
     
     @Autowired
+    private EngenheiroChefeInterface engenheiroChefeInterface;
+    
+    @Autowired
     private UserDetailsService userDetailsService;
 
     @PostMapping("/login")
     public ResponseEntity login(@RequestBody @Valid AutenticacaoDTOServico data) {
-            var usernamePassword = new UsernamePasswordAuthenticationToken(data.nome(), data.senha());
-            var auth = this.authenticationManager.authenticate(usernamePassword);
-            
-            var token = tokenServico.generateToken((LiderDeProjeto)auth.getPrincipal());
-            
-            return ResponseEntity.ok(new LoginResponseDTOServico(token));
+        var usernamePassword = new UsernamePasswordAuthenticationToken(data.nome(), data.senha());
+        var auth = this.authenticationManager.authenticate(usernamePassword);
 
+        UserDetails userDetails = userDetailsService.loadUserByUsername(data.nome());
+
+        if (userDetails instanceof LiderDeProjeto) {
+            var token = tokenServico.generateToken((LiderDeProjeto) userDetails);
+            return ResponseEntity.ok(new LoginResponseDTOServico(token));
+        } else if (userDetails instanceof EngenheiroChefe) {
+            var token = tokenServico.generateToken((EngenheiroChefe) userDetails);
+            return ResponseEntity.ok(new LoginResponseDTOServico(token));
+        } else {
+            // Handle other user types or return an error response
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
     }
     
-    @PostMapping("/registro")
-    public ResponseEntity register(@RequestBody @Valid RegistroDTOServico data){
-        if(this.repository.findByNome(data.nome()) != null) return ResponseEntity.badRequest().build();
-
-        String encryptedPassword = new BCryptPasswordEncoder().encode(data.senha());
-        LiderDeProjeto newUser = new LiderDeProjeto(data.nome(), encryptedPassword, data.role());
-
-        this.repository.save(newUser);
-
-        return ResponseEntity.ok().build();
-    }
 }

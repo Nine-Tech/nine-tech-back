@@ -6,19 +6,32 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
+import com.example.fatec.ninetech.repositories.EngenheiroChefeInterface;
 import com.example.fatec.ninetech.repositories.LiderDeProjetoInterface;
-import com.example.fatec.ninetech.repositories.UsuarioInterface;
 @Service
 public class AutorizacaoServico implements UserDetailsService {
     @Autowired
-    LiderDeProjetoInterface repositorio;
-    
+    LiderDeProjetoInterface liderDeProjetoRepositorio;
+
+    @Autowired
+    EngenheiroChefeInterface engenheiroChefeRepositorio;
+
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        UserDetails userDetails = repositorio.findByNome(username);
-        if (userDetails == null) {
-            throw new UsernameNotFoundException("Usuário não encontrado.");
+        UserDetails userDetails = null;
+
+        // Verifica se o usuário é um Líder de Projeto
+        userDetails = liderDeProjetoRepositorio.findByNome(username);
+        if (userDetails != null) {
+            return userDetails;
         }
-        return userDetails;
+
+        // Se não for um Líder de Projeto, verifica se é um Engenheiro Chefe
+        userDetails = engenheiroChefeRepositorio.findByNome(username);
+        if (userDetails != null) {
+            return userDetails;
+        }
+
+        throw new UsernameNotFoundException("Usuário não encontrado.");
     }
 }

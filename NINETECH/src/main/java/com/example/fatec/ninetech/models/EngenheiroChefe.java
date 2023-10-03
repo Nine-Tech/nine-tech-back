@@ -59,6 +59,7 @@ public class EngenheiroChefe implements UserDetails {
 	public void setRole(UsuarioRole role) {
 		this.role = role;
 	}
+	
 	@Override
 	public Collection<? extends GrantedAuthority> getAuthorities() {
         // Use os valores do enum em letras maiúsculas
