@@ -31,6 +31,7 @@ public class WBE {
 	}
 	
 	@ManyToOne
+	@JsonIgnore //ignorando valores do objeto pai inteiro
 	@JoinColumn(name = "wbe_pai_id")
 	private WBE wbePai;
 

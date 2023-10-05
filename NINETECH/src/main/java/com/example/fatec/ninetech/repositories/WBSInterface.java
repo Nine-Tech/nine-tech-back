@@ -13,4 +13,6 @@ public interface WBSInterface extends JpaRepository<WBE, Long>{
 	List<WBE> findByProjeto_Id(Long projetoId);
 
 	List<WBE> findByLiderDeProjetoId(Long idLider);
+	
+	List<WBE> findByWbePaiId(Long wbePaiId);
 }

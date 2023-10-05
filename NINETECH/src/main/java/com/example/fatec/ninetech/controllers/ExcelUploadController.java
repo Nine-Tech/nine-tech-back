@@ -153,6 +153,21 @@ public class ExcelUploadController {
 	    }
 	}
 	
+	@GetMapping("/pacotes/{id}")
+	@JsonIgnoreProperties({"wbes"})
+	public ResponseEntity<List<WBE>> listarWBEsPorPacoteId(@PathVariable Long id) {
+	    try {
+	        List<WBE> wbes = interfaceWBS.findByWbePaiId(id);
+	        if (!wbes.isEmpty()) {
+	            return new ResponseEntity<>(wbes, HttpStatus.OK);
+	        } else {
+	            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+	        }
+	    } catch (Exception e) {
+	        return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+	    }
+	}
+	
 	@GetMapping("/lideres/{idLider}")
 	@JsonIgnoreProperties({"wbes"})
 	public ResponseEntity<List<WBE>> listarWBEsPorLiderId(@PathVariable Long idLider) {
