@@ -190,5 +190,27 @@ public class WBEController {
 
 		return ResponseEntity.ok(wbeList);
 	}
+	
+	@GetMapping("/liderprojeto/{liderprojetoId}")
+	public ResponseEntity<Object> listarPorLiderprojetoId(@PathVariable Long liderprojetoId) {
+	    try {
+	        // Verificar se o líder de projeto com o ID fornecido existe
+	        Optional<LiderDeProjeto> optionalLider = liderdeprojetoInterface.findById(liderprojetoId);
+	        if (!optionalLider.isPresent()) {
+	            Map<String, String> response = new HashMap<>();
+	            response.put("error", "Líder de Projeto não encontrado com o ID fornecido.");
+	            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+	        }
+
+	        // Buscar os elementos da tabela WBE pelo líder de projeto
+	        List<WBE> wbeList = wbeInterface.findByLiderDeProjetoId(liderprojetoId);
+
+	        return ResponseEntity.ok(wbeList);
+	    } catch (Exception e) {
+	        Map<String, String> response = new HashMap<>();
+	        response.put("error", "Ocorreu um erro ao buscar os dados do líder de projeto: " + e.getMessage());
+	        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+	    }
+	}
 
 }
