@@ -30,7 +30,12 @@ import lombok.NoArgsConstructor;
 @Table(name = "lider_de_projeto")
 
 public class LiderDeProjeto implements UserDetails {
-    @Id
+    /**
+	 * 
+	 */
+	private static final long serialVersionUID = 7356186984914687774L;
+
+	@Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 

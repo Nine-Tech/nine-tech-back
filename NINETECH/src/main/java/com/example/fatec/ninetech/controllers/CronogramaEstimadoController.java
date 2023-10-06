@@ -7,10 +7,10 @@ import org.springframework.web.bind.annotation.*;
 
 import com.example.fatec.ninetech.models.CronogramaEstimado;
 import com.example.fatec.ninetech.models.Projeto;
-import com.example.fatec.ninetech.models.WBE;
+import com.example.fatec.ninetech.models.Pacotes;
 import com.example.fatec.ninetech.repositories.CronogramaEstimadoInterface;
 import com.example.fatec.ninetech.repositories.ProjetoInterface;
-import com.example.fatec.ninetech.repositories.WBSInterface;
+import com.example.fatec.ninetech.repositories.PacotesInterface;
 
 import jakarta.transaction.Transactional;
 
@@ -31,7 +31,7 @@ public class CronogramaEstimadoController {
     private ProjetoInterface projetoInterface;
 
     @Autowired
-    private WBSInterface wbeInterface;
+    private PacotesInterface wbeInterface;
 
     @PostMapping("/{projeto_id}")
     public ResponseEntity<String> criarCronogramaEstimado(
@@ -60,7 +60,7 @@ public class CronogramaEstimadoController {
         List<List<Integer>> porcentagens = request.getPorcentagens();
 
         // Validação: Verificar se a quantidade de listas corresponde à quantidade de WBEs
-        List<WBE> wbesDoProjeto = wbeInterface.findByProjetoId(projeto_id);
+        List<Pacotes> wbesDoProjeto = wbeInterface.findByProjetoId(projeto_id);
 
         if (wbesDoProjeto.isEmpty() || wbesDoProjeto.size() != porcentagens.size()) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
@@ -76,11 +76,11 @@ public class CronogramaEstimadoController {
         }
 
         // Agora, podemos salvar as porcentagens, pois todas estão corretas
-        for (WBE wbe : wbesDoProjeto) {
-            int wbeIndex = wbesDoProjeto.indexOf(wbe);
+        for (Pacotes pacotes : wbesDoProjeto) {
+            int wbeIndex = wbesDoProjeto.indexOf(pacotes);
 
             List<Integer> porcentagensDoWBE = porcentagens.get(wbeIndex);
-            Long wbeId = wbe.getId();
+            Long wbeId = pacotes.getId();
 
             // Salve as porcentagens no banco de dados para este WBE
             CronogramaEstimado novoCronograma = new CronogramaEstimado();
@@ -128,7 +128,7 @@ public class CronogramaEstimadoController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Projeto não encontrado.");
         }
 
-        List<WBE> wbesDoProjeto = wbeInterface.findByProjetoId(projeto_id);
+        List<Pacotes> wbesDoProjeto = wbeInterface.findByProjetoId(projeto_id);
 
         if (wbesDoProjeto.isEmpty()) {
             return ResponseEntity.badRequest().body("O projeto não possui WBEs associados.");
@@ -136,11 +136,11 @@ public class CronogramaEstimadoController {
 
         Map<String, Object> wbesJson = new HashMap<>();
 
-        for (WBE wbe : wbesDoProjeto) {
-            Long wbeId = wbe.getId();
+        for (Pacotes pacotes : wbesDoProjeto) {
+            Long wbeId = pacotes.getId();
 
             Map<String, Object> wbeData = new HashMap<>();
-            wbeData.put("nome", wbe.getWbe()); // Adicione o nome do WBE
+            wbeData.put("nome", pacotes.getNome()); // Adicione o nome do WBE
 
             List<Integer> porcentagens = new ArrayList<>();
 
@@ -201,7 +201,7 @@ public class CronogramaEstimadoController {
         List<List<Integer>> porcentagens = request.getPorcentagens();
 
         // Validação: Verificar se a quantidade de listas corresponde à quantidade de WBEs
-        List<WBE> wbesDoProjeto = wbeInterface.findByProjetoId(projeto_id);
+        List<Pacotes> wbesDoProjeto = wbeInterface.findByProjetoId(projeto_id);
 
         if (wbesDoProjeto.isEmpty() || wbesDoProjeto.size() != porcentagens.size()) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
@@ -214,14 +214,19 @@ public class CronogramaEstimadoController {
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                         .body("A quantidade de porcentagens para um dos WBEs não corresponde a 12 meses.");
             }
+            
+            if (!isOrdenada(porcentagensDoWBE)) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                        .body("As porcentagens para um dos WBEs não estão ordenadas.");
+            }
         }
 
         // Agora, podemos salvar as porcentagens atualizadas, pois todas estão corretas
-        for (WBE wbe : wbesDoProjeto) {
-            int wbeIndex = wbesDoProjeto.indexOf(wbe);
+        for (Pacotes pacotes : wbesDoProjeto) {
+            int wbeIndex = wbesDoProjeto.indexOf(pacotes);
 
             List<Integer> porcentagensDoWBE = porcentagens.get(wbeIndex);
-            Long wbeId = wbe.getId();
+            Long wbeId = pacotes.getId();
 
             // Salve as porcentagens no banco de dados para este WBE
             CronogramaEstimado novoCronograma = new CronogramaEstimado();
@@ -243,5 +248,14 @@ public class CronogramaEstimadoController {
         }
 
         return ResponseEntity.ok("Cronograma atualizado com sucesso!");
+    }
+    
+    private boolean isOrdenada(List<Integer> porcentagens) {
+        for (int i = 1; i < porcentagens.size(); i++) {
+            if (porcentagens.get(i) < porcentagens.get(i - 1)) {
+                return false;
+            }
+        }
+        return true;
     }
 }
