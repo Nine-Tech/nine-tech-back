@@ -101,7 +101,7 @@ public class TokenServico {
 	        LiderDeProjeto liderDeProjeto = (LiderDeProjeto) userDetails;
 	        return String.valueOf(liderDeProjeto.getId()); // Converter para String
 	    } else {
-	        return null; // Se o UserDetails não contiver um ID numérico, retorne null.
+	        return null;
 	    }
 	}
 }
