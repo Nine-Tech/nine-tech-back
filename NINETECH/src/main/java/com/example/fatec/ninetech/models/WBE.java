@@ -60,6 +60,11 @@ public class WBE {
 	@JoinColumn(name = "lider_de_projeto_id")
 	private LiderDeProjeto liderDeProjeto;
 
+	
+	@ManyToOne
+	@JoinColumn(name = "id_wbe")
+	private ProgressaoMensal progressaoMensal;
+	
 	public Double getMaterial() {
 		return material;
 	}

@@ -31,7 +31,7 @@ public class NinetechApplication {
 		configuracao.put("spring.jpa.hibernate.ddl-auto", "update");
 		configuracao.put("spring.datasource.url", "jdbc:mysql://localhost:3306/ninetech?createDatabaseIfNotExist=true"); // caminho da conexão
 		configuracao.put("spring.datasource.username", "root"); // usuario
-		configuracao.put("spring.datasource.password", "123456"); // senha
+		configuracao.put("spring.datasource.password", "mcs2809"); // senha
         configuracao.put("spring.datasource.driver-class-name", "com.mysql.cj.jdbc.Driver"); // driver mysql
         configuracao.put("spring.jpa.properties.hibernate.dialect", "org.hibernate.dialect.MySQLDialect"); // dialeto mysql
 		
