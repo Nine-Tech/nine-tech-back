@@ -8,6 +8,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.example.fatec.ninetech.models.Pacotes;
+import com.example.fatec.ninetech.models.Projeto;
 import com.example.fatec.ninetech.models.Tarefas;
 import com.example.fatec.ninetech.repositories.TarefasInterface;
 
@@ -21,10 +23,12 @@ public class TarefasController {
 	
 	@PostMapping
 	public ResponseEntity<Object> cadastrar(@RequestBody Tarefas tarefas) {
-		
-		
-		
-		return ResponseEntity.ok(tarefas);
+        try {
+            Tarefas novaTarefa = interfaceTarefas.save(tarefas);
+            return new ResponseEntity<>(novaTarefa, HttpStatus.CREATED);
+        } catch (Exception e) {
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
 	}
 	
 }
