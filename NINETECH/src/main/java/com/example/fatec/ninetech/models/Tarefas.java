@@ -38,7 +38,7 @@ public class Tarefas {
 	private Integer peso;
 	
 	@Column
-	private Integer execucao;
+	private boolean execucao;
 	
 	@Column
 	private double porcentagem;
@@ -111,11 +111,11 @@ public class Tarefas {
 		this.peso = peso;
 	}
 
-	public Integer getExecucao() {
+	public boolean getExecucao() {
 		return execucao;
 	}
 
-	public void setExecucao(Integer execucao) {
+	public void setExecucao(boolean execucao) {
 		this.execucao = execucao;
 	}
 
