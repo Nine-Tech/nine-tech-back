@@ -15,38 +15,38 @@ public class Tarefas {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
-	
+
 	@Column
 	private String nome;
-	
+
 	@Column
 	private String descricao;
-	
+
 	@Column
 	private LocalDate data;
-	
+
 	@Column
 	private double hh;
-	
+
 	@Column
 	private double material;
-	
+
 	@Column
 	private double valor;
-	
+
 	@Column
 	private Integer peso;
-	
+
 	@Column
-	private Integer execucao;
-	
+	private boolean execucao;
+
 	@Column
 	private double porcentagem;
-	
+
 	@ManyToOne
 	@JoinColumn(name = "subpacotes_id")
 	private Subpacotes subpacotes;
-	
+
 	public Long getId() {
 		return id;
 	}
@@ -111,11 +111,11 @@ public class Tarefas {
 		this.peso = peso;
 	}
 
-	public Integer getExecucao() {
+	public boolean isExecucao() {
 		return execucao;
 	}
 
-	public void setExecucao(Integer execucao) {
+	public void setExecucao(boolean execucao) {
 		this.execucao = execucao;
 	}
 
