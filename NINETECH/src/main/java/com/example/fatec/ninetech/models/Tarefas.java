@@ -39,7 +39,11 @@ public class Tarefas {
 
 	@Column
 	private boolean execucao;
+<<<<<<< HEAD
 
+=======
+	
+>>>>>>> 30bf2cf02cb7895410ddc6cd5139ab2a19ce60ee
 	@Column
 	private double porcentagem;
 
@@ -111,7 +115,11 @@ public class Tarefas {
 		this.peso = peso;
 	}
 
+<<<<<<< HEAD
 	public boolean isExecucao() {
+=======
+	public boolean getExecucao() {
+>>>>>>> 30bf2cf02cb7895410ddc6cd5139ab2a19ce60ee
 		return execucao;
 	}
 
