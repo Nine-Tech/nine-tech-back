@@ -29,7 +29,6 @@ public class SegurancaConfig{
             .csrf(csrf -> csrf.disable())
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             
-            // !!! CUIDADO AO DESCOMENTAR E COMMITAR PARA O DEVELOPMENT, SÓ SUBIR COM ELE TOTALMENTE FUNCIONAL
             .authorizeHttpRequests(authorize -> authorize
                     .requestMatchers(HttpMethod.POST, "/auth/login").permitAll()
                     .anyRequest().authenticated()

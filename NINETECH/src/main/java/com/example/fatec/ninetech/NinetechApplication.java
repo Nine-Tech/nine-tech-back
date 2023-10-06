@@ -25,7 +25,6 @@ public class NinetechApplication {
 				
 		
 		//!!! Setando alguns usuarios
-        // Obtendo o serviço EngenheiroChefeServico do contexto Spring
 		EngenheiroChefeServico servicoEngenheiroChefe = context.getBean(EngenheiroChefeServico.class);
 		LiderDeProjetoServico servicoLiderDeProjeto = context.getBean(LiderDeProjetoServico.class);
 		ProjetoServico servicoProjeto = context.getBean(ProjetoServico.class);
