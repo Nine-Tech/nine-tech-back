@@ -72,15 +72,9 @@ public class ExcelUploadController {
             while (rowIterator.hasNext()) {
                 Row row = rowIterator.next();
                 Cell colunaDoWBS = row.getCell(1);
-                Cell colunaDoValor = row.getCell(4);
-                Cell colunaDoHH = row.getCell(6);
-                Cell colunaDoMaterial = row.getCell(7);
                 
-                if (colunaDoWBS != null && colunaDoValor != null && colunaDoHH != null && colunaDoMaterial != null) {
+                if (colunaDoWBS != null) {
                     String wbe = colunaDoWBS.getStringCellValue();
-                    double valor = colunaDoValor.getNumericCellValue();
-                    double hh = colunaDoHH.getNumericCellValue();
-                    double material = colunaDoMaterial.getNumericCellValue();
 
                     int espacosIniciais = 0;
 
@@ -90,11 +84,8 @@ public class ExcelUploadController {
                     }
 
                     WBE dadosWBE = new WBE();
-                    dadosWBE.setHh(hh);
-                    dadosWBE.setValor(valor);
                     dadosWBE.setWbe(wbe);
                     dadosWBE.setProjeto(projetoRecemCriado);
-                    dadosWBE.setMaterial(material);
 
                     if (espacosIniciais == 0) {
                         // Se for 0, salvar no projetoRecemCriado
@@ -137,7 +128,8 @@ public class ExcelUploadController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
-
+    
+    //Retorna Pais e Filhos pelo Get pelo Id do Projeto
 	@GetMapping("/{id}")
 	@JsonIgnoreProperties({"wbes"})
 	public ResponseEntity<List<WBE>> listarWBEsPorProjetoId(@PathVariable Long id) {
@@ -153,6 +145,7 @@ public class ExcelUploadController {
 	    }
 	}
 	
+	//Retorna os Filhos pelo Get pelo Id do Pacote Pai
 	@GetMapping("/pacotes/{id}")
 	@JsonIgnoreProperties({"wbes"})
 	public ResponseEntity<List<WBE>> listarWBEsPorPacoteId(@PathVariable Long id) {
@@ -184,34 +177,29 @@ public class ExcelUploadController {
 	}
 	
 	// Isolar as variáveis e salvar apenas as que mudaram, se não ele seta para nulo
-	@PutMapping("/{id}")
-	public ResponseEntity<WBE> atualizarWBS(@PathVariable Long id, @RequestBody WBE atualizadoWBS) {
+	@PutMapping("/{idLider}/{id}")
+	public ResponseEntity<WBE> atualizarWBS(@PathVariable Long id, @PathVariable Long idLider) {
 		//Verificando se WBE, Projeto e LiderDeProjeto existem
+		
+		System.out.println(id);
+		System.out.println(idLider);
+		
 	    Optional<WBE> encontrarPorIdWBS = interfaceWBS.findById(id);
-	    Optional<Projeto> projetoOptional = interfaceProjeto.findById(atualizadoWBS.getProjeto().getId());
-	    Optional<LiderDeProjeto> liderDeProjetoOptional = interfaceLiderDeProjeto.findById(atualizadoWBS.getLiderDeProjeto().getId());
+	    Optional<LiderDeProjeto> liderDeProjetoOptional = interfaceLiderDeProjeto.findById(idLider);
 
-	    if (encontrarPorIdWBS.isEmpty()) {
-	        return ResponseEntity.notFound().build();
-	    }
+//	    if (encontrarPorIdWBS.isEmpty()) {
+//	        return ResponseEntity.notFound().build();
+//	    }
 
 	    WBE atualizandoWBS = encontrarPorIdWBS.get();
 
-	    if (atualizadoWBS.getWbe() != null) {
-	        atualizandoWBS.setWbe(atualizadoWBS.getWbe());
-	    }
-	    if (atualizadoWBS.getValor() != null) {
-	        atualizandoWBS.setValor(atualizadoWBS.getValor());
-	    }
-	    if (atualizadoWBS.getMaterial() != null) {
-	        atualizandoWBS.setMaterial(atualizadoWBS.getMaterial());
-	    }
-	    if (atualizadoWBS.getHh() != null) {
-	        atualizandoWBS.setHh(atualizadoWBS.getHh());
-	    }
-	    if (projetoOptional.isPresent()) {
-	        atualizandoWBS.setProjeto(projetoOptional.get());
-	    }
+//	    if (atualizadoWBS.getWbe() != null) {
+//	        atualizandoWBS.setWbe(atualizadoWBS.getWbe());
+//	    }
+//
+//	    if (projetoOptional.isPresent()) {
+//	        atualizandoWBS.setProjeto(projetoOptional.get());
+	    //}
 
 	    if (liderDeProjetoOptional.isPresent()) {
 	        atualizandoWBS.setLiderDeProjeto(liderDeProjetoOptional.get());
@@ -221,6 +209,7 @@ public class ExcelUploadController {
 
 	    return ResponseEntity.ok(wbeAtualizado);
 	}
+
 
 
 	@DeleteMapping("/{id}")

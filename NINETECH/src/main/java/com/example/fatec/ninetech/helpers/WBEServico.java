@@ -59,9 +59,6 @@ public class WBEServico {
 
 	        // Atualize os campos do WBE com os novos valores
 	        WBE wbeExistente = optionalWBE.get();
-	        wbeExistente.setHh(wbe.getHh());
-	        wbeExistente.setValor(wbe.getValor());
-	        wbeExistente.setMaterial(wbe.getMaterial());
 	        wbeExistente.setWbe(wbe.getWbe());
 
 	        // Atualize o líder de projeto se o ID for diferente

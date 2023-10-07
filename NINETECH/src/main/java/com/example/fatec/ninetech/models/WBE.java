@@ -45,12 +45,6 @@ public class WBE {
 
 	@Column
 	private String wbe;
-	@Column
-	private Double valor;
-	@Column
-	private Double hh;
-	@Column
-	private Double material;
 
 	@ManyToOne
 	@JoinColumn(name = "projeto_id")
@@ -59,14 +53,6 @@ public class WBE {
 	@ManyToOne
 	@JoinColumn(name = "lider_de_projeto_id")
 	private LiderDeProjeto liderDeProjeto;
-
-	public Double getMaterial() {
-		return material;
-	}
-
-	public void setMaterial(Double material) {
-		this.material = material;
-	}
 
 	public LiderDeProjeto getLiderDeProjeto() {
 		return liderDeProjeto;
@@ -94,22 +80,6 @@ public class WBE {
 
 	public void setWbe(String wbs) {
 		this.wbe = wbs;
-	}
-
-	public Double getValor() {
-		return valor;
-	}
-
-	public void setValor(Double valor) {
-		this.valor = valor;
-	}
-
-	public Double getHh() {
-		return hh;
-	}
-
-	public void setHh(Double hh) {
-		this.hh = hh;
 	}
 
 }

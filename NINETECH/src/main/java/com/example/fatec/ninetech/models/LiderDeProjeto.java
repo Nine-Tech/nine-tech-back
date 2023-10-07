@@ -81,6 +81,15 @@ public class LiderDeProjeto implements UserDetails {
         return null;
     }
 
+    // Construtor sem argumentos
+    public LiderDeProjeto() {
+    }
+
+    // Construtor que aceita um valor `Number` como argumento
+    public LiderDeProjeto(Number liderDeProjetoId) {
+        this.id = liderDeProjetoId.longValue();
+    }
+
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         // Use os valores do enum em letras maiúsculas

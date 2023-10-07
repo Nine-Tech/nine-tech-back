@@ -49,8 +49,7 @@ public class WBEController {
 
 		try {
 			// Verificar se os campos obrigatórios estão presentes
-			if (wbe.getWbe() == null || wbe.getValor() == null || wbe.getHh() == null || wbe.getMaterial() == null
-					|| wbe.getLiderDeProjeto() == null) {
+			if (wbe.getWbe() == null || wbe.getLiderDeProjeto() == null) {
 				Map<String, String> response = new HashMap<>();
 				response.put("error",
 						"Todos os campos obrigatórios devem ser preenchidos (WBE, Valor, Hh, Material, LiderDeProjeto).");
@@ -117,9 +116,6 @@ public class WBEController {
 	@PutMapping("/{wbeId}")
 	public ResponseEntity<Object> atualizarDadosWBE(@PathVariable Long wbeId, @RequestBody WBE requestBody) {
 	    // Extrair os novos valores dos campos
-	    Double novoHH = requestBody.getHh();
-	    Double novoValor = requestBody.getValor();
-	    Double novoMaterial = requestBody.getMaterial();
 	    String novoWbe = requestBody.getWbe();
 
 	    try {
@@ -133,9 +129,6 @@ public class WBEController {
 
 	        WBE wbe = optionalWBE.get();
 	        // Atualizar os campos do WBE com os novos valores
-	        wbe.setHh(novoHH);
-	        wbe.setValor(novoValor);
-	        wbe.setMaterial(novoMaterial);
 	        wbe.setWbe(novoWbe);
 
 	        // Atualizar o líder de projeto se o ID for diferente

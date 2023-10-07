@@ -29,15 +29,15 @@ public class SegurancaConfig{
             .csrf(csrf -> csrf.disable())
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             
-            .authorizeHttpRequests(authorize -> authorize
-                    .requestMatchers(HttpMethod.POST, "/auth/login").permitAll()
-                    .anyRequest().authenticated()
-            )
+//            .authorizeHttpRequests(authorize -> authorize
+//                    .requestMatchers(HttpMethod.POST, "/auth/login").permitAll()
+//                    .anyRequest().authenticated()
+//            )
             
             // Permitindo o acesso a todos enquanto o TOKEN não está finalizado e conectado com o Front
-//            .authorizeHttpRequests(authorize -> authorize
-//                    .requestMatchers("/**").permitAll() // Permitir acesso a todas as URLs sem autenticação
-//                )
+            .authorizeHttpRequests(authorize -> authorize
+                    .requestMatchers("/**").permitAll() // Permitir acesso a todas as URLs sem autenticação
+                )
             .addFilterBefore(filtroSeguranca, UsernamePasswordAuthenticationFilter.class)
             .build();
     }
