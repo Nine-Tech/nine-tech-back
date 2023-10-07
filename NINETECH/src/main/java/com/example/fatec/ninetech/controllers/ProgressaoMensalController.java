@@ -164,11 +164,11 @@ public class ProgressaoMensalController {
 	    }
 	}
 	
-	@GetMapping("/calculo")
-	public Double CalculoProgressaoMensal() {
+	@GetMapping("/calculo/{id}")
+	public Double CalculoProgressaoMensal(@PathVariable Long id) {
 	    // Buscar todas as ProgressaoMensal com execucao igual a 1
 	    boolean execucao = true;
-	    List<ProgressaoMensal> progressoes = repoProgressaoMensal.findByExecucao(execucao);
+	    List<ProgressaoMensal> progressoes = repoProgressaoMensal.buscarPorIdExecucao(id,execucao);
 	    
 	    // Inicializar a soma dos pesos com execucao igual a 1
 	    double somaPesosExecucao1 = 0.0;

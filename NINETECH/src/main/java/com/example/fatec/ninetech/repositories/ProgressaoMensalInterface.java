@@ -14,34 +14,40 @@ import jakarta.transaction.Transactional;
 public interface ProgressaoMensalInterface extends JpaRepository<ProgressaoMensal, Long> {
 	
 	List<ProgressaoMensal> findByExecucao(boolean execucao);
+	
+	@Query("SELECT pm FROM ProgressaoMensal pm " +
+		       "INNER JOIN pm.wbe wbe " +
+		       "WHERE pm.execucao = :execucao " +
+		       "AND wbe.projeto.id = :idProjeto")
+	List<ProgressaoMensal> buscarPorIdExecucao(@Param("idProjeto") Long idProjeto, @Param("execucao") Boolean execucao ); 
 	 
 	@Query("SELECT pm, pm.wbe.id FROM ProgressaoMensal pm " +
 		       "INNER JOIN pm.wbe wbe " +
 		       "WHERE wbe.liderDeProjeto.id = :liderId " +
 		       "AND wbe.projeto.id = :projetoId")
-		List<Object[]> buscarPorLiderEProjeto(@Param("liderId") Long liderId, @Param("projetoId") Long projetoId);
+	List<Object[]> buscarPorLiderEProjeto(@Param("liderId") Long liderId, @Param("projetoId") Long projetoId);
 		
 		// CREATE
-		@Modifying
-	    @Transactional
-	    @Query(value = "INSERT INTO progressao_mensal (data, execucao, id_wbe, peso) " +
+	@Modifying
+	@Transactional
+	@Query(value = "INSERT INTO progressao_mensal (data, execucao, id_wbe, peso) " +
 	                   "VALUES (:data, :execucao, :id_wbe, :peso)",
 	           nativeQuery = true)
-	    void inserirProgressaoMensal(@Param("data") String data,
-	                                 @Param("execucao") boolean execucao,
-	                                 @Param("id_wbe") Long idWbe,
-	                                 @Param("peso") String peso);
+	void inserirProgressaoMensal(@Param("data") String data,
+	                             @Param("execucao") boolean execucao,
+	                             @Param("id_wbe") Long idWbe,
+	                             @Param("peso") String peso);
 		// UPDATE
-		@Modifying
-	    @Transactional
-	    @Query(value = "UPDATE progressao_mensal " +
+	@Modifying
+	@Transactional
+	@Query(value = "UPDATE progressao_mensal " +
 	                   "SET data = :data, execucao = :execucao, peso = :peso " +
 	                   "WHERE id = :id",
 	           nativeQuery = true)
-	    void atualizarProgressaoMensal(@Param("id") Long id,
-	                                   @Param("data") String data,
-	                                   @Param("execucao") boolean execucao,
-	                                   @Param("peso") String peso);
+	void atualizarProgressaoMensal(@Param("id") Long id,
+	                               @Param("data") String data,
+	                               @Param("execucao") boolean execucao,
+	                               @Param("peso") String peso);
 	
 
 }
