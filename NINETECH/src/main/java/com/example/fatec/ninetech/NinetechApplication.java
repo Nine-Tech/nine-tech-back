@@ -22,7 +22,6 @@ public class NinetechApplication {
 
 	public static void main(String[] args) {
 		ApplicationContext context = SpringApplication.run(NinetechApplication.class, args);
-				
 		
 		//!!! Setando alguns usuarios
 		EngenheiroChefeServico servicoEngenheiroChefe = context.getBean(EngenheiroChefeServico.class);
