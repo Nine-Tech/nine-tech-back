@@ -35,7 +35,43 @@ public class TarefasController {
 			double porcentagemCalculada = ((execucaoNumerica * tarefas.getPeso()) / tarefas.getPeso()) * 100;
 			tarefas.setPorcentagem(porcentagemCalculada);
 
+			// Obter o ID do Subpacote da Tarefa
+			Long subpacoteId = tarefas.getSubpacotes().getId();
+			// salvando nova tarefa
 			Tarefas novaTarefa = interfaceTarefas.save(tarefas);
+
+			// Obter as tarefas relacionadas ao Subpacote indicado
+			List<Tarefas> tarefasRelacionadas = interfaceTarefas.findBySubpacotes_Id(subpacoteId);
+			
+			// Calcular a soma dos valores e pesos das tarefas relacionadas ao Subpacote
+			double somaValores = 0.0;
+			double somaPesos = 0.0;
+			double somaPesosTotal = 0.0;
+
+			for (Tarefas tarefaRelacionada : tarefasRelacionadas) {
+				double execucaoNumericaTarefa = tarefaRelacionada.getExecucao() ? 1.0 : 0.0;
+				somaValores += execucaoNumericaTarefa * tarefaRelacionada.getValor();
+				somaPesos += execucaoNumericaTarefa * tarefaRelacionada.getPeso();
+			}
+			System.out.println();
+			for (Tarefas tarefaRelacionada : tarefasRelacionadas) {
+				somaPesosTotal += tarefaRelacionada.getPeso();
+			}
+
+			// Calcular valor_total e porcentagem no Subpacote
+			double valorTotalCalculado = somaValores;
+			double porcentagemSubpacote =  (somaPesos / somaPesosTotal)*100.0;
+
+			// Atualizar o Subpacote com os novos valores
+			Optional<Subpacotes> subpacoteOptional = interfaceSubpacotes.findById(subpacoteId);
+			if (subpacoteOptional.isPresent()) {
+				Subpacotes subpacote = subpacoteOptional.get();
+				subpacote.setValor_total(valorTotalCalculado);
+				subpacote.setPorcentagem(porcentagemSubpacote);
+				interfaceSubpacotes.save(subpacote);
+			}
+
+			
 			return new ResponseEntity<>(novaTarefa, HttpStatus.CREATED);
 		} catch (Exception e) {
 			return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
