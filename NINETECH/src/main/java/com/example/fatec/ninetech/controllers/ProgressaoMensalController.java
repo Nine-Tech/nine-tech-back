@@ -4,6 +4,8 @@ import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -20,6 +22,14 @@ import com.example.fatec.ninetech.repositories.ProgressaoMensalInterface;
 @RequestMapping("/progressaomensal")
 public class ProgressaoMensalController {
 	
+    @Autowired
+    private JdbcTemplate jdbcTemplate;
+
+    @Transactional
+    public void executarComandoSQL(String comandoSQL) {
+        jdbcTemplate.execute(comandoSQL);
+    }
+
 	@Autowired
 	private ProgressaoMensalInterface repoProgressaoMensal;
 	
@@ -36,6 +46,18 @@ public class ProgressaoMensalController {
 	    }
 	}
 	
+	@GetMapping("/{liderId}/{projetoId}")
+	public ResponseEntity<List<Object[]>> buscarPorLiderEProjeto(@PathVariable Long liderId,@PathVariable Long projetoId) {
+
+	    List<Object[]> progressoes = repoProgressaoMensal.buscarPorLiderEProjeto(liderId, projetoId);
+
+	    if (!progressoes.isEmpty()) {
+	        return ResponseEntity.ok(progressoes);
+	    } else {
+	        return ResponseEntity.notFound().build();
+	    }
+	}
+	
 	@GetMapping("/{id}")
 	public ResponseEntity<ProgressaoMensal> buscar(@PathVariable Long id) {
 	    ProgressaoMensal progressao = repoProgressaoMensal.findById(id).orElse(null);
@@ -49,8 +71,8 @@ public class ProgressaoMensalController {
 	    }
 	}
 	
-	@PostMapping
-	public ResponseEntity<Object> cadastrar(@RequestBody ProgressaoMensal progressaomensal) {
+	@PostMapping("/{id}")
+	public ResponseEntity<Object> cadastrar(@PathVariable Long id, @RequestBody ProgressaoMensal progressaomensal) {
 	    // Verifica se o campo 'peso' foi fornecido na requisição
 	    if (progressaomensal.getPeso() == null) {
 	        return ResponseEntity.badRequest().body("Campo 'peso' é obrigatório.");
@@ -68,13 +90,19 @@ public class ProgressaoMensalController {
 	    	}
 	    }
 	    
+	    
+	    
 	    if (!pesoValido) {
 	        return ResponseEntity.badRequest().body("Valor fornecido não é válido.");
 	    }
-
+	    
+	    String data = progressaomensal.getData().toString();
 	    // Se todos os campos necessários foram fornecidos, salva a progressão mensal
-	    ProgressaoMensal salvarProgressaoMensal = repoProgressaoMensal.save(progressaomensal);
-	    return ResponseEntity.ok(salvarProgressaoMensal);
+	    // INSERT INTO progressao_mensal (data, execucao, id_wbe, peso) VALUES (:data, :execucao, :id_wbe, :peso)
+	    String comandoSQL = "INSERT INTO progressao_mensal (data, execucao, id_wbe, peso) " +
+                "VALUES ('" + data + "', " + progressaomensal.getExecucao() + ", '" + id + "', '" + progressaomensal.getPeso() + "')";
+	    this.executarComandoSQL(comandoSQL);
+	    return ResponseEntity.ok(progressaomensal);
 	}
 	
 	@DeleteMapping("/{id}")
@@ -89,6 +117,10 @@ public class ProgressaoMensalController {
 		}
 		
 	}
+	
+	
+	
+	
 	
 	@PutMapping("/{id}")
 	public ResponseEntity<Object> alterar(@PathVariable Long id, @RequestBody ProgressaoMensal progressaomensal) {
@@ -120,20 +152,23 @@ public class ProgressaoMensalController {
 	        if (progressaomensal.getExecucao() != progressao.getExecucao()) {
 	            progressao.setExecucao(progressaomensal.getExecucao());
 	        }
-	        
+	        String data = progressaomensal.getData().toString();
+	        String comandoSQL = "UPDATE progressao_mensal SET data = '" + data + "', execucao =  " + progressaomensal.getExecucao() + ", peso = " + progressaomensal.getPeso() + " WHERE id = " + id ;
+	        System.out.println(comandoSQL);
+		    this.executarComandoSQL(comandoSQL);
 	        // Salvar as alterações no registro
-	        ProgressaoMensal updatedProgressao = repoProgressaoMensal.save(progressao);
-	        return ResponseEntity.ok(updatedProgressao);
+	        //ProgressaoMensal updatedProgressao = repoProgressaoMensal.save(progressao);
+	        return ResponseEntity.ok(progressao);
 	    } else {
 	        return null;
 	    }
 	}
 	
-	@GetMapping("/calculo")
-	public Double CalculoProgressaoMensal() {
+	@GetMapping("/calculo/{id}")
+	public Double CalculoProgressaoMensal(@PathVariable Long id) {
 	    // Buscar todas as ProgressaoMensal com execucao igual a 1
 	    boolean execucao = true;
-	    List<ProgressaoMensal> progressoes = repoProgressaoMensal.findByExecucao(execucao);
+	    List<ProgressaoMensal> progressoes = repoProgressaoMensal.buscarPorIdExecucao(id,execucao);
 	    
 	    // Inicializar a soma dos pesos com execucao igual a 1
 	    double somaPesosExecucao1 = 0.0;

@@ -89,6 +89,10 @@ public class ExcelUploadController {
                         espacosIniciais++;
                     }
 
+                    WBE dadosWBE = new WBE();
+                    dadosWBE.setWbe(wbe);
+                    dadosWBE.setProjeto(projetoRecemCriado);
+
                     if (espacosIniciais == 0) {
                         // Se for 0, salvar no projetoRecemCriado
                         if (projetoRecemCriado == null) {
@@ -136,7 +140,8 @@ public class ExcelUploadController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
-
+    
+    //Retorna Pais e Filhos pelo Get pelo Id do Projeto
 	@GetMapping("/{id}")
 	@JsonIgnoreProperties({"wbes"})
 	public ResponseEntity<List<Pacotes>> listarWBEsPorProjetoId(@PathVariable Long id) {
@@ -152,57 +157,61 @@ public class ExcelUploadController {
 	    }
 	}
 	
-//	@GetMapping("/pacotes/{id}")
-//	@JsonIgnoreProperties({"wbes"})
-//	public ResponseEntity<List<Pacotes>> listarWBEsPorPacoteId(@PathVariable Long id) {
-//	    try {
-//	        List<Pacotes> wbes = interfacePacotes.findByWbePaiId(id);
-//	        if (!wbes.isEmpty()) {
-//	            return new ResponseEntity<>(wbes, HttpStatus.OK);
-//	        } else {
-//	            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-//	        }
-//	    } catch (Exception e) {
-//	        return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
-//	    }
-//	}
-//	
-//	@GetMapping("/lideres/{idLider}")
-//	@JsonIgnoreProperties({"wbes"})
-//	public ResponseEntity<List<Pacotes>> listarWBEsPorLiderId(@PathVariable Long idLider) {
-//	    try {
-//	        List<Pacotes> wbes = interfacePacotes.findByLiderDeProjetoId(idLider);
-//	        if (!wbes.isEmpty()) {
-//	            return new ResponseEntity<>(wbes, HttpStatus.OK);
-//	        } else {
-//	            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-//	        }
-//	    } catch (Exception e) {
-//	        return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
-//	    }
-//	}
+	//Retorna os Filhos pelo Get pelo Id do Pacote Pai
+	@GetMapping("/pacotes/{id}")
+	@JsonIgnoreProperties({"wbes"})
+	public ResponseEntity<List<WBE>> listarWBEsPorPacoteId(@PathVariable Long id) {
+	    try {
+	        List<WBE> wbes = interfaceWBS.findByWbePaiId(id);
+	        if (!wbes.isEmpty()) {
+	            return new ResponseEntity<>(wbes, HttpStatus.OK);
+	        } else {
+	            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+	        }
+	    } catch (Exception e) {
+	        return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+	    }
+	}
+	
+	@GetMapping("/lideres/{idLider}")
+	@JsonIgnoreProperties({"wbes"})
+	public ResponseEntity<List<WBE>> listarWBEsPorLiderId(@PathVariable Long idLider) {
+	    try {
+	        List<WBE> wbes = interfaceWBS.findByLiderDeProjetoId(idLider);
+	        if (!wbes.isEmpty()) {
+	            return new ResponseEntity<>(wbes, HttpStatus.OK);
+	        } else {
+	            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+	        }
+	    } catch (Exception e) {
+	        return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+	    }
+	}
 	
 	// Isolar as variáveis e salvar apenas as que mudaram, se não ele seta para nulo
-	@PutMapping("/{id}")
-	public ResponseEntity<Pacotes> atualizarWBS(@PathVariable Long id, @RequestBody Pacotes atualizadoWBS) {
+	@PutMapping("/{idLider}/{id}")
+	public ResponseEntity<WBE> atualizarWBS(@PathVariable Long id, @PathVariable Long idLider) {
 		//Verificando se WBE, Projeto e LiderDeProjeto existem
-	    Optional<Pacotes> encontrarPorIdWBS = interfacePacotes.findById(id);
-	    Optional<Projeto> projetoOptional = interfaceProjeto.findById(atualizadoWBS.getProjeto().getId());
-	    // Optional<LiderDeProjeto> liderDeProjetoOptional = interfaceLiderDeProjeto.findById(atualizadoWBS.getLiderDeProjeto().getId());
+		
+		System.out.println(id);
+		System.out.println(idLider);
+		
+	    Optional<WBE> encontrarPorIdWBS = interfaceWBS.findById(id);
+	    Optional<LiderDeProjeto> liderDeProjetoOptional = interfaceLiderDeProjeto.findById(idLider);
 
-	    if (encontrarPorIdWBS.isEmpty()) {
-	        return ResponseEntity.notFound().build();
-	    }
+//	    if (encontrarPorIdWBS.isEmpty()) {
+//	        return ResponseEntity.notFound().build();
+//	    }
 
 	    Pacotes atualizandoWBS = encontrarPorIdWBS.get();
 
-	    if (atualizadoWBS.getNome() != null) {
-	        atualizandoWBS.setNome(atualizadoWBS.getNome());
-	    }
-	    
-	    if (projetoOptional.isPresent()) {
-	        atualizandoWBS.setProjeto(projetoOptional.get());
-	    }
+//	    if (atualizadoWBS.getWbe() != null) {
+//	        atualizandoWBS.setWbe(atualizadoWBS.getWbe());
+//	    }
+//
+//	    if (projetoOptional.isPresent()) {
+//	        atualizandoWBS.setProjeto(projetoOptional.get());
+	    //}
 
 //	    if (liderDeProjetoOptional.isPresent()) {
 //	        atualizandoWBS.setLiderDeProjeto(liderDeProjetoOptional.get());
@@ -212,6 +221,7 @@ public class ExcelUploadController {
 
 	    return ResponseEntity.ok(wbeAtualizado);
 	}
+
 
 
 	@DeleteMapping("/{id}")

@@ -1,5 +1,7 @@
 package com.example.fatec.ninetech.controllers;
 
+import java.util.Map;
+
 import javax.naming.AuthenticationException;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,8 +13,11 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -22,6 +27,7 @@ import com.example.fatec.ninetech.helpers.LoginResponseDTOServico;
 import com.example.fatec.ninetech.helpers.TokenServico;
 import com.example.fatec.ninetech.models.EngenheiroChefe;
 import com.example.fatec.ninetech.models.LiderDeProjeto;
+import com.example.fatec.ninetech.models.ProgressaoMensal;
 import com.example.fatec.ninetech.repositories.EngenheiroChefeInterface;
 import com.example.fatec.ninetech.repositories.LiderDeProjetoInterface;
 
@@ -49,7 +55,7 @@ public class AutenticacaoController {
     public ResponseEntity login(@RequestBody @Valid AutenticacaoDTOServico data) {
         var usernamePassword = new UsernamePasswordAuthenticationToken(data.nome(), data.senha());
         var auth = this.authenticationManager.authenticate(usernamePassword);
-
+        
         UserDetails userDetails = userDetailsService.loadUserByUsername(data.nome());
 
         if (userDetails instanceof LiderDeProjeto) {
@@ -62,6 +68,21 @@ public class AutenticacaoController {
             // Handle other user types or return an error response
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
+    }
+    
+    @GetMapping("/informacaoUsuario")
+    public ResponseEntity<?> getUserInfo(@RequestHeader("Authorization") String authorizationHeader) {
+        // Verifique se o cabeçalho de autorização está presente e no formato correto
+        if (authorizationHeader == null || !authorizationHeader.startsWith("Bearer ")) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+        }
+
+        String token = authorizationHeader.substring(7); // Remova o prefixo "Bearer " do token
+
+        Map<String, Object> userInfo = tokenServico.getUserInfoFromToken(token);
+
+        // Agora você pode usar as informações do usuário conforme necessário
+        return ResponseEntity.ok(userInfo);
     }
     
 }

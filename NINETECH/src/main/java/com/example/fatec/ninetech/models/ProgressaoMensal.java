@@ -11,6 +11,8 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 
 @Entity
 public class ProgressaoMensal {
@@ -28,12 +30,9 @@ public class ProgressaoMensal {
 	@Column
 	private Timestamp data;
 	
-	/**
 	@ManyToOne
-	@JoinColumn(name = "wbe_id")
-	*/
-	private ForeignKey id_wbe;
-	
+    @JoinColumn(name = "id_wbe") 
+    private WBE wbe;
 	
 	public Long getId() {
 		return id;
