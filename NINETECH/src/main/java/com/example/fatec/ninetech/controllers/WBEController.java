@@ -113,51 +113,51 @@ public class WBEController {
 
 	// ATUALIZAR A LINHA WBE_ID E QUE O PROJETO_ID EXISTA NA PLANILHA PROJETO.
 
-//	@PutMapping("/{wbeId}")
-//	public ResponseEntity<Object> atualizarDadosWBE(@PathVariable Long wbeId, @RequestBody Pacotes requestBody) {
-//	    // Extrair os novos valores dos campos
-//	    String novoWbe = requestBody.getNome();
-//
-//	    try {
-//	        // Verificar se o WBE com o ID fornecido existe
-//	        Optional<Pacotes> optionalWBE = wbeInterface.findById(wbeId);
-//	        if (!optionalWBE.isPresent()) {
-//	            Map<String, String> response = new HashMap<>();
-//	            response.put("error", "WBE não encontrado com o ID fornecido.");
-//	            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
-//	        }
-//
-//	        Pacotes pacotes = optionalWBE.get();
-//	        // Atualizar os campos do WBE com os novos valores
-//	        pacotes.setNome(novoWbe);
-//
-//	        // Atualizar o líder de projeto se o ID for diferente
-//	        LiderDeProjeto novoLiderDeProjeto = requestBody.getLiderDeProjeto();
-//	        if (novoLiderDeProjeto != null) {
-//	            Long novoLiderDeProjetoId = novoLiderDeProjeto.getId();
-//
-//	            // Verificar se o novo ID do Líder de Projeto é válido
-//	            Optional<LiderDeProjeto> optionalLider = liderdeprojetoInterface.findById(novoLiderDeProjetoId);
-//	            if (!optionalLider.isPresent()) {
-//	                Map<String, String> response = new HashMap<>();
-//	                response.put("error", "Líder de Projeto não encontrado com o ID fornecido.");
-//	                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
-//	            }
-//
-//	            pacotes.setLiderDeProjeto(optionalLider.get());
-//	        }
-//
-//	        // Atualizar o WBE no banco de dados usando o serviço
-//	        Pacotes wbeAtualizado = wbeServico.atualizarDadosWBE(pacotes);
-//
-//	        // Retornar o WBE atualizado em JSON
-//	        return ResponseEntity.ok(wbeAtualizado);
-//	    } catch (Exception e) {
-//	        Map<String, String> response = new HashMap<>();
-//	        response.put("error", "Ocorreu um erro ao atualizar os dados do WBE: " + e.getMessage());
-//	        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
-//	    }
-//	}
+	@PutMapping("/{wbeId}")
+	public ResponseEntity<Object> atualizarDadosWBE(@PathVariable Long wbeId, @RequestBody WBE requestBody) {
+	    // Extrair os novos valores dos campos
+	    String novoWbe = requestBody.getWbe();
+
+	    try {
+	        // Verificar se o WBE com o ID fornecido existe
+	        Optional<WBE> optionalWBE = wbeInterface.findById(wbeId);
+	        if (!optionalWBE.isPresent()) {
+	            Map<String, String> response = new HashMap<>();
+	            response.put("error", "WBE não encontrado com o ID fornecido.");
+	            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+	        }
+
+	        WBE wbe = optionalWBE.get();
+	        // Atualizar os campos do WBE com os novos valores
+	        wbe.setWbe(novoWbe);
+
+	        // Atualizar o líder de projeto se o ID for diferente
+	        LiderDeProjeto novoLiderDeProjeto = requestBody.getLiderDeProjeto();
+	        if (novoLiderDeProjeto != null) {
+	            Long novoLiderDeProjetoId = novoLiderDeProjeto.getId();
+
+	            // Verificar se o novo ID do Líder de Projeto é válido
+	            Optional<LiderDeProjeto> optionalLider = liderdeprojetoInterface.findById(novoLiderDeProjetoId);
+	            if (!optionalLider.isPresent()) {
+	                Map<String, String> response = new HashMap<>();
+	                response.put("error", "Líder de Projeto não encontrado com o ID fornecido.");
+	                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+	            }
+
+	            wbe.setLiderDeProjeto(optionalLider.get());
+	        }
+
+	        // Atualizar o WBE no banco de dados usando o serviço
+	        WBE wbeAtualizado = wbeServico.atualizarDadosWBE(wbe);
+
+	        // Retornar o WBE atualizado em JSON
+	        return ResponseEntity.ok(wbeAtualizado);
+	    } catch (Exception e) {
+	        Map<String, String> response = new HashMap<>();
+	        response.put("error", "Ocorreu um erro ao atualizar os dados do WBE: " + e.getMessage());
+	        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+	    }
+	}
 
 
 
@@ -182,6 +182,28 @@ public class WBEController {
 																		// por projetoId
 
 		return ResponseEntity.ok(wbeList);
+	}
+	
+	@GetMapping("/liderprojeto/{liderprojetoId}")
+	public ResponseEntity<Object> listarPorLiderprojetoId(@PathVariable Long liderprojetoId) {
+	    try {
+	        // Verificar se o líder de projeto com o ID fornecido existe
+	        Optional<LiderDeProjeto> optionalLider = liderdeprojetoInterface.findById(liderprojetoId);
+	        if (!optionalLider.isPresent()) {
+	            Map<String, String> response = new HashMap<>();
+	            response.put("error", "Líder de Projeto não encontrado com o ID fornecido.");
+	            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+	        }
+
+	        // Buscar os elementos da tabela WBE pelo líder de projeto
+	        List<WBE> wbeList = wbeInterface.findByLiderDeProjetoId(liderprojetoId);
+
+	        return ResponseEntity.ok(wbeList);
+	    } catch (Exception e) {
+	        Map<String, String> response = new HashMap<>();
+	        response.put("error", "Ocorreu um erro ao buscar os dados do líder de projeto: " + e.getMessage());
+	        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+	    }
 	}
 
 }
