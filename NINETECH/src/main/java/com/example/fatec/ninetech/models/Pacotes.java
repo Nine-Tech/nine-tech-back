@@ -18,6 +18,28 @@ public class Pacotes {
 	
 	@Column
 	private String nome;
+	
+	@Column
+	private double porcentagem;
+	
+	@Column
+	private double valor_total;
+
+	public double getPorcentagem() {
+		return porcentagem;
+	}
+
+	public void setPorcentagem(double porcentagem) {
+		this.porcentagem = porcentagem;
+	}
+
+	public double getValor_total() {
+		return valor_total;
+	}
+
+	public void setValor_total(double valor_total) {
+		this.valor_total = valor_total;
+	}
 
 	@ManyToOne
 	@JoinColumn(name = "projeto_id")

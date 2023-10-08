@@ -14,6 +14,9 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 
+/**
+ * 
+ */
 @Entity
 @Table(name = "projeto")
 public class Projeto {
@@ -29,6 +32,28 @@ public class Projeto {
 	
 	@Column
 	private LocalDate data_final;
+	
+	@Column
+	private double porcentagem;
+	
+	public double getPorcentagem() {
+		return porcentagem;
+	}
+
+	public void setPorcentagem(double porcentagem) {
+		this.porcentagem = porcentagem;
+	}
+
+	public double getValor_total() {
+		return valor_total;
+	}
+
+	public void setValor_total(double valor_total) {
+		this.valor_total = valor_total;
+	}
+
+	@Column
+	private double valor_total;
 	
 	@ManyToOne
 	@JoinColumn(name = "engenheiro_chefe_id")
