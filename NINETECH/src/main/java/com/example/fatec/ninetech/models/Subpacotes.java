@@ -71,8 +71,8 @@ public class Subpacotes {
 		return liderDeProjeto;
 	}
 
-	public void setLiderDeProjeto(LiderDeProjeto liderDeProjeto) {
-		this.liderDeProjeto = liderDeProjeto;
+	public void setLiderDeProjeto(LiderDeProjeto liderDeProjeto2) {
+		this.liderDeProjeto = liderDeProjeto2;
 	}
 
 	public void setValor_total(double valor_total) {
