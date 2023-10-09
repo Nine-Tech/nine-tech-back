@@ -7,10 +7,10 @@ import org.springframework.web.server.ResponseStatusException;
 
 import com.example.fatec.ninetech.models.LiderDeProjeto;
 import com.example.fatec.ninetech.models.Projeto;
-import com.example.fatec.ninetech.models.WBE;
+import com.example.fatec.ninetech.models.Pacotes;
 import com.example.fatec.ninetech.repositories.LiderDeProjetoInterface;
 import com.example.fatec.ninetech.repositories.ProjetoInterface;
-import com.example.fatec.ninetech.repositories.WBSInterface;
+import com.example.fatec.ninetech.repositories.PacotesInterface;
 
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
@@ -22,7 +22,7 @@ import java.util.Optional;
 public class WBEServico {
 
 	@Autowired
-	private WBSInterface wbeInterface;
+	private PacotesInterface wbeInterface;
 
 	@Autowired
 	private ProjetoInterface projetoInterface;
@@ -33,8 +33,8 @@ public class WBEServico {
 	
 
 	@Transactional
-	public WBE excluirWBEPorId(Long wbeId) {
-		Optional<WBE> wbeOptional = wbeInterface.findById(wbeId);
+	public Pacotes excluirWBEPorId(Long wbeId) {
+		Optional<Pacotes> wbeOptional = wbeInterface.findById(wbeId);
 
 		return wbeOptional.map(wbe -> {
 			wbeInterface.delete(wbe);
@@ -42,30 +42,24 @@ public class WBEServico {
 		}).orElseThrow(() -> new EntityNotFoundException("WBE não encontrado com ID: " + wbeId));
 	}
 
-	public WBEServico(WBSInterface wbeInterface) {
+	public WBEServico(PacotesInterface wbeInterface) {
 		this.wbeInterface = wbeInterface;
 	}
 
-	public List<WBE> obterTodosOsWBE() {
+	public List<Pacotes> obterTodosOsWBE() {
 		return wbeInterface.findAll();
 	}
 	
-	 public WBE atualizarDadosWBE(WBE wbe) {
+	 public Pacotes atualizarDadosWBE(Pacotes pacotes) {
 	        // Verifique se o WBE existe no banco de dados
-	        Optional<WBE> optionalWBE = wbeInterface.findById(wbe.getId());
+	        Optional<Pacotes> optionalWBE = wbeInterface.findById(pacotes.getId());
 	        if (!optionalWBE.isPresent()) {
 	            throw new EntityNotFoundException("WBE não encontrado com o ID fornecido.");
 	        }
 
 	        // Atualize os campos do WBE com os novos valores
-	        WBE wbeExistente = optionalWBE.get();
-	        wbeExistente.setWbe(wbe.getWbe());
-
-	        // Atualize o líder de projeto se o ID for diferente
-	        if (!wbeExistente.getLiderDeProjeto().getId().equals(wbe.getLiderDeProjeto().getId())) {
-	            // Lógica para atualizar o líder de projeto se necessário
-	            // ...
-	        }
+	        Pacotes wbeExistente = optionalWBE.get();
+	        wbeExistente.setNome(pacotes.getNome());
 
 	        // Salve as atualizações no banco de dados
 	        return wbeInterface.save(wbeExistente);

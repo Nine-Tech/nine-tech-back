@@ -30,7 +30,12 @@ import lombok.NoArgsConstructor;
 @Table(name = "lider_de_projeto")
 
 public class LiderDeProjeto implements UserDetails {
-    @Id
+    /**
+	 * 
+	 */
+	private static final long serialVersionUID = 7356186984914687774L;
+
+	@Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
@@ -79,15 +84,6 @@ public class LiderDeProjeto implements UserDetails {
     public LiderDeProjeto findByNome(String novoNome) {
         // TODO Auto-generated method stub
         return null;
-    }
-
-    // Construtor sem argumentos
-    public LiderDeProjeto() {
-    }
-
-    // Construtor que aceita um valor `Number` como argumento
-    public LiderDeProjeto(Number liderDeProjetoId) {
-        this.id = liderDeProjetoId.longValue();
     }
 
     @Override

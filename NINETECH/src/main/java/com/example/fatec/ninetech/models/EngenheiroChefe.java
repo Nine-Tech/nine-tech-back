@@ -27,6 +27,11 @@ import lombok.NoArgsConstructor;
 @EqualsAndHashCode(of = "id")
 @Table(name = "engenheiro_chefe")
 public class EngenheiroChefe implements UserDetails {
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = -7084023030676554939L;
+
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;

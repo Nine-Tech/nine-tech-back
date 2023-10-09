@@ -33,3 +33,4 @@ build/
 ### VS Code ###
 .vscode/
 /bin/
+/.apt_generated_tests/
