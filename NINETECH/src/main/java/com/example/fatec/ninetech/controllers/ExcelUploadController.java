@@ -4,9 +4,13 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+
+import javax.management.relation.RelationNotFoundException;
 
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
@@ -90,8 +94,8 @@ public class ExcelUploadController {
                         espacosIniciais++;
                     }
 
-                    WBE dadosWBE = new WBE();
-                    dadosWBE.setWbe(wbe);
+                    Pacotes dadosWBE = new Pacotes();
+                    dadosWBE.setNome(wbe);
                     dadosWBE.setProjeto(projetoRecemCriado);
 
                     if (espacosIniciais == 0) {
@@ -141,7 +145,41 @@ public class ExcelUploadController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
-    
+
+	//Retorna todo o Projeto
+	@GetMapping("/todosfilhos/{id}")
+	public ResponseEntity<List<Object>> listarPacotesESeusSubpacotes(@PathVariable Long id) {
+		Optional<Projeto> projetoOptional = interfaceProjeto.findById(id);
+
+		if (projetoOptional.isPresent()) {
+			Projeto projeto = projetoOptional.get();
+			Long projetoId = projeto.getId();
+
+			List<Object> pacotesESeusSubpacotes = new ArrayList<>();
+
+			List<Pacotes> pacotes = interfacePacotes.findByProjetoId(projetoId);
+
+			for (Pacotes pacote : pacotes) {
+				List<Subpacotes> subpacotes = interfaceSubpacotes.findByPacotesId(pacote.getId());
+
+				Map<String, Object> pacoteMap = new HashMap<>();
+				pacoteMap.put("nome", pacote.getNome());
+				pacoteMap.put("porcentagem", pacote.getPorcentagem());
+				pacoteMap.put("valor_total", pacote.getValor_total());
+				pacotesESeusSubpacotes.add(pacoteMap);
+
+				for (Subpacotes subpacote : subpacotes) {
+					pacotesESeusSubpacotes.add(subpacote);
+				}
+			}
+
+			return new ResponseEntity<>(pacotesESeusSubpacotes, HttpStatus.OK);
+		} else {
+			return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+		}
+	}
+
+
     //Retorna Pais e Filhos pelo Get pelo Id do Projeto
 	@GetMapping("/{id}")
 	@JsonIgnoreProperties({"wbes"})
@@ -161,9 +199,9 @@ public class ExcelUploadController {
 	//Retorna os Filhos pelo Get pelo Id do Pacote Pai
 	@GetMapping("/pacotes/{id}")
 	@JsonIgnoreProperties({"wbes"})
-	public ResponseEntity<List<WBE>> listarWBEsPorPacoteId(@PathVariable Long id) {
+	public ResponseEntity<List<Pacotes>> listarWBEsPorPacoteId(@PathVariable Long id) {
 	    try {
-	        List<WBE> wbes = interfaceWBS.findByWbePaiId(id);
+	        List<Pacotes> wbes = interfacePacotes.findAll();
 	        if (!wbes.isEmpty()) {
 	            return new ResponseEntity<>(wbes, HttpStatus.OK);
 	        } else {
@@ -176,9 +214,9 @@ public class ExcelUploadController {
 	
 	@GetMapping("/lideres/{idLider}")
 	@JsonIgnoreProperties({"wbes"})
-	public ResponseEntity<List<WBE>> listarWBEsPorLiderId(@PathVariable Long idLider) {
+	public ResponseEntity<List<Pacotes>> listarWBEsPorLiderId(@PathVariable Long idLider) {
 	    try {
-	        List<WBE> wbes = interfaceWBS.findByLiderDeProjetoId(idLider);
+	        List<Pacotes> wbes = interfacePacotes.findAll();
 	        if (!wbes.isEmpty()) {
 	            return new ResponseEntity<>(wbes, HttpStatus.OK);
 	        } else {
@@ -188,42 +226,6 @@ public class ExcelUploadController {
 	        return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
 	    }
 	}
-	
-	// Isolar as variáveis e salvar apenas as que mudaram, se não ele seta para nulo
-	@PutMapping("/{idLider}/{id}")
-	public ResponseEntity<WBE> atualizarWBS(@PathVariable Long id, @PathVariable Long idLider) {
-		//Verificando se WBE, Projeto e LiderDeProjeto existem
-		
-		System.out.println(id);
-		System.out.println(idLider);
-		
-	    Optional<WBE> encontrarPorIdWBS = interfaceWBS.findById(id);
-	    Optional<LiderDeProjeto> liderDeProjetoOptional = interfaceLiderDeProjeto.findById(idLider);
-
-//	    if (encontrarPorIdWBS.isEmpty()) {
-//	        return ResponseEntity.notFound().build();
-//	    }
-
-	    Pacotes atualizandoWBS = encontrarPorIdWBS.get();
-
-//	    if (atualizadoWBS.getWbe() != null) {
-//	        atualizandoWBS.setWbe(atualizadoWBS.getWbe());
-//	    }
-//
-//	    if (projetoOptional.isPresent()) {
-//	        atualizandoWBS.setProjeto(projetoOptional.get());
-	    //}
-
-//	    if (liderDeProjetoOptional.isPresent()) {
-//	        atualizandoWBS.setLiderDeProjeto(liderDeProjetoOptional.get());
-//	    }
-
-	    Pacotes wbeAtualizado = interfacePacotes.save(atualizandoWBS);
-
-	    return ResponseEntity.ok(wbeAtualizado);
-	}
-
-
 
 	@DeleteMapping("/{id}")
 	public ResponseEntity<List<Pacotes>> apagarWBS(@PathVariable Long id) {

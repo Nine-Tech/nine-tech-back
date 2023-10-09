@@ -15,20 +15,20 @@ public interface ProgressaoMensalInterface extends JpaRepository<ProgressaoMensa
 	
 	List<ProgressaoMensal> findByExecucao(boolean execucao);
 	
-	@Query("SELECT pm FROM ProgressaoMensal pm " +
+	/* @Query("SELECT pm FROM ProgressaoMensal pm " +
 		       "INNER JOIN pm.wbe wbe " +
 		       "WHERE pm.execucao = :execucao " +
 		       "AND wbe.projeto.id = :idProjeto")
-	List<ProgressaoMensal> buscarPorIdExecucao(@Param("idProjeto") Long idProjeto, @Param("execucao") Boolean execucao ); 
+	List<ProgressaoMensal> buscarPorIdExecucao(@Param("idProjeto") Long idProjeto, @Param("execucao") Boolean execucao ); */ 
 	 
-	@Query("SELECT pm, pm.wbe.id FROM ProgressaoMensal pm " +
+	/* @Query("SELECT pm, pm.wbe.id FROM ProgressaoMensal pm " +
 		       "INNER JOIN pm.wbe wbe " +
 		       "WHERE wbe.liderDeProjeto.id = :liderId " +
 		       "AND wbe.projeto.id = :projetoId")
-	List<Object[]> buscarPorLiderEProjeto(@Param("liderId") Long liderId, @Param("projetoId") Long projetoId);
+	List<Object[]> buscarPorLiderEProjeto(@Param("liderId") Long liderId, @Param("projetoId") Long projetoId); */
 		
 		// CREATE
-	@Modifying
+	/* @Modifying
 	@Transactional
 	@Query(value = "INSERT INTO progressao_mensal (data, execucao, id_wbe, peso) " +
 	                   "VALUES (:data, :execucao, :id_wbe, :peso)",
@@ -47,7 +47,7 @@ public interface ProgressaoMensalInterface extends JpaRepository<ProgressaoMensa
 	void atualizarProgressaoMensal(@Param("id") Long id,
 	                               @Param("data") String data,
 	                               @Param("execucao") boolean execucao,
-	                               @Param("peso") String peso);
+	                               @Param("peso") String peso); */
 	
 
 }

@@ -164,7 +164,7 @@ public class ProgressaoMensalController {
 	    }
 	}
 	
-	@GetMapping("/calculo/{id}")
+	/* @GetMapping("/calculo/{id}")
 	public Double CalculoProgressaoMensal(@PathVariable Long id) {
 	    // Buscar todas as ProgressaoMensal com execucao igual a 1
 	    boolean execucao = true;
@@ -195,5 +195,5 @@ public class ProgressaoMensalController {
 	    double resultado = (somaPesosExecucao1 / somaExecucaoTotal) * 100;
 	    
 	    return resultado;
-	}
+	} */
 }

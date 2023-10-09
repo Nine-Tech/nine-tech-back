@@ -1,5 +1,7 @@
 package com.example.fatec.ninetech.models;
 
+import java.util.List;
+
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import jakarta.persistence.Column;

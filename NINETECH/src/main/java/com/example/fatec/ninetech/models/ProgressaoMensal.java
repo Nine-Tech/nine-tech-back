@@ -32,7 +32,7 @@ public class ProgressaoMensal {
 	
 	@ManyToOne
     @JoinColumn(name = "id_wbe") 
-    private WBE wbe;
+    private Pacotes pacotes;
 	
 	public Long getId() {
 		return id;

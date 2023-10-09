@@ -22,8 +22,10 @@ import com.example.fatec.ninetech.helpers.WBEServico;
 import com.example.fatec.ninetech.models.Pacotes;
 import com.example.fatec.ninetech.repositories.LiderDeProjetoInterface;
 import com.example.fatec.ninetech.repositories.ProjetoInterface;
+import com.example.fatec.ninetech.repositories.SubpacotesInterface;
 import com.example.fatec.ninetech.models.LiderDeProjeto;
 import com.example.fatec.ninetech.models.Projeto;
+import com.example.fatec.ninetech.models.Subpacotes;
 
 import jakarta.persistence.EntityNotFoundException;
 
@@ -33,6 +35,9 @@ public class WBEController {
 
 	@Autowired
 	private PacotesInterface wbeInterface;
+	
+	@Autowired
+	private SubpacotesInterface subpacotesInterface;
 
 	@Autowired
 	private ProjetoInterface interfaceProjeto;
@@ -115,22 +120,27 @@ public class WBEController {
 	// ATUALIZAR A LINHA WBE_ID E QUE O PROJETO_ID EXISTA NA PLANILHA PROJETO.
 
 	@PutMapping("/{wbeId}")
-	public ResponseEntity<Object> atualizarDadosWBE(@PathVariable Long wbeId, @RequestBody WBE requestBody) {
+	public ResponseEntity<Object> atualizarDadosWBE(@PathVariable Long wbeId, @RequestBody Subpacotes requestBody) {
 	    // Extrair os novos valores dos campos
-	    String novoWbe = requestBody.getWbe();
+	    String novoWbe = requestBody.getNome();
 
 	    try {
 	        // Verificar se o WBE com o ID fornecido existe
-	        Optional<WBE> optionalWBE = wbeInterface.findById(wbeId);
+	        Optional<Pacotes> optionalWBE = wbeInterface.findById(wbeId);
+
 	        if (!optionalWBE.isPresent()) {
 	            Map<String, String> response = new HashMap<>();
 	            response.put("error", "WBE não encontrado com o ID fornecido.");
 	            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
 	        }
 
-	        WBE wbe = optionalWBE.get();
+			Optional<Subpacotes> optionalSubpacotes = subpacotesInterface.findById(wbeId);
+
+	        Pacotes pacotes = optionalWBE.get();
 	        // Atualizar os campos do WBE com os novos valores
-	        wbe.setWbe(novoWbe);
+	        pacotes.setNome(novoWbe);
+
+			Subpacotes subpacotes = optionalSubpacotes.get();
 
 	        // Atualizar o líder de projeto se o ID for diferente
 	        LiderDeProjeto novoLiderDeProjeto = requestBody.getLiderDeProjeto();
@@ -145,11 +155,11 @@ public class WBEController {
 	                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
 	            }
 
-	            wbe.setLiderDeProjeto(optionalLider.get());
+	            subpacotes.setLiderDeProjeto(optionalLider.get());
 	        }
 
 	        // Atualizar o WBE no banco de dados usando o serviço
-	        WBE wbeAtualizado = wbeServico.atualizarDadosWBE(wbe);
+	        Pacotes wbeAtualizado = wbeServico.atualizarDadosWBE(pacotes);
 
 	        // Retornar o WBE atualizado em JSON
 	        return ResponseEntity.ok(wbeAtualizado);
@@ -197,9 +207,9 @@ public class WBEController {
 	        }
 
 	        // Buscar os elementos da tabela WBE pelo líder de projeto
-	        List<WBE> wbeList = wbeInterface.findByLiderDeProjetoId(liderprojetoId);
+	        List<Subpacotes> listaDeSubpacotes = subpacotesInterface.findByLiderDeProjetoId(liderprojetoId);
 
-	        return ResponseEntity.ok(wbeList);
+	        return ResponseEntity.ok(listaDeSubpacotes);
 	    } catch (Exception e) {
 	        Map<String, String> response = new HashMap<>();
 	        response.put("error", "Ocorreu um erro ao buscar os dados do líder de projeto: " + e.getMessage());

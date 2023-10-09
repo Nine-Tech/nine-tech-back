@@ -2,6 +2,7 @@ package com.example.fatec.ninetech.models;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonGetter;
 
@@ -127,6 +128,9 @@ public class Projeto {
 
 	public void setData_final(LocalDate data_final) {
 		this.data_final = data_final;
+	}
+
+	public void setPacotes(List<Pacotes> pacotes) {
 	}
 	
 }
