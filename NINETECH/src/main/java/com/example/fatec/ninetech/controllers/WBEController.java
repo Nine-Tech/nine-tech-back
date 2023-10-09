@@ -24,6 +24,7 @@ import com.example.fatec.ninetech.repositories.LiderDeProjetoInterface;
 import com.example.fatec.ninetech.repositories.ProjetoInterface;
 import com.example.fatec.ninetech.models.LiderDeProjeto;
 import com.example.fatec.ninetech.models.Projeto;
+
 import jakarta.persistence.EntityNotFoundException;
 
 @RestController
