@@ -27,7 +27,6 @@ import com.example.fatec.ninetech.helpers.LoginResponseDTOServico;
 import com.example.fatec.ninetech.helpers.TokenServico;
 import com.example.fatec.ninetech.models.EngenheiroChefe;
 import com.example.fatec.ninetech.models.LiderDeProjeto;
-import com.example.fatec.ninetech.models.ProgressaoMensal;
 import com.example.fatec.ninetech.repositories.EngenheiroChefeInterface;
 import com.example.fatec.ninetech.repositories.LiderDeProjetoInterface;
 
