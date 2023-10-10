@@ -42,6 +42,21 @@ public class SubpacotesController {
 	        return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
 	    }
 	}
+    
+    @GetMapping("/listaIdSubpacote/{idSubpacote}")
+	public ResponseEntity<Subpacotes> listarSubpacotesPorId(@PathVariable Long idSubpacote) {
+	    try {
+	        Optional<Subpacotes> subpacotes = interfaceSubpacotes.findById(idSubpacote);
+	        if (subpacotes != null) {
+	        	return new ResponseEntity<Subpacotes>(subpacotes.get(), HttpStatus.OK);
+
+	        } else {
+	            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+	        }
+	    } catch (Exception e) {
+	        return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+	    }
+	}
 
     // Isolar as variáveis e salvar apenas as que mudaram, se não ele seta para nulo
 	@PutMapping("/{idLider}/{id}")
