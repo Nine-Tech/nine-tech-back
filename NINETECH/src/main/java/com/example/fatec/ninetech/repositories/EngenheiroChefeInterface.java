@@ -7,5 +7,5 @@ import org.springframework.security.core.userdetails.UserDetails;
 import com.example.fatec.ninetech.models.EngenheiroChefe;
 
 public interface EngenheiroChefeInterface extends JpaRepository<EngenheiroChefe, Long>{
-	UserDetails findByNome(String nome);
+	UserDetails findByLogin(String login);
 }

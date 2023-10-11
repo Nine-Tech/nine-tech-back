@@ -52,10 +52,10 @@ public class AutenticacaoController {
 
     @PostMapping("/login")
     public ResponseEntity login(@RequestBody @Valid AutenticacaoDTOServico data) {
-        var usernamePassword = new UsernamePasswordAuthenticationToken(data.nome(), data.senha());
+        var usernamePassword = new UsernamePasswordAuthenticationToken(data.login(), data.senha());
         var auth = this.authenticationManager.authenticate(usernamePassword);
         
-        UserDetails userDetails = userDetailsService.loadUserByUsername(data.nome());
+        UserDetails userDetails = userDetailsService.loadUserByUsername(data.login());
 
         if (userDetails instanceof LiderDeProjeto) {
             var token = tokenServico.generateToken((LiderDeProjeto) userDetails);

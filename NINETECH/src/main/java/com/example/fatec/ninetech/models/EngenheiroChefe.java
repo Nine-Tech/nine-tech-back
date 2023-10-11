@@ -40,6 +40,9 @@ public class EngenheiroChefe implements UserDetails {
 	private String nome;
 	
 	@Column
+	private String login;
+	
+	@Column
 	private String senha;
 	
 	@Column
@@ -65,6 +68,14 @@ public class EngenheiroChefe implements UserDetails {
 		this.role = role;
 	}
 	
+	public String getLogin() {
+		return login;
+	}
+	
+	public void setLogin(String login) {
+		this.login = login;
+	}
+	
 	@Override
 	public Collection<? extends GrantedAuthority> getAuthorities() {
         // Use os valores do enum em letras maiúsculas
@@ -84,7 +95,7 @@ public class EngenheiroChefe implements UserDetails {
 	@Override
 	public String getUsername() {
 		// TODO Auto-generated method stub
-		return nome;
+		return login;
 	}
 	@Override
 	public boolean isAccountNonExpired() {
@@ -106,6 +117,9 @@ public class EngenheiroChefe implements UserDetails {
 		// TODO Auto-generated method stub
 		return true;
 	}
-
+	public String findNomeById(Long id) {
+		// TODO Auto-generated method stub
+		return nome;
+	}
 
 }

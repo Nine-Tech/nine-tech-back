@@ -37,6 +37,7 @@ public class SegurancaConfig{
             // Permitindo o acesso a todos enquanto o TOKEN não está finalizado e conectado com o Front
             .authorizeHttpRequests(authorize -> authorize
                     .requestMatchers("/**").permitAll() // Permitir acesso a todas as URLs sem autenticação
+                    .anyRequest().authenticated()
                 )
             .addFilterBefore(filtroSeguranca, UsernamePasswordAuthenticationFilter.class)
             .build();

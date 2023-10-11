@@ -11,7 +11,7 @@ import com.example.fatec.ninetech.models.CronogramaEstimado;
 import com.example.fatec.ninetech.models.LiderDeProjeto;
 
 public interface LiderDeProjetoInterface extends JpaRepository<LiderDeProjeto, Long> {
-    UserDetails findByNome(String nome);
+    UserDetails findByLogin(String login);
     
     Optional<LiderDeProjeto> findById(Long liderDeProjetoId);
 }

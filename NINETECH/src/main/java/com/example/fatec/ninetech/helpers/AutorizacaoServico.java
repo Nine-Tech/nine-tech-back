@@ -21,13 +21,13 @@ public class AutorizacaoServico implements UserDetailsService {
         UserDetails userDetails = null;
 
         // Verifica se o usuário é um Líder de Projeto
-        userDetails = liderDeProjetoRepositorio.findByNome(username);
+        userDetails = liderDeProjetoRepositorio.findByLogin(username);
         if (userDetails != null) {
             return userDetails;
         }
 
         // Se não for um Líder de Projeto, verifica se é um Engenheiro Chefe
-        userDetails = engenheiroChefeRepositorio.findByNome(username);
+        userDetails = engenheiroChefeRepositorio.findByLogin(username);
         if (userDetails != null) {
             return userDetails;
         }
