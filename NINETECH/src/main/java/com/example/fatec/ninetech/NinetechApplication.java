@@ -37,7 +37,7 @@ public class NinetechApplication {
 		if (engenheiroExistente == null) {
 	        // Criar e salvar um EngenheiroChefe
 	        EngenheiroChefe engenheiroChefe = new EngenheiroChefe();
-	        engenheiroChefe.setNome("Engenheiro Chefe 1");
+	        engenheiroChefe.setNome("engenheiro1");
 			String senhaEncriptada = new BCryptPasswordEncoder().encode("123");
 			engenheiroChefe.setRole(UsuarioRole.ENGENHEIRO_CHEFE);
 	        engenheiroChefe.setSenha(senhaEncriptada);
@@ -45,13 +45,13 @@ public class NinetechApplication {
 	        
 	        // Criar e salvar dois LiderDeProjeto
 	        LiderDeProjeto liderDeProjeto = new LiderDeProjeto();
-	        liderDeProjeto.setNome("Lider de Projeto 1");
+	        liderDeProjeto.setNome("lider1");
 			liderDeProjeto.setRole(UsuarioRole.LIDER_DE_PROJETO_1);
 	        liderDeProjeto.setSenha(senhaEncriptada);
 	        servicoLiderDeProjeto.criarLiderDeProjeto(liderDeProjeto);
 	        
 	        LiderDeProjeto liderDeProjeto2 = new LiderDeProjeto();
-	        liderDeProjeto2.setNome("Líder de Projeto 2");
+	        liderDeProjeto2.setNome("lider2");
 	        liderDeProjeto2.setSenha(senhaEncriptada);
 	        liderDeProjeto2.setRole(UsuarioRole.LIDER_DE_PROJETO_2);
 	        servicoLiderDeProjeto.criarLiderDeProjeto(liderDeProjeto2);
