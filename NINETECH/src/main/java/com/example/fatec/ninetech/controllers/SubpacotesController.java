@@ -14,8 +14,10 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.example.fatec.ninetech.models.LiderDeProjeto;
 import com.example.fatec.ninetech.models.Pacotes;
+import com.example.fatec.ninetech.models.Projeto;
 import com.example.fatec.ninetech.models.Subpacotes;
 import com.example.fatec.ninetech.repositories.LiderDeProjetoInterface;
+import com.example.fatec.ninetech.repositories.PacotesInterface;
 import com.example.fatec.ninetech.repositories.SubpacotesInterface;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
@@ -28,6 +30,9 @@ public class SubpacotesController {
 
     @Autowired
     private LiderDeProjetoInterface interfaceLiderDeProjeto;
+    
+    @Autowired
+    private PacotesInterface interfacePacotes;
 
     @GetMapping("/{idDoLider}")
 	public ResponseEntity<List<Subpacotes>> listarSubpacotesPorLiderId(@PathVariable Long idDoLider) {
@@ -56,6 +61,24 @@ public class SubpacotesController {
 	    } catch (Exception e) {
 	        return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
 	    }
+	}
+    
+    @GetMapping("/porIdProjeto/{id}")
+	public ResponseEntity<List<Subpacotes>> listarPacotesPorIdProjeto(@PathVariable Long id){
+		
+		Optional<Pacotes> pacotesOptional = interfacePacotes.findById(id);
+		
+		if (pacotesOptional.isPresent()) {
+			Long idPacote = pacotesOptional.get().getId();
+			
+			List<Subpacotes> listaPacotes = interfaceSubpacotes.findByPacotesId(idPacote);
+			
+			return new ResponseEntity<>(listaPacotes, HttpStatus.OK);
+			
+		} else {
+			
+			return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+		}
 	}
 
     // Isolar as variáveis e salvar apenas as que mudaram, se não ele seta para nulo
