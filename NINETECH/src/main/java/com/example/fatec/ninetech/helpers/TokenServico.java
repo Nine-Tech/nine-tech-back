@@ -31,11 +31,13 @@ public class TokenServico {
 	    try {
 	        Algorithm algorithm = Algorithm.HMAC256(secret);
 	        String id = extractUserId(userDetails); // Extrair o ID do usuário, se possível
+            String nome = extractNome(userDetails); // Buscar o login do usuário no banco de dados
 	        String token = JWT.create()
 	                .withIssuer("auth-api")
 	                .withSubject(userDetails.getUsername())
 	                .withClaim("id", id) // Adicione o ID do usuário como uma reclamação personalizada
-	                .withClaim("username", userDetails.getUsername())
+	                .withClaim("login", userDetails.getUsername())
+	                .withClaim("nome", nome)
 	                .withClaim("role", userDetails.getAuthorities().stream()
 	                        .map(GrantedAuthority::getAuthority)
 	                        .collect(Collectors.toList()))
@@ -74,7 +76,8 @@ public class TokenServico {
 
 	        Map<String, Object> userInfo = new HashMap<>();
 	        userInfo.put("id", decodedJWT.getClaim("id").asString());
-	        userInfo.put("nome", decodedJWT.getClaim("username").asString());
+	        userInfo.put("nome", decodedJWT.getClaim("nome").asString());
+	        userInfo.put("login", decodedJWT.getClaim("login").asString());
 	        userInfo.put("roles", decodedJWT.getClaim("role").asList(String.class));
 
 	        return userInfo;
@@ -104,4 +107,16 @@ public class TokenServico {
 	        return null;
 	    }
 	}
+    
+    private String extractNome(UserDetails userDetails) {
+	    if (userDetails instanceof EngenheiroChefe) {
+	        EngenheiroChefe engenheiroChefe = (EngenheiroChefe) userDetails;
+	        return engenheiroChefe.findNomeById(engenheiroChefe.getId());
+	    } else if (userDetails instanceof LiderDeProjeto) {
+	        LiderDeProjeto liderDeProjeto = (LiderDeProjeto) userDetails;
+	        return liderDeProjeto.findNomeById(liderDeProjeto.getId());
+	    } else {
+	        return null;
+	    }
+    }
 }

@@ -60,12 +60,12 @@ public class FiltroSeguranca extends OncePerRequestFilter {
             UserDetails userDetails = null;
             
             // Verifique se o usuário é um Líder de Projeto
-            UserDetails liderDeProjeto = liderDeProjetoInterface.findByNome(subject);
+            UserDetails liderDeProjeto = liderDeProjetoInterface.findByLogin(subject);
             if (liderDeProjeto != null) {
                 userDetails = liderDeProjeto;
             } else {
                 // Se não for um Líder de Projeto, verifique se é um Engenheiro Chefe
-                UserDetails engenheiroChefe = engenheiroChefeInterface.findByNome(subject);
+                UserDetails engenheiroChefe = engenheiroChefeInterface.findByLogin(subject);
                 if (engenheiroChefe != null) {
                     userDetails = engenheiroChefe;
                 }

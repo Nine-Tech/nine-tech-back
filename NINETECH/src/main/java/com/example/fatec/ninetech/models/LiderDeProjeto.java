@@ -41,6 +41,9 @@ public class LiderDeProjeto implements UserDetails {
 
     @Column
     private String nome;
+    
+    @Column
+    private String login;
 
     @Column
     private String senha;
@@ -80,6 +83,14 @@ public class LiderDeProjeto implements UserDetails {
     public void setNome(String nome) {
         this.nome = nome;
     }
+    
+    public String getLogin() {
+        return login;
+    }
+	
+	public void setLogin(String login) {
+		this.login = login;
+	}
 
     public LiderDeProjeto findByNome(String novoNome) {
         // TODO Auto-generated method stub
@@ -100,7 +111,7 @@ public class LiderDeProjeto implements UserDetails {
 
     @Override
     public String getUsername() {
-        return nome;
+        return login;
     }
 
     @Override
@@ -127,4 +138,10 @@ public class LiderDeProjeto implements UserDetails {
     public String getPassword() {
         return senha;
     }
+
+	public String findNomeById(Long id) {
+		// TODO Auto-generated method stub
+		return nome;
+	}
+
 }
