@@ -17,7 +17,5 @@ public interface SubpacotesInterface extends JpaRepository<Subpacotes, Long>{
 	
 	@Query("SELECT SP FROM Subpacotes SP WHERE SP.id = :id")
 	Optional<Subpacotes> findById(@Param("id")Long id);
-
-	List<Subpacotes> findByPacotesId(Long idPacote);
 	
 }

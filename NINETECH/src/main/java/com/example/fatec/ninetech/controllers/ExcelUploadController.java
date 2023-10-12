@@ -49,104 +49,123 @@ public class ExcelUploadController {
 
 	@Autowired
 	private PacotesInterface interfacePacotes;
-	
+
 	@Autowired
 	private SubpacotesInterface interfaceSubpacotes;
-	
+
 	@Autowired
 	private EngenheiroChefeInterface interfaceEngenheiroChefe;
-	
+
 	@Autowired
 	private ProjetoInterface interfaceProjeto;
-	
+
 	@Autowired
 	private LiderDeProjetoInterface interfaceLiderDeProjeto;
-    
-    @PostMapping
-    public ResponseEntity<List<Pacotes>> processarExcel(@RequestParam("file") MultipartFile file) {
-        try (InputStream is = file.getInputStream();
-                XSSFWorkbook workbook = new XSSFWorkbook(is)) {
-            XSSFSheet sheet = workbook.getSheetAt(1);
 
-            Iterator<Row> rowIterator = sheet.iterator();
-            
-            Row linhaDoCabecalho = rowIterator.next();
-            if (!validadorDeCabecalho(linhaDoCabecalho)) {
-                return ResponseEntity.badRequest().build();
-            }
+	@PostMapping
+	public ResponseEntity<List<Pacotes>> processarExcel(@RequestParam("file") MultipartFile file) {
+		try (InputStream is = file.getInputStream();
+				XSSFWorkbook workbook = new XSSFWorkbook(is)) {
+			XSSFSheet sheet = workbook.getSheetAt(1);
 
-            List<Pacotes> wbes = new ArrayList<>();
-            List<Subpacotes> subpacotesLista = new ArrayList<>();
-            Projeto projetoRecemCriado = null;
-            Long idPai = null;
+			Iterator<Row> rowIterator = sheet.iterator();
 
-            while (rowIterator.hasNext()) {
-                Row row = rowIterator.next();
-                Cell colunaDoWBS = row.getCell(1);
-                
-                if (colunaDoWBS != null) {
-                    String wbe = colunaDoWBS.getStringCellValue();
+			Row linhaDoCabecalho = rowIterator.next();
+			if (!validadorDeCabecalho(linhaDoCabecalho)) {
+				return ResponseEntity.badRequest().build();
+			}
 
-                    int espacosIniciais = 0;
+			List<Pacotes> wbes = new ArrayList<>();
+			List<Subpacotes> subpacotesLista = new ArrayList<>();
+			Projeto projetoRecemCriado = null;
+			Long idPai = null;
 
-                    // Contar os espaços no início da string
-                    while (espacosIniciais < wbe.length() && wbe.charAt(espacosIniciais) == ' ') {
-                        espacosIniciais++;
-                    }
+			boolean pacoteProximoTem1 = false;
 
-                    Pacotes dadosWBE = new Pacotes();
-                    dadosWBE.setNome(wbe);
-                    dadosWBE.setProjeto(projetoRecemCriado);
+			while (rowIterator.hasNext()) {
+				Row row = rowIterator.next();
+				Cell colunaDoWBS = row.getCell(1);
 
-                    if (espacosIniciais == 0) {
-                        // Se for 0, salvar no projetoRecemCriado
-                        if (projetoRecemCriado == null) {
-                            EngenheiroChefe idEngenheiroChefe = interfaceEngenheiroChefe.findById(1L).orElse(null);
-                            Projeto dadosProjeto = new Projeto();
-                            dadosProjeto.setNome(wbe);
-                            dadosProjeto.setEngenheiroChefe(idEngenheiroChefe);
+				if (colunaDoWBS != null) {
+					String wbe = colunaDoWBS.getStringCellValue();
+					System.out.println(wbe);
 
-                            LocalDate dataInicioAgora = LocalDate.now();
-                            dadosProjeto.setData_inicio(dataInicioAgora);
+					int espacosIniciais = 0;
 
-                            LocalDate dataFinalSomado11Meses = dataInicioAgora.plusMonths(12);
-                            dadosProjeto.setData_final(dataFinalSomado11Meses);
+					// Contar os espaços no início da string
+					while (espacosIniciais < wbe.length() && wbe.charAt(espacosIniciais) == ' ') {
+						espacosIniciais++;
+					}
 
-                            projetoRecemCriado = interfaceProjeto.save(dadosProjeto);
-                        }
-                    } else if (espacosIniciais == 1) {
-                    	Pacotes dadosPacote = new Pacotes();
-                        // Se for 1, salvar normalmente
-                    	dadosPacote.setNome(wbe);
-                    	dadosPacote.setProjeto(projetoRecemCriado);
-                    	Pacotes pacoteSalvo = interfacePacotes.save(dadosPacote);
-                    	wbes.add(pacoteSalvo);
-                        idPai = pacoteSalvo.getId();
-                    } else if (espacosIniciais == 4) {
-                    	Subpacotes dadosSubpacote = new Subpacotes();
-                        // Se for 4, adicionar filho = true e salvar
-                    	
-                        Optional<Pacotes> EncontrarPacotePai = interfacePacotes.findById(idPai);
-                        
-                        dadosSubpacote.setPacotes(EncontrarPacotePai.get());
-                        dadosSubpacote.setNome(wbe);
-                        
-                        Subpacotes subpacoteSalvo = interfaceSubpacotes.save(dadosSubpacote);
-                        subpacotesLista.add(subpacoteSalvo);
-                    }
+					Pacotes dadosWBE = new Pacotes();
+					dadosWBE.setNome(wbe);
+					dadosWBE.setProjeto(projetoRecemCriado);
 
-                } else {
-                    break;
-                }
-            }
+					if (espacosIniciais == 0) {
+						// Se for 0, salvar no projetoRecemCriado
+						if (projetoRecemCriado == null) {
+							EngenheiroChefe idEngenheiroChefe = interfaceEngenheiroChefe.findById(1L).orElse(null);
+							Projeto dadosProjeto = new Projeto();
+							dadosProjeto.setNome(wbe);
+							dadosProjeto.setEngenheiroChefe(idEngenheiroChefe);
 
-            return ResponseEntity.ok(wbes);
-        } catch (IOException e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-        }
-    }
+							LocalDate dataInicioAgora = LocalDate.now();
+							dadosProjeto.setData_inicio(dataInicioAgora);
 
-	//Retorna todo o Projeto
+							LocalDate dataFinalSomado11Meses = dataInicioAgora.plusMonths(12);
+							dadosProjeto.setData_final(dataFinalSomado11Meses);
+
+							projetoRecemCriado = interfaceProjeto.save(dadosProjeto);
+						}
+					} else if (espacosIniciais == 1) {
+
+						Pacotes dadosPacote = new Pacotes();
+						// Se for 1, salvar normalmente
+						dadosPacote.setNome(wbe);
+						dadosPacote.setProjeto(projetoRecemCriado);
+						Pacotes pacoteSalvo = interfacePacotes.save(dadosPacote);
+						wbes.add(pacoteSalvo);
+						idPai = pacoteSalvo.getId();
+						pacoteProximoTem1 = true;
+
+						if (pacoteProximoTem1) {
+							// Salvar como subpacote
+							Subpacotes dadosSubpacote = new Subpacotes();
+							Optional<Pacotes> EncontrarPacotePai = interfacePacotes.findById(idPai);
+							dadosSubpacote.setPacotes(EncontrarPacotePai.get());
+							dadosSubpacote.setNome(wbe);
+							Subpacotes subpacoteSalvo = interfaceSubpacotes.save(dadosSubpacote);
+							subpacotesLista.add(subpacoteSalvo);
+							pacoteProximoTem1 = false;
+						}
+
+					} else if (espacosIniciais == 4) {
+						// Se for 4, adicionar filho = true e salvar
+
+						Subpacotes dadosSubpacote = new Subpacotes();
+						// Se for 4, adicionar filho = true e salvar
+
+						Optional<Pacotes> EncontrarPacotePai = interfacePacotes.findById(idPai);
+
+						dadosSubpacote.setPacotes(EncontrarPacotePai.get());
+						dadosSubpacote.setNome(wbe);
+
+						Subpacotes subpacoteSalvo = interfaceSubpacotes.save(dadosSubpacote);
+						subpacotesLista.add(subpacoteSalvo);
+					}
+
+				} else {
+					break;
+				}
+			}
+
+			return ResponseEntity.ok(wbes);
+		} catch (IOException e) {
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+		}
+	}
+
+	// Retorna todo o Projeto
 	@GetMapping("/todosfilhos/{id}")
 	public ResponseEntity<List<Object>> listarPacotesESeusSubpacotes(@PathVariable Long id) {
 		Optional<Projeto> projetoOptional = interfaceProjeto.findById(id);
@@ -179,69 +198,67 @@ public class ExcelUploadController {
 		}
 	}
 
-
-    //Retorna Pais e Filhos pelo Get pelo Id do Projeto
+	// Retorna Pais e Filhos pelo Get pelo Id do Projeto
 	@GetMapping("/{id}")
-	@JsonIgnoreProperties({"wbes"})
+	@JsonIgnoreProperties({ "wbes" })
 	public ResponseEntity<List<Pacotes>> listarWBEsPorProjetoId(@PathVariable Long id) {
-	    try {
-	        List<Pacotes> wbes = interfacePacotes.findByProjetoId(id);
-	        if (!wbes.isEmpty()) {
-	            return new ResponseEntity<>(wbes, HttpStatus.OK);
-	        } else {
-	            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-	        }
-	    } catch (Exception e) {
-	        return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
-	    }
+		try {
+			List<Pacotes> wbes = interfacePacotes.findByProjetoId(id);
+			if (!wbes.isEmpty()) {
+				return new ResponseEntity<>(wbes, HttpStatus.OK);
+			} else {
+				return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+			}
+		} catch (Exception e) {
+			return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+		}
 	}
-	
-	//Retorna os Filhos pelo Get pelo Id do Pacote Pai
+
+	// Retorna os Filhos pelo Get pelo Id do Pacote Pai
 	@GetMapping("/pacotes/{id}")
-	@JsonIgnoreProperties({"wbes"})
+	@JsonIgnoreProperties({ "wbes" })
 	public ResponseEntity<List<Pacotes>> listarWBEsPorPacoteId(@PathVariable Long id) {
-	    try {
-	        List<Pacotes> wbes = interfacePacotes.findAll();
-	        if (!wbes.isEmpty()) {
-	            return new ResponseEntity<>(wbes, HttpStatus.OK);
-	        } else {
-	            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-	        }
-	    } catch (Exception e) {
-	        return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
-	    }
+		try {
+			List<Pacotes> wbes = interfacePacotes.findAll();
+			if (!wbes.isEmpty()) {
+				return new ResponseEntity<>(wbes, HttpStatus.OK);
+			} else {
+				return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+			}
+		} catch (Exception e) {
+			return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+		}
 	}
-	
+
 	@GetMapping("/lideres/{idLider}")
-	@JsonIgnoreProperties({"wbes"})
+	@JsonIgnoreProperties({ "wbes" })
 	public ResponseEntity<List<Pacotes>> listarWBEsPorLiderId(@PathVariable Long idLider) {
-	    try {
-	        List<Pacotes> wbes = interfacePacotes.findAll();
-	        if (!wbes.isEmpty()) {
-	            return new ResponseEntity<>(wbes, HttpStatus.OK);
-	        } else {
-	            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-	        }
-	    } catch (Exception e) {
-	        return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
-	    }
+		try {
+			List<Pacotes> wbes = interfacePacotes.findAll();
+			if (!wbes.isEmpty()) {
+				return new ResponseEntity<>(wbes, HttpStatus.OK);
+			} else {
+				return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+			}
+		} catch (Exception e) {
+			return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+		}
 	}
 
 	@DeleteMapping("/{id}")
 	public ResponseEntity<List<Pacotes>> apagarWBS(@PathVariable Long id) {
-	    Optional<Pacotes> encontrarPorIdWBS = interfacePacotes.findById(id);
+		Optional<Pacotes> encontrarPorIdWBS = interfacePacotes.findById(id);
 
-	    if (encontrarPorIdWBS.isEmpty()) {
-	        return ResponseEntity.notFound().build();
-	    }
+		if (encontrarPorIdWBS.isEmpty()) {
+			return ResponseEntity.notFound().build();
+		}
 
-	    interfacePacotes.delete(encontrarPorIdWBS.get());
-	    
-	    List<Pacotes> wbesRestantes = interfacePacotes.findAll();
+		interfacePacotes.delete(encontrarPorIdWBS.get());
 
-	    return ResponseEntity.ok(wbesRestantes);
+		List<Pacotes> wbesRestantes = interfacePacotes.findAll();
+
+		return ResponseEntity.ok(wbesRestantes);
 	}
-
 
 	private boolean validadorDeCabecalho(Row linhaDoCabecalho) {
 		if (linhaDoCabecalho == null) {

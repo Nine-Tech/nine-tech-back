@@ -34,6 +34,19 @@ public class SubpacotesController {
     @Autowired
     private PacotesInterface interfacePacotes;
 
+
+	@GetMapping("/listarUmSubpacote/{idDoSubpacote}")
+	public ResponseEntity<Subpacotes> listarSubpacotes (@PathVariable Long idDoSubpacote) {
+	    Optional<Subpacotes> subpacoteOptional = interfaceSubpacotes.findById(idDoSubpacote);
+
+	    if (subpacoteOptional.isPresent()) {
+	        Subpacotes subpacotes = subpacoteOptional.get();
+	        return new ResponseEntity<>(subpacotes, HttpStatus.OK);
+	    } else {
+	        return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+	    }
+	}
+
     @GetMapping("/{idDoLider}")
 	public ResponseEntity<List<Subpacotes>> listarSubpacotesPorLiderId(@PathVariable Long idDoLider) {
 	    try {
