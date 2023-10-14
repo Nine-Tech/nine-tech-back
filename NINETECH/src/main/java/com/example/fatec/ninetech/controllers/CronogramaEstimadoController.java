@@ -45,7 +45,7 @@ public class CronogramaEstimadoController {
 
 
             Optional<Subpacotes> subpacote_query = this.subpacotesInterface.findById(id_subpacote);
-            Optional<Projeto> projeto_query = this.projetoInterface.findById(request.getId_projeto());
+            Optional<Projeto> projeto_query = this.projetoInterface.findById(request.getId_projeto());      
 
             if (subpacote_query.isPresent() && projeto_query.isPresent()) {
                 Projeto projeto = projeto_query.get();
@@ -89,6 +89,8 @@ public class CronogramaEstimadoController {
           if (cronogramaEstimado.isEmpty()) {
               return ResponseEntity.status(HttpStatus.NOT_FOUND).body(cronogramaEstimado);
           }
+
+          System.out.println(cronogramaEstimado);
 
           return ResponseEntity.status(HttpStatus.FOUND).body(cronogramaEstimado);
       } catch (Exception e) {

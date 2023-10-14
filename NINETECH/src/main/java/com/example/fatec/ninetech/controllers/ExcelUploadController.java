@@ -66,6 +66,7 @@ public class ExcelUploadController {
 	public ResponseEntity<List<Pacotes>> processarExcel(@RequestParam("file") MultipartFile file) {
 		try (InputStream is = file.getInputStream();
 				XSSFWorkbook workbook = new XSSFWorkbook(is)) {
+
 			XSSFSheet sheet = workbook.getSheetAt(1);
 
 			Iterator<Row> rowIterator = sheet.iterator();
@@ -79,18 +80,19 @@ public class ExcelUploadController {
 			List<Subpacotes> subpacotesLista = new ArrayList<>();
 			Projeto projetoRecemCriado = null;
 			Long idPai = null;
-
-			boolean pacoteProximoTem1 = false;
+			boolean pacoteAnteriorTemFilhos = false;
+			int espacosIniciais = 0;
+			String wbe = "";
 
 			while (rowIterator.hasNext()) {
 				Row row = rowIterator.next();
 				Cell colunaDoWBS = row.getCell(1);
 
 				if (colunaDoWBS != null) {
-					String wbe = colunaDoWBS.getStringCellValue();
+					wbe = colunaDoWBS.getStringCellValue();
 					System.out.println(wbe);
 
-					int espacosIniciais = 0;
+					espacosIniciais = 0;
 
 					// Contar os espaços no início da string
 					while (espacosIniciais < wbe.length() && wbe.charAt(espacosIniciais) == ' ') {
@@ -104,6 +106,7 @@ public class ExcelUploadController {
 					if (espacosIniciais == 0) {
 						// Se for 0, salvar no projetoRecemCriado
 						if (projetoRecemCriado == null) {
+
 							EngenheiroChefe idEngenheiroChefe = interfaceEngenheiroChefe.findById(1L).orElse(null);
 							Projeto dadosProjeto = new Projeto();
 							dadosProjeto.setNome(wbe);
@@ -117,45 +120,63 @@ public class ExcelUploadController {
 
 							projetoRecemCriado = interfaceProjeto.save(dadosProjeto);
 						}
-					} else if (espacosIniciais == 1) {
 
-						Pacotes dadosPacote = new Pacotes();
-						// Se for 1, salvar normalmente
-						dadosPacote.setNome(wbe);
-						dadosPacote.setProjeto(projetoRecemCriado);
-						Pacotes pacoteSalvo = interfacePacotes.save(dadosPacote);
-						wbes.add(pacoteSalvo);
-						idPai = pacoteSalvo.getId();
-						pacoteProximoTem1 = true;
-
-						if (pacoteProximoTem1) {
-							// Salvar como subpacote
+						if (espacosIniciais == 1 && !pacoteAnteriorTemFilhos) {
 							Subpacotes dadosSubpacote = new Subpacotes();
 							Optional<Pacotes> EncontrarPacotePai = interfacePacotes.findById(idPai);
 							dadosSubpacote.setPacotes(EncontrarPacotePai.get());
 							dadosSubpacote.setNome(wbe);
 							Subpacotes subpacoteSalvo = interfaceSubpacotes.save(dadosSubpacote);
 							subpacotesLista.add(subpacoteSalvo);
-							pacoteProximoTem1 = false;
 						}
 
-					} else if (espacosIniciais == 4) {
-						// Se for 4, adicionar filho = true e salvar
+						pacoteAnteriorTemFilhos = false; // Redefina para o próximo pacote.
 
+					} else if (espacosIniciais == 1) {
+
+						Pacotes dadosPacote = new Pacotes();
+						dadosPacote.setNome(wbe);
+						dadosPacote.setProjeto(projetoRecemCriado);
+						Pacotes pacoteSalvo = interfacePacotes.save(dadosPacote);
+						wbes.add(pacoteSalvo);
+						idPai = pacoteSalvo.getId();
+
+						if (pacoteAnteriorTemFilhos) {
+							Subpacotes dadosSubpacote = new Subpacotes();
+							Optional<Pacotes> EncontrarPacotePai = interfacePacotes.findById(idPai);
+							dadosSubpacote.setPacotes(EncontrarPacotePai.get());
+							dadosSubpacote.setNome(wbe);
+							Subpacotes subpacoteSalvo = interfaceSubpacotes.save(dadosSubpacote);
+							subpacotesLista.add(subpacoteSalvo);
+						}
+
+						pacoteAnteriorTemFilhos = false; // Indica que o pacote atual não tem filhos.
+
+					} else {
+
+						// Se for 4, adicionar filho = true e salvar
 						Subpacotes dadosSubpacote = new Subpacotes();
-						// Se for 4, adicionar filho = true e salvar
-
 						Optional<Pacotes> EncontrarPacotePai = interfacePacotes.findById(idPai);
-
 						dadosSubpacote.setPacotes(EncontrarPacotePai.get());
 						dadosSubpacote.setNome(wbe);
+						Subpacotes subpacoteSalvo = interfaceSubpacotes.save(dadosSubpacote);
+						subpacotesLista.add(subpacoteSalvo);
 
+						// Se não tiver filhos, setar pacoteAnteriorTemFilhos para false
+						pacoteAnteriorTemFilhos = true;
+
+					}
+				} else {
+
+					if (espacosIniciais == 1 && !pacoteAnteriorTemFilhos) {
+						Subpacotes dadosSubpacote = new Subpacotes();
+						Optional<Pacotes> EncontrarPacotePai = interfacePacotes.findById(idPai);
+						dadosSubpacote.setPacotes(EncontrarPacotePai.get());
+						dadosSubpacote.setNome(wbe);
 						Subpacotes subpacoteSalvo = interfaceSubpacotes.save(dadosSubpacote);
 						subpacotesLista.add(subpacoteSalvo);
 					}
 
-				} else {
-					break;
 				}
 			}
 
