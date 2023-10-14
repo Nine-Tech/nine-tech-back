@@ -79,6 +79,24 @@ public class CronogramaEstimadoController {
         }
     }
 
+    
+    @GetMapping("/pacote/{id_pacote}")
+    public ResponseEntity<?> getCronogramaPorPagote(
+            @PathVariable("id_pacote") Long id_pacote
+    ) {
+      try {
+          List<CronogramaEstimado> cronogramaEstimado = this.cronogramaEstimadoInterface.findByProjetoId(id_pacote);
+
+          if (cronogramaEstimado.isEmpty()) {
+              return ResponseEntity.status(HttpStatus.OK).body(cronogramaEstimado);
+          }
+
+          return ResponseEntity.status(HttpStatus.OK).body(cronogramaEstimado);
+      } catch (Exception e) {
+          return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Erro: " + e);
+      }
+    };
+    
     @GetMapping("/{id_subpacote}")
     public ResponseEntity<?> getCronograma(
             @PathVariable("id_subpacote") Long id_subpacote
@@ -87,12 +105,12 @@ public class CronogramaEstimadoController {
           Optional<CronogramaEstimado> cronogramaEstimado = this.cronogramaEstimadoInterface.findBySubpacoteId(id_subpacote);
 
           if (cronogramaEstimado.isEmpty()) {
-              return ResponseEntity.status(HttpStatus.NOT_FOUND).body(cronogramaEstimado);
+              return ResponseEntity.status(HttpStatus.OK).body(cronogramaEstimado);
           }
 
           System.out.println(cronogramaEstimado);
 
-          return ResponseEntity.status(HttpStatus.FOUND).body(cronogramaEstimado);
+          return ResponseEntity.status(HttpStatus.OK).body(cronogramaEstimado);
       } catch (Exception e) {
           return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Erro: " + e);
       }
