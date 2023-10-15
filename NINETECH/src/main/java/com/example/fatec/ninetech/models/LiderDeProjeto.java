@@ -1,39 +1,147 @@
 package com.example.fatec.ninetech.models;
 
+import java.util.Collection;
+import java.util.List;
+
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
+
+import com.example.fatec.ninetech.config.UsuarioRole;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import lombok.AllArgsConstructor;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 @Entity
+@Getter
+@NoArgsConstructor
+@AllArgsConstructor
+@EqualsAndHashCode(of = "id")
 @Table(name = "lider_de_projeto")
-public class LiderDeProjeto {
+
+public class LiderDeProjeto implements UserDetails {
+    /**
+	 * 
+	 */
+	private static final long serialVersionUID = 7356186984914687774L;
+
 	@Id
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	private Long lider_de_projeto_id;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
-	public Long getLider_de_projeto_id() {
-		return lider_de_projeto_id;
-	}
-	public void setLider_de_projeto_id(Long lider_de_projeto_id) {
-		this.lider_de_projeto_id = lider_de_projeto_id;
-	}
+    @Column
+    private String nome;
+    
+    @Column
+    private String login;
 
-	@Column
-	private String nome;
+    @Column
+    private String senha;
 
-	public String getNome() {
-		return nome;
-	}
-	public void setNome(String nome) {
-		this.nome = nome;
-	}
+    @Enumerated(EnumType.STRING) // Especifique o tipo de enumeração para uso com strings
+    @Column
+    private UsuarioRole role;
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public UsuarioRole getRole() {
+        return role;
+    }
+
+    public void setRole(UsuarioRole role) {
+        this.role = role;
+    }
+
+    public String getSenha() {
+        return senha;
+    }
+
+    public void setSenha(String senha) {
+        this.senha = senha;
+    }
+
+    public String getNome() {
+        return nome;
+    }
+
+    public void setNome(String nome) {
+        this.nome = nome;
+    }
+    
+    public String getLogin() {
+        return login;
+    }
 	
-	public LiderDeProjeto findByNome(String novoNome) {
+	public void setLogin(String login) {
+		this.login = login;
+	}
+
+    public LiderDeProjeto findByNome(String novoNome) {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    @Override
+    public Collection<? extends GrantedAuthority> getAuthorities() {
+        // Use os valores do enum em letras maiúsculas
+        if (this.role == UsuarioRole.ENGENHEIRO_CHEFE) {
+            return List.of(new SimpleGrantedAuthority("ROLE_ENGENHEIRO_CHEFE"), new SimpleGrantedAuthority("ROLE_LIDER_DE_PROJETO_1"), new SimpleGrantedAuthority("ROLE_LIDER_DE_PROJETO_2"));
+        } else if (this.role == UsuarioRole.LIDER_DE_PROJETO_1) {
+            return List.of(new SimpleGrantedAuthority("ROLE_LIDER_DE_PROJETO_1"));
+        } else {
+            return List.of(new SimpleGrantedAuthority("ROLE_LIDER_DE_PROJETO_2"));
+        }
+    }
+
+    @Override
+    public String getUsername() {
+        return login;
+    }
+
+    @Override
+    public boolean isAccountNonExpired() {
+        return true;
+    }
+
+    @Override
+    public boolean isAccountNonLocked() {
+        return true;
+    }
+
+    @Override
+    public boolean isCredentialsNonExpired() {
+        return true;
+    }
+
+    @Override
+    public boolean isEnabled() {
+        return true;
+    }
+
+    @Override
+    public String getPassword() {
+        return senha;
+    }
+
+	public String findNomeById(Long id) {
 		// TODO Auto-generated method stub
-		return null;
+		return nome;
 	}
 
 }

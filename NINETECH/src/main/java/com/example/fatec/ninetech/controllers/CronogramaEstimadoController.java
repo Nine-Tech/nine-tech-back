@@ -1,113 +1,183 @@
 package com.example.fatec.ninetech.controllers;
-
-import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-
+import com.example.fatec.ninetech.helpers.CronogramaEstimadoPostRequest;
+import com.example.fatec.ninetech.helpers.CronogramaEstimadoRequest;
+import com.example.fatec.ninetech.models.Projeto;
+import com.example.fatec.ninetech.models.Subpacotes;
+import com.example.fatec.ninetech.repositories.SubpacotesInterface;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.server.ResponseStatusException;
 
 import com.example.fatec.ninetech.models.CronogramaEstimado;
-import com.example.fatec.ninetech.models.Projeto;
-import com.example.fatec.ninetech.models.WBE;
 import com.example.fatec.ninetech.repositories.CronogramaEstimadoInterface;
 import com.example.fatec.ninetech.repositories.ProjetoInterface;
-import com.example.fatec.ninetech.repositories.WBSInterface;
+import com.example.fatec.ninetech.repositories.PacotesInterface;
 
-import jakarta.transaction.Transactional;
+import java.util.List;
+import java.util.Optional;
+
 @RestController
 @RequestMapping("/cronograma")
 public class CronogramaEstimadoController {
-	
+
     @Autowired
     private CronogramaEstimadoInterface cronogramaEstimadoInterface;
 
     @Autowired
+    private SubpacotesInterface subpacotesInterface;
+
+    @Autowired
     private ProjetoInterface projetoInterface;
+
+    @Autowired
+    private PacotesInterface wbeInterface;
+
+    @PostMapping("/{id_subpacote}")
+    public ResponseEntity<String> criarCronogramaEstimado(
+            @PathVariable("id_subpacote") Long id_subpacote,
+            @RequestBody CronogramaEstimadoRequest request) {
+        try {
+            if (cronogramaEstimadoInterface.existsBySubpacoteId(id_subpacote)) {
+                return ResponseEntity.badRequest().body("Cronograma with the same id_subpacote already exists.");
+            }
+
+
+            Optional<Subpacotes> subpacote_query = this.subpacotesInterface.findById(id_subpacote);
+            Optional<Projeto> projeto_query = this.projetoInterface.findById(request.getId_projeto());      
+
+            if (subpacote_query.isPresent() && projeto_query.isPresent()) {
+                Projeto projeto = projeto_query.get();
+                Subpacotes subpacote = subpacote_query.get();
+
+                CronogramaEstimado novoCronogramaEstimado  = new CronogramaEstimado(
+                        request.getMes1(),
+                        request.getMes2(),
+                        request.getMes3(),
+                        request.getMes4(),
+                        request.getMes5(),
+                        request.getMes6(),
+                        request.getMes7(),
+                        request.getMes8(),
+                        request.getMes9(),
+                        request.getMes10(),
+                        request.getMes11(),
+                        request.getMes12(),
+                        projeto,
+                        subpacote,
+                        request.getPorcentagens()
+                );
+
+                this.cronogramaEstimadoInterface.save(novoCronogramaEstimado);
+                return ResponseEntity.ok("Cronograma criado com sucesso!");
+            }
+
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Projeto ou subpacote não existente");
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().body("Um erro ocorreu: " + e);
+        }
+    }
+
     
-	@Autowired
-	private WBSInterface wbeInterface;
+    @GetMapping("/pacote/{id_pacote}")
+    public ResponseEntity<?> getCronogramaPorPagote(
+            @PathVariable("id_pacote") Long id_pacote
+    ) {
+      try {
+          List<CronogramaEstimado> cronogramaEstimado = this.cronogramaEstimadoInterface.findByProjetoId(id_pacote);
 
-	  @PostMapping("/criar")
-	    public ResponseEntity<String> criarCronogramaEstimado(@Validated @RequestBody CronogramaEstimado request) {
-	        // Validações iniciais
-	        if (request == null || request.getProjeto() == null) {
-	            return ResponseEntity.badRequest().body("CronogramaEstimado não está associado a nenhum projeto.");
-	        }
+          if (cronogramaEstimado.isEmpty()) {
+              return ResponseEntity.status(HttpStatus.OK).body(cronogramaEstimado);
+          }
 
-	        Projeto projeto = request.getProjeto();
-	        Long projetoId = projeto.getId();
+          return ResponseEntity.status(HttpStatus.OK).body(cronogramaEstimado);
+      } catch (Exception e) {
+          return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Erro: " + e);
+      }
+    };
+    
+    @GetMapping("/{id_subpacote}")
+    public ResponseEntity<?> getCronograma(
+            @PathVariable("id_subpacote") Long id_subpacote
+    ) {
+      try {
+          Optional<CronogramaEstimado> cronogramaEstimado = this.cronogramaEstimadoInterface.findBySubpacoteId(id_subpacote);
 
-	        Optional<Projeto> projetoOptional = projetoInterface.findById(projetoId);
+          if (cronogramaEstimado.isEmpty()) {
+              return ResponseEntity.status(HttpStatus.OK).body(cronogramaEstimado);
+          }
 
-	        Projeto projetoExistente = projetoOptional.orElse(null);
+          System.out.println(cronogramaEstimado);
 
-	        if (projetoExistente == null) {
-	            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Projeto não encontrado.");
-	        }
+          return ResponseEntity.status(HttpStatus.OK).body(cronogramaEstimado);
+      } catch (Exception e) {
+          return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Erro: " + e);
+      }
+    };
 
-	        List<List<Integer>> porcentagens = request.getPorcentagens();
 
-	        // Validação: Verificar se a quantidade de porcentagens corresponde à duração do projeto
-	        int meses = calcularQuantidadeMeses(projetoExistente.getData_inicio(), projetoExistente.getData_final());
+    @PutMapping("/{id_subpacote}")
+    public ResponseEntity<?> editCronograma(
+            @PathVariable("id_subpacote") Long id_subpacote,
+            @Validated @RequestBody CronogramaEstimadoPostRequest request
+    ) {
+        try {
+            if (this.cronogramaEstimadoInterface.existsByIdAndSubpacoteId(request.getId(), id_subpacote)) {
+                Optional<Subpacotes> query_subpacote = this.subpacotesInterface.findById(id_subpacote);
+                Optional<Projeto> query_projeto = this.projetoInterface.findById(request.getId_projeto());
 
-	        for (List<Integer> porcentagensDoWBE : porcentagens) {
-	            if (porcentagensDoWBE.size() != meses) {
-	                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-	                        .body("A quantidade de porcentagens não corresponde à duração do projeto.");
-	            }
-	        }
+                if (query_subpacote.isPresent() && query_projeto.isPresent()) {
+                    Subpacotes subpacote = query_subpacote.get();
+                    Projeto projeto = query_projeto.get();
 
-	        // Validação: Verificar se a quantidade de listas corresponde à quantidade de WBE IDs encontrados
-	        List<WBE> wbesDoProjeto = wbeInterface.findByProjetoId(projetoId);
+                    CronogramaEstimado updateCronogramaEstimado = new CronogramaEstimado(
+                            request.getId(),
+                            request.getMes1(),
+                            request.getMes2(),
+                            request.getMes3(),
+                            request.getMes4(),
+                            request.getMes5(),
+                            request.getMes6(),
+                            request.getMes7(),
+                            request.getMes8(),
+                            request.getMes9(),
+                            request.getMes10(),
+                            request.getMes11(),
+                            request.getMes12(),
+                            projeto,
+                            subpacote,
+                            request.getPorcentagens()
+                    );
 
-	        if (wbesDoProjeto.isEmpty() || wbesDoProjeto.size() != porcentagens.size()) {
-	            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-	                    .body("A quantidade de listas de porcentagens não corresponde à quantidade de WBE IDs encontrados.");
-	        }
+                    CronogramaEstimado cronogramaEstimadoAlterado = this.cronogramaEstimadoInterface.save(updateCronogramaEstimado);
 
-	        // Validação: Verificar se as porcentagens estão ordenadas
-	        for (List<Integer> porcentagensDoWBE : porcentagens) {
-	            if (!isPorcentagensOrdenadas(porcentagensDoWBE)) {
-	                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-	                        .body("As porcentagens devem estar em ordem crescente.");
-	            }
-	        }
+                    return ResponseEntity.status(HttpStatus.OK).body(cronogramaEstimadoAlterado);
+                }
+            }
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Subpacote não encontrado");
+        } catch(Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Erro no servidor: " + e);
+        }
+    }
 
-	        for (WBE wbe : wbesDoProjeto) {
-	            int wbeIndex = wbesDoProjeto.indexOf(wbe);
+    @DeleteMapping("/{id_subpacote}")
+    public ResponseEntity<?> deleteCronograma(
+            @PathVariable("id_subpacote") Long id_subpacote
+    ) {
+        try {
+            if (this.cronogramaEstimadoInterface.existsBySubpacoteId(id_subpacote)) {
+                this.cronogramaEstimadoInterface.deleteBySubpacoteId(id_subpacote);
+                return ResponseEntity.status(HttpStatus.OK).body("Cronograma removido");
+            }
 
-	            List<Integer> porcentagensDoWBE = porcentagens.get(wbeIndex);
-
-	            if (porcentagensDoWBE.size() != meses) {
-	                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-	                        .body("A quantidade de porcentagens para o WBE " + wbe.getId() + " não corresponde à duração do projeto.");
-	            }
-
-	            for (int i = 0; i < meses; i++) {
-	                CronogramaEstimado novoCronograma = new CronogramaEstimado();
-	                novoCronograma.setProjeto(projeto);
-	                novoCronograma.getWBE().add(wbe);
-	                novoCronograma.setMes(i + 1);
-	                novoCronograma.setWbeId(wbe.getId());
-	                novoCronograma.setPorcentagem(porcentagensDoWBE.get(i));
-
-	                cronogramaEstimadoInterface.save(novoCronograma);
-	            }
-	        }
-
-	        return ResponseEntity.ok("Cronograma criado com sucesso!");
-	    }
-
-    private boolean isPorcentagensOrdenadas(List<Integer> porcentagens) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Cronograma não existente");
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Erro: " + e);
+        }
+    }
+    
+    private boolean isOrdenada(List<Integer> porcentagens) {
         for (int i = 1; i < porcentagens.size(); i++) {
             if (porcentagens.get(i) < porcentagens.get(i - 1)) {
                 return false;
@@ -115,144 +185,4 @@ public class CronogramaEstimadoController {
         }
         return true;
     }
-
-	private int calcularQuantidadeMeses(LocalDate dataInicio, LocalDate dataFim) {
-	    int anos = dataFim.getYear() - dataInicio.getYear();
-	    int meses = dataFim.getMonthValue() - dataInicio.getMonthValue();
-	    int dias = dataFim.getDayOfMonth() - dataInicio.getDayOfMonth();
-
-	    // Se houver dias restantes no último mês, conte-o como um mês completo
-	    if (dias > 0) {
-	        meses++;
-	    }
-
-	    // Some os meses de anos completos
-	    int totalMeses = (anos * 12) + meses;
-	    return totalMeses;
-	}
-	
-	@GetMapping("/cronograma-por-wbe/{projetoId}")
-	public Map<Long, Map<String, Object>> getCronogramaPorWBE(@PathVariable Long projetoId) {
-	    // Consulta ao banco de dados para recuperar os registros com base no projetoId
-	    List<CronogramaEstimado> cronogramas = cronogramaEstimadoInterface.findByProjetoId(projetoId);
-
-	    // Processamento para agrupar as porcentagens por wbe_id e obter o nome do wbe
-	    Map<Long, Map<String, Object>> cronogramaPorWBE = new HashMap<>();
-	    for (CronogramaEstimado cronograma : cronogramas) {
-	        Long wbeId = cronograma.getWbeId();
-	        Integer porcentagem = cronograma.getPorcentagem();
-
-	        // Verifique se o wbeId já existe no mapa
-	        if (!cronogramaPorWBE.containsKey(wbeId)) {
-	            Map<String, Object> wbeInfo = new HashMap<>();
-	            cronogramaPorWBE.put(wbeId, wbeInfo);
-
-	            // Consulta ao banco de dados para obter o nome do wbe
-	            WBE wbe = wbeInterface.findById(wbeId).orElse(null);
-	            if (wbe != null) {
-	                wbeInfo.put("nome", wbe.getWbe());
-	                wbeInfo.put("porcentagens", new ArrayList<>()); // Inicialize a lista de porcentagens
-	            }
-	        }
-
-	        // Adicione a porcentagem à lista correspondente ao wbe_id
-	        Map<String, Object> wbeInfo = cronogramaPorWBE.get(wbeId);
-	        if (wbeInfo != null) {
-	            List<Integer> porcentagens = (List<Integer>) wbeInfo.get("porcentagens");
-	            porcentagens.add(porcentagem);
-	        }
-	    }
-
-	    return cronogramaPorWBE;
-	}
-	
-    @Transactional
-    @DeleteMapping("/deletar/{projetoId}")
-    public ResponseEntity<String> deletarCronogramasByProjetoId(@PathVariable Long projetoId) {
-        Optional<Projeto> projetoOptional = projetoInterface.findById(projetoId);
-
-        if (!projetoOptional.isPresent()) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Projeto não encontrado.");
-        }
-        
-        Projeto projetoExistente = projetoOptional.get();
-
-        // Deletar todos os cronogramas associados ao projeto
-        cronogramaEstimadoInterface.deleteByProjeto(projetoExistente);
-
-        return ResponseEntity.ok("Cronogramas do projeto foram deletados com sucesso.");
-    }
-
-    @PutMapping("/atualizar")
-    public ResponseEntity<String> atualizarCronogramaEstimado(@Validated @RequestBody CronogramaEstimado request) {
-        // Validações iniciais
-        if (request == null || request.getProjeto() == null) {
-            return ResponseEntity.badRequest().body("CronogramaEstimado não está associado a nenhum projeto.");
-        }
-
-        Projeto projeto = request.getProjeto();
-        Long projetoId = projeto.getId();
-
-        Optional<Projeto> projetoOptional = projetoInterface.findById(projetoId);
-
-        Projeto projetoExistente = projetoOptional.orElse(null);
-
-        if (projetoExistente == null) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Projeto não encontrado.");
-        }
-
-        List<List<Integer>> porcentagens = request.getPorcentagens();
-
-        // Validação: Verificar se a quantidade de porcentagens corresponde à duração do projeto
-        int meses = calcularQuantidadeMeses(projetoExistente.getData_inicio(), projetoExistente.getData_final());
-
-        for (List<Integer> porcentagensDoWBE : porcentagens) {
-            if (porcentagensDoWBE.size() != meses) {
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                        .body("A quantidade de porcentagens não corresponde à duração do projeto.");
-            }
-        }
-
-        // Validação: Verificar se a quantidade de listas corresponde à quantidade de WBE IDs encontrados
-        List<WBE> wbesDoProjeto = wbeInterface.findByProjetoId(projetoId);
-
-        if (wbesDoProjeto.isEmpty() || wbesDoProjeto.size() != porcentagens.size()) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body("A quantidade de listas de porcentagens não corresponde à quantidade de WBE IDs encontrados.");
-        }
-
-        // Validação: Verificar se as porcentagens estão ordenadas
-        for (List<Integer> porcentagensDoWBE : porcentagens) {
-            if (!isPorcentagensOrdenadas(porcentagensDoWBE)) {
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                        .body("As porcentagens devem estar em ordem crescente.");
-            }
-        }
-        
-        // Atualizando as porcentagens do WBE
-        for (WBE wbe : wbesDoProjeto) {
-            int wbeIndex = wbesDoProjeto.indexOf(wbe);
-
-            List<Integer> porcentagensDoWBE = porcentagens.get(wbeIndex);
-
-            if (porcentagensDoWBE.size() != meses) {
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                        .body("A quantidade de porcentagens para o WBE " + wbe.getId() + " não corresponde à duração do projeto.");
-            }
-
-            for (int i = 0; i < meses; i++) {
-                CronogramaEstimado novoCronograma = new CronogramaEstimado();
-                novoCronograma.setProjeto(projeto);
-                novoCronograma.getWBE().add(wbe);
-                novoCronograma.setMes(i + 1);
-                novoCronograma.setWbeId(wbe.getId());
-                novoCronograma.setPorcentagem(porcentagensDoWBE.get(i));
-
-                cronogramaEstimadoInterface.save(novoCronograma);
-            }
-        }
-
-        return ResponseEntity.ok("Cronograma atualizado com sucesso!");
-    }
-
 }

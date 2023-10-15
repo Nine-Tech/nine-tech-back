@@ -10,6 +10,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+import javax.management.relation.RelationNotFoundException;
+
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
@@ -29,178 +31,254 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.example.fatec.ninetech.models.EngenheiroChefe;
+import com.example.fatec.ninetech.models.LiderDeProjeto;
 import com.example.fatec.ninetech.models.Projeto;
-import com.example.fatec.ninetech.models.WBE;
+import com.example.fatec.ninetech.models.Subpacotes;
+
+import com.example.fatec.ninetech.models.Pacotes;
 import com.example.fatec.ninetech.repositories.EngenheiroChefeInterface;
 import com.example.fatec.ninetech.repositories.LiderDeProjetoInterface;
 import com.example.fatec.ninetech.repositories.ProjetoInterface;
-import com.example.fatec.ninetech.repositories.WBSInterface;
+import com.example.fatec.ninetech.repositories.SubpacotesInterface;
+import com.example.fatec.ninetech.repositories.PacotesInterface;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 @RestController
 @RequestMapping("/upload")
 public class ExcelUploadController {
 
 	@Autowired
-	private WBSInterface interfaceWBS;
-	
+	private PacotesInterface interfacePacotes;
+
+	@Autowired
+	private SubpacotesInterface interfaceSubpacotes;
+
 	@Autowired
 	private EngenheiroChefeInterface interfaceEngenheiroChefe;
-	
+
 	@Autowired
 	private ProjetoInterface interfaceProjeto;
-	
+
 	@Autowired
 	private LiderDeProjetoInterface interfaceLiderDeProjeto;
-	
-    private String dadosWBSRecemCriados;
-    
 
-    @PostMapping("/criarWBS")
-    public ResponseEntity<String> processarExcel(@RequestParam("file") MultipartFile file) {
-        try (InputStream is = file.getInputStream();
-                XSSFWorkbook workbook = new XSSFWorkbook(is)) {
-            XSSFSheet sheet = workbook.getSheetAt(1);
+	@PostMapping
+	public ResponseEntity<List<Pacotes>> processarExcel(@RequestParam("file") MultipartFile file) {
+		try (InputStream is = file.getInputStream();
+				XSSFWorkbook workbook = new XSSFWorkbook(is)) {
 
-            Iterator<Row> rowIterator = sheet.iterator();
-            
-            Row linhaDoCabecalho = rowIterator.next();
-            if (!validadorDeCabecalho(linhaDoCabecalho)) {
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Arquivo sem o padrão necessário");
-            }
+			XSSFSheet sheet = workbook.getSheetAt(1);
 
-            List<Map<String, Object>> dadosProjetoEListaWBS = new ArrayList<>();
-            Projeto projetoRecemCriado = null;
+			Iterator<Row> rowIterator = sheet.iterator();
 
-            while (rowIterator.hasNext()) {
-                Row row = rowIterator.next();
-                Cell colunaDoWBS = row.getCell(1);
-                Cell colunaDoValor = row.getCell(4);
-                Cell colunaDoHH = row.getCell(6);
+			Row linhaDoCabecalho = rowIterator.next();
+			if (!validadorDeCabecalho(linhaDoCabecalho)) {
+				return ResponseEntity.badRequest().build();
+			}
 
-                if (colunaDoWBS != null && colunaDoValor != null && colunaDoHH != null) {
-                    String wbe = colunaDoWBS.getStringCellValue();
-                    double valor = colunaDoValor.getNumericCellValue();
-                    double hh = colunaDoHH.getNumericCellValue();
+			List<Pacotes> wbes = new ArrayList<>();
+			List<Subpacotes> subpacotesLista = new ArrayList<>();
+			Projeto projetoRecemCriado = null;
+			Long idPai = null;
+			boolean pacoteAnteriorTemFilhos = false;
+			int espacosIniciais = 0;
+			String wbe = "";
 
-                    if (projetoRecemCriado == null) {
-                        EngenheiroChefe idEngenheiroChefe = interfaceEngenheiroChefe.findById(1L).orElse(null);
-                        Projeto dadosProjeto = new Projeto();
-                        dadosProjeto.setNome(wbe);
-                        dadosProjeto.setEngenheiroChefe(idEngenheiroChefe);
+			while (rowIterator.hasNext()) {
+				Row row = rowIterator.next();
+				Cell colunaDoWBS = row.getCell(1);
 
-                        LocalDate dataInicioAgora = LocalDate.now();
-                        dadosProjeto.setData_inicio(dataInicioAgora);
+				if (colunaDoWBS != null) {
+					wbe = colunaDoWBS.getStringCellValue();
+					System.out.println(wbe);
 
-                        LocalDate dataFinalSomado11Meses = dataInicioAgora.plusMonths(12);
-                        dadosProjeto.setData_final(dataFinalSomado11Meses);
+					espacosIniciais = 0;
 
-                        projetoRecemCriado = interfaceProjeto.save(dadosProjeto);
-                    } else {
-                        WBE dadosWBE = new WBE();
-                        dadosWBE.setHh(hh);
-                        dadosWBE.setValor(valor);
-                        dadosWBE.setWbe(wbe);
-                        dadosWBE.setProjeto(projetoRecemCriado);
+					// Contar os espaços no início da string
+					while (espacosIniciais < wbe.length() && wbe.charAt(espacosIniciais) == ' ') {
+						espacosIniciais++;
+					}
 
-                        interfaceWBS.save(dadosWBE);
+					Pacotes dadosWBE = new Pacotes();
+					dadosWBE.setNome(wbe);
+					dadosWBE.setProjeto(projetoRecemCriado);
 
-                        Map<String, Object> dadosWBSMap = new HashMap<>();
-                        dadosWBSMap.put("projeto", projetoRecemCriado);
-                        dadosWBSMap.put("wbe", dadosWBE);
+					if (espacosIniciais == 0) {
+						// Se for 0, salvar no projetoRecemCriado
+						if (projetoRecemCriado == null) {
 
-                        dadosProjetoEListaWBS.add(dadosWBSMap);
-                    }
-                } else {
-                    break;
-                }
-            }
+							EngenheiroChefe idEngenheiroChefe = interfaceEngenheiroChefe.findById(1L).orElse(null);
+							Projeto dadosProjeto = new Projeto();
+							dadosProjeto.setNome(wbe);
+							dadosProjeto.setEngenheiroChefe(idEngenheiroChefe);
 
-            ObjectMapper mapeadorDeObjeto = new ObjectMapper();
-            String dadosWBSJSON = mapeadorDeObjeto.writeValueAsString(dadosProjetoEListaWBS);
+							LocalDate dataInicioAgora = LocalDate.now();
+							dadosProjeto.setData_inicio(dataInicioAgora);
 
-            return ResponseEntity.ok(dadosWBSJSON);
-        } catch (IOException e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Erro ao processar o arquivo.");
-        }
-    }
+							LocalDate dataFinalSomado11Meses = dataInicioAgora.plusMonths(12);
+							dadosProjeto.setData_final(dataFinalSomado11Meses);
 
+							projetoRecemCriado = interfaceProjeto.save(dadosProjeto);
+						}
 
-	@GetMapping("/listarWBS/{id}")
-	@JsonIgnoreProperties({"wbes"})
-	public ResponseEntity<List<WBE>> listarWBEsPorProjetoId(@PathVariable Long id) {
-	    try {
-	        List<WBE> wbes = interfaceWBS.findByProjetoId(id);
-	        if (!wbes.isEmpty()) {
-	            return new ResponseEntity<>(wbes, HttpStatus.OK);
-	        } else {
-	            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-	        }
-	    } catch (Exception e) {
-	        return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
-	    }
-	}
-	
-//	@GetMapping("/listarWBSLider/{idLider}")
-//	@JsonIgnoreProperties({"wbes"})
-//	public ResponseEntity<List<WBE>> listarWBEsPorLiderId(@PathVariable Long idLider) {
-//	    try {
-//	        List<WBE> wbes = interfaceWBS.findByLiderDeProjeto_Id(idLider);
-//	        if (!wbes.isEmpty()) {
-//	            return new ResponseEntity<>(wbes, HttpStatus.OK);
-//	        } else {
-//	            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-//	        }
-//	    } catch (Exception e) {
-//	        return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
-//	    }
-//	}
-	
-	// Isolar as variáveis e salvar apenas as que mudaram, se não ele seta para nulo
-	@PutMapping("/atualizarWBS/{id}")
-	public ResponseEntity<String> atualizarWBS(@PathVariable Long id, @RequestBody WBE atualizadoWBS) {
-		// Trecho repetitivo, criar Helper?
-		Optional<WBE> encontrarPorIdWBS = interfaceWBS.findById(id);
+						if (espacosIniciais == 1 && !pacoteAnteriorTemFilhos) {
+							Subpacotes dadosSubpacote = new Subpacotes();
+							Optional<Pacotes> EncontrarPacotePai = interfacePacotes.findById(idPai);
+							dadosSubpacote.setPacotes(EncontrarPacotePai.get());
+							dadosSubpacote.setNome(wbe);
+							Subpacotes subpacoteSalvo = interfaceSubpacotes.save(dadosSubpacote);
+							subpacotesLista.add(subpacoteSalvo);
+						}
 
-		if (encontrarPorIdWBS.isEmpty()) {
-			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Tabela não encontrada.");
+						pacoteAnteriorTemFilhos = false; // Redefina para o próximo pacote.
+
+					} else if (espacosIniciais == 1) {
+
+						Pacotes dadosPacote = new Pacotes();
+						dadosPacote.setNome(wbe);
+						dadosPacote.setProjeto(projetoRecemCriado);
+						Pacotes pacoteSalvo = interfacePacotes.save(dadosPacote);
+						wbes.add(pacoteSalvo);
+						idPai = pacoteSalvo.getId();
+
+						if (pacoteAnteriorTemFilhos) {
+							Subpacotes dadosSubpacote = new Subpacotes();
+							Optional<Pacotes> EncontrarPacotePai = interfacePacotes.findById(idPai);
+							dadosSubpacote.setPacotes(EncontrarPacotePai.get());
+							dadosSubpacote.setNome(wbe);
+							Subpacotes subpacoteSalvo = interfaceSubpacotes.save(dadosSubpacote);
+							subpacotesLista.add(subpacoteSalvo);
+						}
+
+						pacoteAnteriorTemFilhos = false; // Indica que o pacote atual não tem filhos.
+
+					} else {
+
+						// Se for 4, adicionar filho = true e salvar
+						Subpacotes dadosSubpacote = new Subpacotes();
+						Optional<Pacotes> EncontrarPacotePai = interfacePacotes.findById(idPai);
+						dadosSubpacote.setPacotes(EncontrarPacotePai.get());
+						dadosSubpacote.setNome(wbe);
+						Subpacotes subpacoteSalvo = interfaceSubpacotes.save(dadosSubpacote);
+						subpacotesLista.add(subpacoteSalvo);
+
+						// Se não tiver filhos, setar pacoteAnteriorTemFilhos para false
+						pacoteAnteriorTemFilhos = true;
+
+					}
+				} else {
+
+					if (espacosIniciais == 1 && !pacoteAnteriorTemFilhos) {
+						Subpacotes dadosSubpacote = new Subpacotes();
+						Optional<Pacotes> EncontrarPacotePai = interfacePacotes.findById(idPai);
+						dadosSubpacote.setPacotes(EncontrarPacotePai.get());
+						dadosSubpacote.setNome(wbe);
+						Subpacotes subpacoteSalvo = interfaceSubpacotes.save(dadosSubpacote);
+						subpacotesLista.add(subpacoteSalvo);
+					}
+
+				}
+			}
+
+			return ResponseEntity.ok(wbes);
+		} catch (IOException e) {
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
 		}
-		// Fim do trecho repetitivo
-
-		WBE atualizandoWBS = encontrarPorIdWBS.get();
-
-		if (atualizadoWBS.getWbe() != null) {
-			atualizandoWBS.setWbe(atualizadoWBS.getWbe());
-		}
-		if (atualizadoWBS.getValor() != null) {
-			atualizandoWBS.setValor(atualizadoWBS.getValor());
-		}
-		if (atualizadoWBS.getHh() != null) {
-			atualizandoWBS.setHh(atualizadoWBS.getHh());
-		}
-		if (atualizandoWBS.getProjeto() != null){
-			atualizandoWBS.setProjeto(atualizadoWBS.getProjeto());
-		}
-
-		interfaceWBS.save(atualizandoWBS);
-
-		return ResponseEntity.ok("WBS atualizado com sucesso.");
 	}
 
-	@DeleteMapping("/apagarWBS/{id}")
-	public ResponseEntity<String> apagarWBS(@PathVariable Long id) {
-		// Trecho repetitivo, criar Helper?
-		Optional<WBE> encontrarPorIdWBS = interfaceWBS.findById(id);
+	// Retorna todo o Projeto
+	@GetMapping("/todosfilhos/{id}")
+	public ResponseEntity<List<Object>> listarPacotesESeusSubpacotes(@PathVariable Long id) {
+		Optional<Projeto> projetoOptional = interfaceProjeto.findById(id);
+
+		if (projetoOptional.isPresent()) {
+			Projeto projeto = projetoOptional.get();
+			Long projetoId = projeto.getId();
+
+			List<Object> pacotesESeusSubpacotes = new ArrayList<>();
+
+			List<Pacotes> pacotes = interfacePacotes.findByProjetoId(projetoId);
+
+			for (Pacotes pacote : pacotes) {
+				List<Subpacotes> subpacotes = interfaceSubpacotes.findByPacotesId(pacote.getId());
+
+				Map<String, Object> pacoteMap = new HashMap<>();
+				pacoteMap.put("nome", pacote.getNome());
+				pacoteMap.put("porcentagem", pacote.getPorcentagem());
+				pacoteMap.put("valor_total", pacote.getValor_total());
+				pacotesESeusSubpacotes.add(pacoteMap);
+
+				for (Subpacotes subpacote : subpacotes) {
+					pacotesESeusSubpacotes.add(subpacote);
+				}
+			}
+
+			return new ResponseEntity<>(pacotesESeusSubpacotes, HttpStatus.OK);
+		} else {
+			return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+		}
+	}
+
+	// Retorna Pais e Filhos pelo Get pelo Id do Projeto
+	@GetMapping("/{id}")
+	@JsonIgnoreProperties({ "wbes" })
+	public ResponseEntity<List<Pacotes>> listarWBEsPorProjetoId(@PathVariable Long id) {
+		try {
+			List<Pacotes> wbes = interfacePacotes.findByProjetoId(id);
+			if (!wbes.isEmpty()) {
+				return new ResponseEntity<>(wbes, HttpStatus.OK);
+			} else {
+				return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+			}
+		} catch (Exception e) {
+			return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+	}
+
+	// Retorna os Filhos pelo Get pelo Id do Pacote Pai
+	@GetMapping("/pacotes/{id}")
+	@JsonIgnoreProperties({ "wbes" })
+	public ResponseEntity<List<Pacotes>> listarWBEsPorPacoteId(@PathVariable Long id) {
+		try {
+			List<Pacotes> wbes = interfacePacotes.findAll();
+			if (!wbes.isEmpty()) {
+				return new ResponseEntity<>(wbes, HttpStatus.OK);
+			} else {
+				return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+			}
+		} catch (Exception e) {
+			return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+	}
+
+	@GetMapping("/lideres/{idLider}")
+	@JsonIgnoreProperties({ "wbes" })
+	public ResponseEntity<List<Pacotes>> listarWBEsPorLiderId(@PathVariable Long idLider) {
+		try {
+			List<Pacotes> wbes = interfacePacotes.findAll();
+			if (!wbes.isEmpty()) {
+				return new ResponseEntity<>(wbes, HttpStatus.OK);
+			} else {
+				return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+			}
+		} catch (Exception e) {
+			return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+	}
+
+	@DeleteMapping("/{id}")
+	public ResponseEntity<List<Pacotes>> apagarWBS(@PathVariable Long id) {
+		Optional<Pacotes> encontrarPorIdWBS = interfacePacotes.findById(id);
 
 		if (encontrarPorIdWBS.isEmpty()) {
-			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Id não encontrado.");
+			return ResponseEntity.notFound().build();
 		}
-		// Fim do trecho repetitivo
 
-		interfaceWBS.delete(encontrarPorIdWBS.get());
+		interfacePacotes.delete(encontrarPorIdWBS.get());
 
-		return ResponseEntity.ok("WBS excluído com sucesso.");
+		List<Pacotes> wbesRestantes = interfacePacotes.findAll();
+
+		return ResponseEntity.ok(wbesRestantes);
 	}
 
 	private boolean validadorDeCabecalho(Row linhaDoCabecalho) {
