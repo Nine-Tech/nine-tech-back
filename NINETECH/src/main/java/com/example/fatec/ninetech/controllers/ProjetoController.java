@@ -155,7 +155,9 @@ public class ProjetoController {
                                         Double total = (hh * valor_homem_hora) + material;
                                         tarefa.setValor(total);
 
-                                        valor_total_subpacote += total;
+                                        if (tarefa.getExecucao() == true){
+                                            valor_total_subpacote += total;
+                                        }
                                         // Persistindo mudanças na tarefa
                                         this.tarefasInterface.save(tarefa);
                                     }
