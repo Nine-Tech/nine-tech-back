@@ -25,6 +25,9 @@ public class Pacotes {
 	private double porcentagem;
 	
 	@Column
+	private double porcentagem_planejada;
+	
+	@Column
 	private double valor_total;
 
 	public double getPorcentagem() {
@@ -33,6 +36,14 @@ public class Pacotes {
 
 	public void setPorcentagem(double porcentagem) {
 		this.porcentagem = porcentagem;
+	}
+	
+	public double getPorcentagem_planejada() {
+		return porcentagem_planejada;
+	}
+	
+	public void setPorcentagem_planejada(double porcentagem_planejada) {
+		this.porcentagem_planejada = porcentagem_planejada;
 	}
 
 	public double getValor_total() {

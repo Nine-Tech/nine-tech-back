@@ -37,6 +37,9 @@ public class Projeto {
 	@Column
 	private double porcentagem;
 	
+	@Column
+	private double porcentagem_planejada;
+	
 	public double getPorcentagem() {
 		return porcentagem;
 	}
@@ -45,6 +48,14 @@ public class Projeto {
 		this.porcentagem = porcentagem;
 	}
 
+	public double getPorcentagem_planejada() {
+		return porcentagem_planejada;
+	}
+	
+	public void setPorcentagem_planejada(double porcentagem_planejada) {
+		this.porcentagem_planejada = porcentagem_planejada;
+	}
+	
 	public double getValor_total() {
 		return valor_total;
 	}

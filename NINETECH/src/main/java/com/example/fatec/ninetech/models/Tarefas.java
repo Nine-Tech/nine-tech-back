@@ -42,6 +42,9 @@ public class Tarefas {
 
 	@Column
 	private double porcentagem;
+	
+	@Column
+	private double porcentagem_planejada;
 
 	@ManyToOne
 	@JoinColumn(name = "subpacotes_id")
@@ -129,6 +132,14 @@ public class Tarefas {
 
 	public void setPorcentagem(double porcentagem) {
 		this.porcentagem = porcentagem;
+	}
+	
+	public double getPorcentagem_planejada() {
+		return porcentagem_planejada;
+	}
+	
+	public void setPorcentagem_planejada(double porcentagem_planejada) {
+		this.porcentagem_planejada = porcentagem_planejada;
 	}
 
 	public Subpacotes getSubpacotes() {
