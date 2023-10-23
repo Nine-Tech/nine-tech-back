@@ -385,7 +385,7 @@ public class TarefasController {
 				Long projetoId = projeto.getId();
 				/////////////// ---------------------------------------------
 				
-				
+				interfaceTarefas.deleteById(id);
 
 				// Buscar todas as tarefas relacionadas ao subpacote
 				List<Tarefas> tarefasRelacionadas = interfaceTarefas.findBySubpacotes_Id(subpacoteId);
@@ -398,7 +398,7 @@ public class TarefasController {
 
 				// ----------------------------------------------------------------------------------------------------------
 
-				interfaceTarefas.deleteById(id);
+				
 				
 				// Calcular a soma dos valores e pesos das tarefas relacionadas ao
 				// Subpacote///////////////////////
