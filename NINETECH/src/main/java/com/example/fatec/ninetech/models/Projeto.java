@@ -3,62 +3,41 @@ package com.example.fatec.ninetech.models;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
-
 import com.fasterxml.jackson.annotation.JsonGetter;
+import jakarta.persistence.*;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.Table;
-
-/**
- * 
- */
 @Entity
 @Table(name = "projeto")
 public class Projeto {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long projeto_id;
-	
+
 	@Column
 	private String nome;
-	
+
 	@Column
 	private LocalDate data_inicio;
-	
+
 	@Column
 	private LocalDate data_final;
-	
+
 	@Column
 	private double porcentagem;
-	
-	public double getPorcentagem() {
-		return porcentagem;
-	}
-
-	public void setPorcentagem(double porcentagem) {
-		this.porcentagem = porcentagem;
-	}
-
-	public double getValor_total() {
-		return valor_total;
-	}
-
-	public void setValor_total(double valor_total) {
-		this.valor_total = valor_total;
-	}
 
 	@Column
 	private double valor_total;
-	
+
+	@Column
+	private double valor_homem_hora = 6; // Salário Mínimo Brasileiro
+
 	@ManyToOne
 	@JoinColumn(name = "engenheiro_chefe_id")
 	private EngenheiroChefe engenheiroChefe;
+
+	public double getValor_homem_hora(){return this.valor_homem_hora;}
+
+	public void setValor_homem_hora(double valor_homem_hora){this.valor_homem_hora = valor_homem_hora;}
 
 	public Long getId() {
 		return projeto_id;
@@ -84,40 +63,26 @@ public class Projeto {
 		this.engenheiroChefe = engenheiroChefe;
 	}
 
-    public LocalDate getData_inicio() {
-        return data_inicio;
-    }
+	public double getPorcentagem() {
+		return porcentagem;
+	}
 
-    @Override
-    public String toString() {
-        StringBuilder stringBuilder = new StringBuilder();
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-        
-        if (data_inicio != null) {
-            stringBuilder.append("data_inicio: ").append(data_inicio.format(formatter)).append("\n");
-        } else {
-            stringBuilder.append("data_inicio: ").append("null").append("\n"); // Or handle the case where data_inicio is null
-        }
-        
-        if (data_final != null) {
-            stringBuilder.append("data_final: ").append(data_final.format(formatter)).append("\n");
-        } else {
-            stringBuilder.append("data_final: ").append("null").append("\n"); // Or handle the case where data_final is null
-        }
+	public void setPorcentagem(double porcentagem) {
+		this.porcentagem = porcentagem;
+	}
 
-        return stringBuilder.toString();
-    }
+	public double getValor_total() {
+		return valor_total;
+	}
 
-    @JsonGetter("data_inicio")
-    public String getDataInicioAsString() {
-        return getData_inicio().toString();
-    }
+	public void setValor_total(double valor_total) {
+		this.valor_total = valor_total;
+	}
 
-    @JsonGetter("data_final")
-    public String getDataFinalAsString() {
-        return getData_final().toString();
-    }
-    
+	public LocalDate getData_inicio() {
+		return data_inicio;
+	}
+
 	public void setData_inicio(LocalDate data_inicio) {
 		this.data_inicio = data_inicio;
 	}
@@ -130,7 +95,28 @@ public class Projeto {
 		this.data_final = data_final;
 	}
 
-	public void setPacotes(List<Pacotes> pacotes) {
+	@Override
+	public String toString() {
+		StringBuilder stringBuilder = new StringBuilder();
+		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+
+		stringBuilder.append("data_inicio: ").append(data_inicio != null ? data_inicio.format(formatter) : "null").append("\n");
+		stringBuilder.append("data_final: ").append(data_final != null ? data_final.format(formatter) : "null").append("\n");
+
+		return stringBuilder.toString();
 	}
-	
+
+	@JsonGetter("data_inicio")
+	public String getDataInicioAsString() {
+		return getData_inicio() != null ? getData_inicio().toString() : null;
+	}
+
+	@JsonGetter("data_final")
+	public String getDataFinalAsString() {
+		return getData_final() != null ? getData_final().toString() : null;
+	}
+
+	public void setPacotes(List<Pacotes> pacotes) {
+		// Implementation for setting pacotes
+	}
 }

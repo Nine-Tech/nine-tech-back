@@ -105,7 +105,7 @@ public class CronogramaEstimadoController {
           Optional<CronogramaEstimado> cronogramaEstimado = this.cronogramaEstimadoInterface.findBySubpacoteId(id_subpacote);
 
           if (cronogramaEstimado.isEmpty()) {
-              return ResponseEntity.status(HttpStatus.OK).body(cronogramaEstimado);
+              return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(cronogramaEstimado);
           }
 
           System.out.println(cronogramaEstimado);
