@@ -20,5 +20,6 @@ public interface PacotesInterface extends JpaRepository<Pacotes, Long>{
 	List<Pacotes> findByProjetoId(Projeto projeto);
 
 	List<Pacotes> findAllById(Long idProjeto);
-	
+
+	Optional<List<Pacotes>> findAllByProjetoId(Long id);
 }
