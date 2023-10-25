@@ -99,7 +99,7 @@ public class ProjetoController {
             Optional<Projeto> projeto = this.projetoInterface.findById(id);
             if (projeto.isPresent()) {
                 // Se existe um projeto como ID passado na variável de caminho
-                return ResponseEntity.status(HttpStatus.FOUND).body(projeto.get().getValor_homem_hora());
+                return ResponseEntity.status(HttpStatus.OK).body(projeto.get().getValor_homem_hora());
             }
 
             // Senão não encontrado
@@ -155,7 +155,9 @@ public class ProjetoController {
                                         Double total = (hh * valor_homem_hora) + material;
                                         tarefa.setValor(total);
 
-                                        valor_total_subpacote += total;
+                                        if (tarefa.getExecucao() == true){
+                                            valor_total_subpacote += total;
+                                        }
                                         // Persistindo mudanças na tarefa
                                         this.tarefasInterface.save(tarefa);
                                     }
