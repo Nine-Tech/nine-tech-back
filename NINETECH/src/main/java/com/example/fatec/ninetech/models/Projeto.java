@@ -24,6 +24,33 @@ public class Projeto {
 
 	@Column
 	private double porcentagem;
+	
+	@Column
+	private Double porcentagem_planejada;
+	
+	public double getPorcentagem() {
+		return porcentagem;
+	}
+
+	public void setPorcentagem(double porcentagem) {
+		this.porcentagem = porcentagem;
+	}
+
+	public Double getPorcentagem_planejada() {
+		return porcentagem_planejada;
+	}
+	
+	public void setPorcentagem_planejada(Double porcentagem_planejada) {
+		this.porcentagem_planejada = porcentagem_planejada;
+	}
+	
+	public double getValor_total() {
+		return valor_total;
+	}
+
+	public void setValor_total(double valor_total) {
+		this.valor_total = valor_total;
+	}
 
 	@Column
 	private double valor_total;
@@ -61,22 +88,6 @@ public class Projeto {
 
 	public void setEngenheiroChefe(EngenheiroChefe engenheiroChefe) {
 		this.engenheiroChefe = engenheiroChefe;
-	}
-
-	public double getPorcentagem() {
-		return porcentagem;
-	}
-
-	public void setPorcentagem(double porcentagem) {
-		this.porcentagem = porcentagem;
-	}
-
-	public double getValor_total() {
-		return valor_total;
-	}
-
-	public void setValor_total(double valor_total) {
-		this.valor_total = valor_total;
 	}
 
 	public LocalDate getData_inicio() {

@@ -29,6 +29,9 @@ public class Subpacotes {
 	private double porcentagem;
 	
 	@Column
+	private Double porcentagem_planejada;
+	
+	@Column
 	private double valor_total;
 	
 	public Long getId() {
@@ -61,6 +64,14 @@ public class Subpacotes {
 
 	public void setPorcentagem(double porcentagem) {
 		this.porcentagem = porcentagem;
+	}
+	
+	public Double getPorcentagem_planejada() {
+		return porcentagem_planejada;
+	}
+	
+	public void setPorcentagem_planejada(Double porcentagem_planejada) {
+		this.porcentagem_planejada = porcentagem_planejada;
 	}
 
 	public double getValor_total() {
