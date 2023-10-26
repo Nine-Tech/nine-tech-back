@@ -33,6 +33,7 @@ public interface CronogramaEstimadoInterface extends JpaRepository<CronogramaEst
     @Transactional
     @Query("DELETE FROM CronogramaEstimado ce WHERE ce.subpacote.id = :subpacoteId")
     void deleteBySubpacoteId(@Param("subpacoteId") Long subpacoteId);
+	List<CronogramaEstimado> findByProjetoIdAndMes(Long idProjeto, int i);
 
 
     // boolean existsByProjetoAndWbeId(Projeto projeto, Long wbeId);
