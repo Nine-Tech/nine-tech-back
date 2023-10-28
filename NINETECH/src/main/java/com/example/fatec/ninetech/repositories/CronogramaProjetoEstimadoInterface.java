@@ -11,5 +11,7 @@ public interface CronogramaProjetoEstimadoInterface extends JpaRepository<Cronog
 	CronogramaProjetoEstimado findByProjetoId(Long id);
 
 	CronogramaProjetoEstimado findByProjetoIdAndMes(Long idProjeto, int mes);
+
+	CronogramaProjetoEstimado findByMesAndProjetoId(int mes, Long idProjeto);
     
 }

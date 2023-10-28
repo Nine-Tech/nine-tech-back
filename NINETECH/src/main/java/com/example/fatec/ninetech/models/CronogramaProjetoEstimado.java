@@ -53,4 +53,9 @@ public class CronogramaProjetoEstimado {
     public void setProjeto(Projeto projeto) {
         this.projeto = projeto;
     }
+
+	public void setProjeto(Long idProjeto) {
+		// TODO Auto-generated method stub
+		
+	}
 }

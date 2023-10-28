@@ -23,6 +23,7 @@ import com.example.fatec.ninetech.repositories.*;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -117,39 +118,46 @@ public class CronogramaEstimadoController {
     private void calcularPorcentagemMediaPorMes(Long idProjeto) {
         // Consulte os subpacotes do projeto que correspondem ao projeto_id
         List<CronogramaEstimado> subpacotesDoProjeto = this.cronogramaEstimadoInterface.findByProjetoId(idProjeto);
-        System.out.println(subpacotesDoProjeto);
 
         // Use o Java Stream API para agrupar os registros por mês
         Map<Integer, List<CronogramaEstimado>> porMes = subpacotesDoProjeto.stream()
                 .collect(Collectors.groupingBy(CronogramaEstimado::getMes));
 
-     // Calcula a média da porcentagem para cada mês
         for (Map.Entry<Integer, List<CronogramaEstimado>> entry : porMes.entrySet()) {
             int mes = entry.getKey();
             List<CronogramaEstimado> cronogramasDoMes = entry.getValue();
 
-            // Calcula a média da porcentagem para o mês atual
-            double mediaPorcentagem = cronogramasDoMes.stream()
-                    .collect(Collectors.averagingInt(CronogramaEstimado::getPorcentagem));
+            // Soma as porcentagens para o mês atual em todos os subpacotes
+            int somaPorcentagens = cronogramasDoMes.stream()
+                    .mapToInt(CronogramaEstimado::getPorcentagem)
+                    .sum();
 
-            // Crie um novo objeto CronogramaProjetoEstimado com os valores apropriados
-            CronogramaProjetoEstimado cronogramaProjetoMedia = new CronogramaProjetoEstimado();
-            cronogramaProjetoMedia.setMes(mes);
-            cronogramaProjetoMedia.setPorcentagem((double) mediaPorcentagem);
+            // Calcula o total de subpacotes para o mês atual
+            int totalSubpacotes = cronogramasDoMes.size();
 
-            // Obtenha o objeto projeto a partir do ID do projeto
-            Projeto projeto = this.projetoInterface.findById(idProjeto).orElse(null);
-            if (projeto != null) {
-                cronogramaProjetoMedia.setProjeto(projeto);
+            // Verifique se já existe um registro para o mês atual e projeto_id
+            CronogramaProjetoEstimado registroExistente = this.CronogramaProjetoEstimadoInterface.findByMesAndProjetoId(mes, idProjeto);
 
-                this.CronogramaProjetoEstimadoInterface.save(cronogramaProjetoMedia);
-                System.out.println(cronogramaProjetoMedia);
+            if (registroExistente != null) {
+                // Se já existe, atualize o valor da porcentagem
+                registroExistente.setPorcentagem((double) somaPorcentagens / totalSubpacotes);
             } else {
-                System.out.println("Projeto não encontrado para o ID: " + idProjeto);
+                // Se não existe, crie um novo registro
+                Projeto projeto = this.projetoInterface.findById(idProjeto).orElse(null);
+                if (projeto != null) {
+                    CronogramaProjetoEstimado cronogramaProjetoMedia = new CronogramaProjetoEstimado(mes, (double) somaPorcentagens / totalSubpacotes, projeto);
+                    this.CronogramaProjetoEstimadoInterface.save(cronogramaProjetoMedia);
+                }
             }
         }
-
     }
+
+
+
+
+
+
+
 
 
     @GetMapping("/pacote/{id_pacote}")
