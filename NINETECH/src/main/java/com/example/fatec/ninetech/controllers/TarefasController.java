@@ -36,10 +36,6 @@ public class TarefasController {
 	@PostMapping
 	public ResponseEntity<Object> cadastrar(@RequestBody Tarefas tarefas) {
 		try {
-			// Calcular o valor com base na fórmula
-			double valorCalculado = (tarefas.getHh() * 100) + tarefas.getMaterial();
-			tarefas.setValor(valorCalculado);
-
 			// Calcular a porcentagem com base na fórmula
 			double execucaoNumerica = tarefas.getExecucao() ? 1 : 0; // 1 se for true, 0 se for false
 			double porcentagemCalculada = ((execucaoNumerica * tarefas.getPeso()) / tarefas.getPeso()) * 100;
@@ -74,6 +70,12 @@ public class TarefasController {
 
 			Long projetoId = projeto.getId();
 			/////////////// ---------------------------------------------
+
+			Double valor_homem_hora = this.interfaceProjeto.findById(projetoId).get().getValor_homem_hora();
+
+			// Calcular o valor com base na fórmula
+			double valorCalculado = (tarefas.getHh() * valor_homem_hora) + tarefas.getMaterial();
+			tarefas.setValor(valorCalculado);
 
 			// salvando nova tarefa
 			Tarefas novaTarefa = interfaceTarefas.save(tarefas);
@@ -111,7 +113,7 @@ public class TarefasController {
 
 			// Calcular valor_total e porcentagem no Subpacote
 			double valorTotalCalculado = somaValores;
-			double porcentagemSubpacote = (somaPesos / somaPesosTotal) * 100.0;
+			double porcentagemSubpacote = (somaPesos / somaPesosTotal) * valor_homem_hora;
 
 			// Atualizar o Subpacote com os novos valores
 			Optional<Subpacotes> subpacoteOptional = interfaceSubpacotes.findById(subpacoteId);
@@ -138,7 +140,7 @@ public class TarefasController {
 
 			// Calcular valor_total e porcentagem no Pacote
 			double valorTotalCalculadoPacote = somaValoresPacote;
-			double porcentagemSubpacotePacote = (somaPesosPacote / somaPesosTotalPacote) * 100.0;
+			double porcentagemSubpacotePacote = (somaPesosPacote / somaPesosTotalPacote) * valor_homem_hora;
 
 			// Atualizar o Pacote com os novos valores
 			Optional<Pacotes> pacoteOptional = interfacePacotes.findById(pacoteId);
@@ -165,7 +167,7 @@ public class TarefasController {
 
 			// Calcular valor_total e porcentagem no Pacote
 			double valorTotalCalculadoProjeto = somaValoresProjeto;
-			double porcentagemSubpacoteProjeto = (somaPesosProjeto / somaPesosTotalProjeto) * 100.0;
+			double porcentagemSubpacoteProjeto = (somaPesosProjeto / somaPesosTotalProjeto) * valor_homem_hora;
 
 			// Atualizar o Pacote com os novos valores
 			Optional<Projeto> projetoOptional = interfaceProjeto.findById(projetoId);
@@ -200,10 +202,6 @@ public class TarefasController {
 				tarefa.setMaterial(tarefaAtualizada.getMaterial());
 				tarefa.setNome(tarefaAtualizada.getNome());
 				tarefa.setPeso(tarefaAtualizada.getPeso());
-
-				// Calcular o valor com base na fórmula
-				double valorCalculado = (tarefaAtualizada.getHh() * 100) + tarefaAtualizada.getMaterial();
-				tarefa.setValor(valorCalculado);
 
 				// Calcular a porcentagem com base na fórmula
 				double execucaoNumerica = tarefaAtualizada.getExecucao() ? 1 : 0; // 1 se for true, 0 se for false
@@ -242,6 +240,12 @@ public class TarefasController {
 
 				Long projetoId = projeto.getId();
 				/////////////// ---------------------------------------------
+
+				Double valor_homem_hora = this.interfaceProjeto.findById(projetoId).get().getValor_homem_hora();
+
+				// Calcular o valor com base na fórmula
+				double valorCalculado = (tarefaAtualizada.getHh() * valor_homem_hora) + tarefaAtualizada.getMaterial();
+				tarefa.setValor(valorCalculado);
 
 				// Obter as tarefas relacionadas ao Subpacote indicado
 				List<Tarefas> tarefasRelacionadas = interfaceTarefas.findBySubpacotes_Id(subpacoteId);
@@ -384,7 +388,7 @@ public class TarefasController {
 
 				Long projetoId = projeto.getId();
 				/////////////// ---------------------------------------------
-				
+
 				interfaceTarefas.deleteById(id);
 
 				// Buscar todas as tarefas relacionadas ao subpacote
