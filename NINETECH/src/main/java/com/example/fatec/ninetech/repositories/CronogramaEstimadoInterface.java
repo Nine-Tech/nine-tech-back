@@ -10,6 +10,8 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 import com.example.fatec.ninetech.models.CronogramaEstimado;
 import com.example.fatec.ninetech.models.Projeto;
+import com.example.fatec.ninetech.models.Subpacotes;
+
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
@@ -34,6 +36,10 @@ public interface CronogramaEstimadoInterface extends JpaRepository<CronogramaEst
     @Query("DELETE FROM CronogramaEstimado ce WHERE ce.subpacote.id = :subpacoteId")
     void deleteBySubpacoteId(@Param("subpacoteId") Long subpacoteId);
 	List<CronogramaEstimado> findByProjetoIdAndMes(Long idProjeto, int i);
+	CronogramaEstimado findByProjetoIdAndSubpacoteIdAndMes(Long id, Long id2, int mes);
+	List<CronogramaEstimado> findBySubpacoteAndProjeto(Subpacotes subpacote, Projeto projeto);
+	void deleteByMesAndSubpacoteAndProjeto(Integer mesExistente, Subpacotes subpacote, Projeto projeto);
+	List<CronogramaEstimado> findByProjetoIdAndSubpacoteId(Long id, Long id2);
 
 
     // boolean existsByProjetoAndWbeId(Projeto projeto, Long wbeId);

@@ -41,10 +41,10 @@ import java.util.stream.Collectors;
 @RestController
 @RequestMapping("/cronograma")
 public class CronogramaEstimadoController {
-	
+
 	@PersistenceContext
-    private EntityManager em; // Injeta o EntityManager
-	
+	private EntityManager em; // Injeta o EntityManager
+
 	@Autowired
 	private CronogramaEstimadoInterface cronogramaEstimadoInterface;
 
@@ -59,7 +59,7 @@ public class CronogramaEstimadoController {
 
 	@Autowired
 	private CronogramaProjetoEstimadoInterface CronogramaProjetoEstimadoInterface;
-	
+
 	@Transactional
 	@PostMapping("/{id_subpacote}")
 	public ResponseEntity<String> criarCronogramaEstimado(@PathVariable("id_subpacote") Long id_subpacote,
@@ -128,79 +128,77 @@ public class CronogramaEstimadoController {
 	// porcentagens para cada mês:
 	@Transactional
 	private void calcularPorcentagemMediaPorMes(Long idProjeto) {
-	    // Consulte os subpacotes do projeto que correspondem ao projeto_id
-	    List<CronogramaEstimado> subpacotesDoProjeto3 = this.cronogramaEstimadoInterface.findByProjetoId(idProjeto);
+		// Consulte os subpacotes do projeto que correspondem ao projeto_id
+		List<CronogramaEstimado> subpacotesDoProjeto3 = this.cronogramaEstimadoInterface.findByProjetoId(idProjeto);
 
-	    // Use o Java Stream API para agrupar os registros por mês
-	    Map<Integer, List<CronogramaEstimado>> porMes = subpacotesDoProjeto3.stream()
-	            .collect(Collectors.groupingBy(CronogramaEstimado::getMes));
+		// Use o Java Stream API para agrupar os registros por mês
+		Map<Integer, List<CronogramaEstimado>> porMes = subpacotesDoProjeto3.stream()
+				.collect(Collectors.groupingBy(CronogramaEstimado::getMes));
 
-	    for (Map.Entry<Integer, List<CronogramaEstimado>> entry : porMes.entrySet()) {
-	        int mes = entry.getKey();
-	        System.out.println("mes");
-	        System.out.println(mes);
-	        List<CronogramaEstimado> cronogramasDoMes = entry.getValue();
+		for (Map.Entry<Integer, List<CronogramaEstimado>> entry : porMes.entrySet()) {
+			int mes = entry.getKey();
+			System.out.println("mes");
+			System.out.println(mes);
+			List<CronogramaEstimado> cronogramasDoMes = entry.getValue();
 
-	        // Soma as porcentagens para o mês atual em todos os subpacotes
-	        int somaPorcentagens = cronogramasDoMes.stream().mapToInt(CronogramaEstimado::getPorcentagem).sum();
-	        System.out.println("soma porcentagens");
-	        System.out.println(somaPorcentagens);
+			// Soma as porcentagens para o mês atual em todos os subpacotes
+			int somaPorcentagens = cronogramasDoMes.stream().mapToInt(CronogramaEstimado::getPorcentagem).sum();
+			System.out.println("soma porcentagens");
+			System.out.println(somaPorcentagens);
 
-	     // Consulte os subpacotes do projeto que correspondem ao projeto_id
-	        List<CronogramaEstimado> subpacotesDoProjeto = this.cronogramaEstimadoInterface.findByProjetoId(idProjeto);
+			// Consulte os subpacotes do projeto que correspondem ao projeto_id
+			List<CronogramaEstimado> subpacotesDoProjeto = this.cronogramaEstimadoInterface.findByProjetoId(idProjeto);
 
-	        // Use um conjunto (Set) para armazenar os id_subpacotes diferentes
-	        Set<Long> idSubpacotesDiferentes = subpacotesDoProjeto.stream()
-	                .map(cronogramaEstimado -> cronogramaEstimado.getSubpacote().getId())
-	                .collect(Collectors.toSet());
+			// Use um conjunto (Set) para armazenar os id_subpacotes diferentes
+			Set<Long> idSubpacotesDiferentes = subpacotesDoProjeto.stream()
+					.map(cronogramaEstimado -> cronogramaEstimado.getSubpacote().getId()).collect(Collectors.toSet());
 
-	        // Agora você tem um conjunto de id_subpacotes diferentes
-	        int quantidadeIdSubpacotesDiferentes = idSubpacotesDiferentes.size();
+			// Agora você tem um conjunto de id_subpacotes diferentes
+			int quantidadeIdSubpacotesDiferentes = idSubpacotesDiferentes.size();
 
-	        System.out.println("Quantidade de id_subpacotes diferentes relacionados ao projeto_id: " + quantidadeIdSubpacotesDiferentes);
+			System.out.println("Quantidade de id_subpacotes diferentes relacionados ao projeto_id: "
+					+ quantidadeIdSubpacotesDiferentes);
 
+			// Calcula a porcentagem média para o mês atual
+			double porcentagemMedia = (double) somaPorcentagens / quantidadeIdSubpacotesDiferentes;
+			System.out.println("conta da porcentagem media");
+			System.out.println(porcentagemMedia);
 
-	        // Calcula a porcentagem média para o mês atual
-	        double porcentagemMedia = (double) somaPorcentagens / quantidadeIdSubpacotesDiferentes;
-	        System.out.println("conta da porcentagem media");
-	        System.out.println(porcentagemMedia);
+			// Verifique se já existe um registro para o mês atual e projeto_id
+			CronogramaProjetoEstimado registroExistente = this.CronogramaProjetoEstimadoInterface
+					.findByMesAndProjetoId(mes, idProjeto);
+			System.out.println(" resgistro existente");
+			System.out.println(registroExistente);
 
-	        // Verifique se já existe um registro para o mês atual e projeto_id
-	        CronogramaProjetoEstimado registroExistente = this.CronogramaProjetoEstimadoInterface
-	                .findByMesAndProjetoId(mes, idProjeto);
-	        System.out.println(" resgistro existente");
-	        System.out.println(registroExistente);
+			if (registroExistente != null) {
+				System.out.println("Conta if");
+				System.out.println(porcentagemMedia);
 
-	        if (registroExistente != null) {
-	            System.out.println("Conta if");
-	            System.out.println(porcentagemMedia);
+				// Se já existe, atualize o valor da porcentagem
+				if (!em.contains(registroExistente)) {
+					registroExistente = em.merge(registroExistente); // Mesclar a entidade para gerenciamento do JPA
+				}
+				registroExistente.setPorcentagem(porcentagemMedia);
 
-	            // Se já existe, atualize o valor da porcentagem
-	            if (!em.contains(registroExistente)) {
-	                registroExistente = em.merge(registroExistente); // Mesclar a entidade para gerenciamento do JPA
-	            }
-	            registroExistente.setPorcentagem(porcentagemMedia);
+				// Sincronize as alterações com o banco de dados
+				em.flush();
 
-	            // Sincronize as alterações com o banco de dados
-	            em.flush();
+				System.out.println("Registro após a sincronização com o banco de dados:");
+				System.out.println(registroExistente);
+			} else {
+				// Se não existe, crie um novo registro
+				Projeto projeto = this.projetoInterface.findById(idProjeto).orElse(null);
+				System.out.println("Conta else");
+				System.out.println(porcentagemMedia);
+				if (projeto != null) {
+					CronogramaProjetoEstimado cronogramaProjetoMedia = new CronogramaProjetoEstimado(mes,
+							porcentagemMedia, projeto);
+					this.CronogramaProjetoEstimadoInterface.save(cronogramaProjetoMedia);
+				}
+			}
 
-	            System.out.println("Registro após a sincronização com o banco de dados:");
-	            System.out.println(registroExistente);
-	        } else {
-	            // Se não existe, crie um novo registro
-	            Projeto projeto = this.projetoInterface.findById(idProjeto).orElse(null);
-	            System.out.println("Conta else");
-	            System.out.println(porcentagemMedia);
-	            if (projeto != null) {
-	                CronogramaProjetoEstimado cronogramaProjetoMedia = new CronogramaProjetoEstimado(mes,
-	                        porcentagemMedia, projeto);
-	                this.CronogramaProjetoEstimadoInterface.save(cronogramaProjetoMedia);
-	            }
-	        }
-
-	    }
+		}
 	}
-
 
 	@GetMapping("/pacote/{id_pacote}")
 	public ResponseEntity<?> getCronogramaPorPagote(@PathVariable("id_pacote") Long id_pacote) {
@@ -233,61 +231,63 @@ public class CronogramaEstimadoController {
 		} catch (Exception e) {
 			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Erro: " + e);
 		}
-	};
+	}
+	
+	@Transactional
+	@PutMapping("/{id_subpacote}")
+	public ResponseEntity<String> atualizarCronogramaEstimado(@PathVariable("id_subpacote") Long id_subpacote, @RequestBody CronogramaEstimadoRequest request) {
+	    try {
+	        Optional<Subpacotes> subpacote_query = this.subpacotesInterface.findById(id_subpacote);
+	        Optional<Projeto> projeto_query = this.projetoInterface.findById(request.getId_projeto());
 
-//    @PutMapping("/{id_subpacote}")
-//    public ResponseEntity<?> editCronograma(
-//            @PathVariable("id_subpacote") Long id_subpacote,
-//            @Validated @RequestBody CronogramaEstimadoPostRequest request
-//    ) {
-//        try {
-//            if (this.cronogramaEstimadoInterface.existsByIdAndSubpacoteId(request.getId(), id_subpacote)) {
-//                Optional<Subpacotes> query_subpacote = this.subpacotesInterface.findById(id_subpacote);
-//                Optional<Projeto> query_projeto = this.projetoInterface.findById(request.getId_projeto());
-//
-//                if (query_subpacote.isPresent() && query_projeto.isPresent()) {
-//                    Subpacotes subpacote = query_subpacote.get();
-//                    Projeto projeto = query_projeto.get();
-//
-//                    CronogramaEstimado updateCronogramaEstimado = new CronogramaEstimado(
-//                            request.getId(),
-//                            request.getMes1(),
-//                            projeto,
-//                            subpacote,
-//                            request.getPorcentagens()
-//                    );
-//
-//                    CronogramaEstimado cronogramaEstimadoAlterado = this.cronogramaEstimadoInterface.save(updateCronogramaEstimado);
-//
-//                    return ResponseEntity.status(HttpStatus.OK).body(cronogramaEstimadoAlterado);
-//                }
-//            }
-//            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Subpacote não encontrado");
-//        } catch(Exception e) {
-//            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Erro no servidor: " + e);
-//        }
-//    }
+	        if (subpacote_query.isPresent() && projeto_query.isPresent()) {
+	            Subpacotes subpacote = subpacote_query.get();
+	            Projeto projeto = projeto_query.get();
+	            List<Integer> porcentagens = request.getPorcentagens();
 
-	@DeleteMapping("/{id_subpacote}")
-	public ResponseEntity<?> deleteCronograma(@PathVariable("id_subpacote") Long id_subpacote) {
-		try {
-			if (this.cronogramaEstimadoInterface.existsBySubpacoteId(id_subpacote)) {
-				this.cronogramaEstimadoInterface.deleteBySubpacoteId(id_subpacote);
-				return ResponseEntity.status(HttpStatus.OK).body("Cronograma removido");
-			}
+	            // Consulte os cronogramas existentes para o id_subpacote
+	            List<CronogramaEstimado> cronogramasExistentes = this.cronogramaEstimadoInterface.findByProjetoIdAndSubpacoteId(projeto.getId(), subpacote.getId());
 
-			return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Cronograma não existente");
-		} catch (Exception e) {
-			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Erro: " + e);
-		}
+	            // Atualiza os cronogramas existentes com base nos novos valores
+	            for (int mes = 1; mes <= porcentagens.size(); mes++) {
+	                int porcentagem = porcentagens.get(mes - 1);
+
+	                int finalMes = mes;  // Criar uma cópia efetivamente final de mes
+	                Optional<CronogramaEstimado> cronogramaExistente = cronogramasExistentes.stream()
+	                    .filter(c -> c.getMes() == finalMes)
+	                    .findFirst();
+
+	                if (cronogramaExistente.isPresent()) {
+	                    CronogramaEstimado cronograma = cronogramaExistente.get();
+	                    cronograma.setPorcentagem(porcentagem);
+	                    this.cronogramaEstimadoInterface.save(cronograma);
+	                } else {
+	                    CronogramaEstimado novoCronogramaEstimado = new CronogramaEstimado(mes, porcentagem, projeto, subpacote);
+	                    this.cronogramaEstimadoInterface.save(novoCronogramaEstimado);
+	                }
+	            }
+
+	            // Remova os cronogramas que não estão mais presentes no novo conjunto de porcentagens
+	            for (CronogramaEstimado cronograma : cronogramasExistentes) {
+	                if (cronograma.getMes() > porcentagens.size()) {
+	                    this.cronogramaEstimadoInterface.delete(cronograma);
+	                }
+	            }
+
+	            // Atualize o mês máximo do projeto
+	            projeto.setMesMaximoProjeto(porcentagens.size());
+
+	            // Recalcule a porcentagem média por mês
+	            calcularPorcentagemMediaPorMes(request.getId_projeto());
+
+	            return ResponseEntity.ok("Cronograma atualizado com sucesso!");
+	        }
+
+	        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Projeto ou subpacote não existente");
+	    } catch (Exception e) {
+	        return ResponseEntity.internalServerError().body("Um erro ocorreu: " + e);
+	    }
 	}
 
-	private boolean isOrdenada(List<Integer> porcentagens) {
-		for (int i = 1; i < porcentagens.size(); i++) {
-			if (porcentagens.get(i) < porcentagens.get(i - 1)) {
-				return false;
-			}
-		}
-		return true;
-	}
+
 }
