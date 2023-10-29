@@ -130,4 +130,22 @@ public class Projeto {
 	public void setPacotes(List<Pacotes> pacotes) {
 		// Implementation for setting pacotes
 	}
+
+
+	public void setNumeroTotalMeses(int size) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	public int getNumeroTotalMeses() {
+		// TODO Auto-generated method stub
+		return 0;
+	}
+
+	public void setMesMaximoProjeto(int mesMaximoProjeto) {
+		// TODO Auto-generated method stub
+		
+	}
+	
 }
+
