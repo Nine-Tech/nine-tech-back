@@ -27,7 +27,7 @@ public interface CronogramaEstimadoInterface extends JpaRepository<CronogramaEst
 
     boolean existsBySubpacoteId(Long id);
 
-    Optional<CronogramaEstimado> findBySubpacoteId(Long id);
+    List<CronogramaEstimado> findBySubpacoteId(Long id);
 
     boolean existsByIdAndSubpacoteId(Long id, Long idSubpacote);
 
