@@ -36,11 +36,6 @@ public class TarefasController {
 	@PostMapping
 	public ResponseEntity<Object> cadastrar(@RequestBody Tarefas tarefas) {
 		try {
-			// Calcular a porcentagem com base na fórmula
-			double execucaoNumerica = tarefas.getExecucao() ? 1 : 0; // 1 se for true, 0 se for false
-			double porcentagemCalculada = ((execucaoNumerica * tarefas.getPeso()) / tarefas.getPeso()) * 100;
-			tarefas.setPorcentagem(porcentagemCalculada);
-
 			// Obter o ID do Subpacote da Tarefa
 			Long subpacoteId = tarefas.getSubpacotes().getId();
 
@@ -76,18 +71,16 @@ public class TarefasController {
 			// Calcular o valor com base na fórmula
 			double valorCalculado = (tarefas.getHh() * valor_homem_hora) + tarefas.getMaterial();
 			tarefas.setValor(valorCalculado);
+			// Calcular a porcentagem com base na fórmula
+			double execucaoNumerica = tarefas.getExecucao() ? 1 : 0; // 1 se for true, 0 se for false
+			double porcentagemCalculada = ((execucaoNumerica * tarefas.getPeso()) / tarefas.getPeso()) * 100;
+			tarefas.setPorcentagem(porcentagemCalculada);
 
 			// salvando nova tarefa
 			Tarefas novaTarefa = interfaceTarefas.save(tarefas);
 
 			// Obter as tarefas relacionadas ao Subpacote indicado
 			List<Tarefas> tarefasRelacionadas = interfaceTarefas.findBySubpacotes_Id(subpacoteId);
-
-			// Obter os Subpacotes relacionado ao Pacote achado no SubPacote
-			List<Subpacotes> subpacotesRelacionados = interfaceSubpacotes.findByPacotesId(pacoteId);
-
-			// Obter os Pacotes relacionados ao Projeto achado no Pacote
-			List<Pacotes> pacotesRelacionados = interfacePacotes.findByProjeto_Id(projetoId);
 
 			// Obter Tarefas Relacionadas ao Pacote
 			List<Tarefas> tarefasDoPacote = interfaceTarefas.findBySubpacotes_Pacotes_Id(pacoteId);
@@ -364,8 +357,6 @@ public class TarefasController {
 				Tarefas tarefa = tarefaOptional.get();
 				Long subpacoteId = tarefa.getSubpacotes().getId();
 
-				
-
 				Optional<Subpacotes> subpacoteRelacionado = interfaceSubpacotes.findById(subpacoteId);
 
 				Subpacotes subpacoteX = subpacoteRelacionado.get();
@@ -402,8 +393,6 @@ public class TarefasController {
 
 				// ----------------------------------------------------------------------------------------------------------
 
-				
-				
 				// Calcular a soma dos valores e pesos das tarefas relacionadas ao
 				// Subpacote///////////////////////
 				double somaValores = 0.0;

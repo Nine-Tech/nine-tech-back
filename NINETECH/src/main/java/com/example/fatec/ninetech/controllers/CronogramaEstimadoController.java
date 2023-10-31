@@ -2,6 +2,8 @@ package com.example.fatec.ninetech.controllers;
 
 import com.example.fatec.ninetech.helpers.CronogramaEstimadoPostRequest;
 import com.example.fatec.ninetech.helpers.CronogramaEstimadoRequest;
+import com.example.fatec.ninetech.helpers.CronogramaEstimadoResponse;
+import com.example.fatec.ninetech.helpers.CronogramaProjetoEstimadoResponse;
 import com.example.fatec.ninetech.models.Projeto;
 import com.example.fatec.ninetech.models.Subpacotes;
 import com.example.fatec.ninetech.repositories.SubpacotesInterface;
@@ -200,94 +202,106 @@ public class CronogramaEstimadoController {
 		}
 	}
 
-	@GetMapping("/pacote/{id_pacote}")
-	public ResponseEntity<?> getCronogramaPorPagote(@PathVariable("id_pacote") Long id_pacote) {
-		try {
-			List<CronogramaEstimado> cronogramaEstimado = this.cronogramaEstimadoInterface.findByProjetoId(id_pacote);
-
-			if (cronogramaEstimado.isEmpty()) {
-				return ResponseEntity.status(HttpStatus.OK).body(cronogramaEstimado);
-			}
-
-			return ResponseEntity.status(HttpStatus.OK).body(cronogramaEstimado);
-		} catch (Exception e) {
-			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Erro: " + e);
-		}
-	};
-
-	@GetMapping("/{id_subpacote}")
-	public ResponseEntity<?> getCronograma(@PathVariable("id_subpacote") Long id_subpacote) {
-		try {
-			Optional<CronogramaEstimado> cronogramaEstimado = this.cronogramaEstimadoInterface
-					.findBySubpacoteId(id_subpacote);
-
-			if (cronogramaEstimado.isEmpty()) {
-				return ResponseEntity.status(HttpStatus.OK).body(cronogramaEstimado);
-			}
-
-			System.out.println(cronogramaEstimado);
-
-			return ResponseEntity.status(HttpStatus.OK).body(cronogramaEstimado);
-		} catch (Exception e) {
-			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Erro: " + e);
-		}
-	}
-	
 	@Transactional
 	@PutMapping("/{id_subpacote}")
-	public ResponseEntity<String> atualizarCronogramaEstimado(@PathVariable("id_subpacote") Long id_subpacote, @RequestBody CronogramaEstimadoRequest request) {
-	    try {
-	        Optional<Subpacotes> subpacote_query = this.subpacotesInterface.findById(id_subpacote);
-	        Optional<Projeto> projeto_query = this.projetoInterface.findById(request.getId_projeto());
+	public ResponseEntity<String> atualizarCronogramaEstimado(@PathVariable("id_subpacote") Long id_subpacote,
+			@RequestBody CronogramaEstimadoRequest request) {
+		try {
+			Optional<Subpacotes> subpacote_query = this.subpacotesInterface.findById(id_subpacote);
+			Optional<Projeto> projeto_query = this.projetoInterface.findById(request.getId_projeto());
 
-	        if (subpacote_query.isPresent() && projeto_query.isPresent()) {
-	            Subpacotes subpacote = subpacote_query.get();
-	            Projeto projeto = projeto_query.get();
-	            List<Integer> porcentagens = request.getPorcentagens();
+			if (subpacote_query.isPresent() && projeto_query.isPresent()) {
+				Subpacotes subpacote = subpacote_query.get();
+				Projeto projeto = projeto_query.get();
+				List<Integer> porcentagens = request.getPorcentagens();
 
-	            // Consulte os cronogramas existentes para o id_subpacote
-	            List<CronogramaEstimado> cronogramasExistentes = this.cronogramaEstimadoInterface.findByProjetoIdAndSubpacoteId(projeto.getId(), subpacote.getId());
+				// Consulte os cronogramas existentes para o id_subpacote
+				List<CronogramaEstimado> cronogramasExistentes = this.cronogramaEstimadoInterface
+						.findByProjetoIdAndSubpacoteId(projeto.getId(), subpacote.getId());
 
-	            // Atualiza os cronogramas existentes com base nos novos valores
-	            for (int mes = 1; mes <= porcentagens.size(); mes++) {
-	                int porcentagem = porcentagens.get(mes - 1);
+				// Atualiza os cronogramas existentes com base nos novos valores
+				for (int mes = 1; mes <= porcentagens.size(); mes++) {
+					int porcentagem = porcentagens.get(mes - 1);
 
-	                int finalMes = mes;  // Criar uma cópia efetivamente final de mes
-	                Optional<CronogramaEstimado> cronogramaExistente = cronogramasExistentes.stream()
-	                    .filter(c -> c.getMes() == finalMes)
-	                    .findFirst();
+					int finalMes = mes; // Criar uma cópia efetivamente final de mes
+					Optional<CronogramaEstimado> cronogramaExistente = cronogramasExistentes.stream()
+							.filter(c -> c.getMes() == finalMes).findFirst();
 
-	                if (cronogramaExistente.isPresent()) {
-	                    CronogramaEstimado cronograma = cronogramaExistente.get();
-	                    cronograma.setPorcentagem(porcentagem);
-	                    this.cronogramaEstimadoInterface.save(cronograma);
-	                } else {
-	                    CronogramaEstimado novoCronogramaEstimado = new CronogramaEstimado(mes, porcentagem, projeto, subpacote);
-	                    this.cronogramaEstimadoInterface.save(novoCronogramaEstimado);
-	                }
-	            }
+					if (cronogramaExistente.isPresent()) {
+						CronogramaEstimado cronograma = cronogramaExistente.get();
+						cronograma.setPorcentagem(porcentagem);
+						this.cronogramaEstimadoInterface.save(cronograma);
+					} else {
+						CronogramaEstimado novoCronogramaEstimado = new CronogramaEstimado(mes, porcentagem, projeto,
+								subpacote);
+						this.cronogramaEstimadoInterface.save(novoCronogramaEstimado);
+					}
+				}
 
-	            // Remova os cronogramas que não estão mais presentes no novo conjunto de porcentagens
-	            for (CronogramaEstimado cronograma : cronogramasExistentes) {
-	                if (cronograma.getMes() > porcentagens.size()) {
-	                    this.cronogramaEstimadoInterface.delete(cronograma);
-	                }
-	            }
+				// Remova os cronogramas que não estão mais presentes no novo conjunto de
+				// porcentagens
+				for (CronogramaEstimado cronograma : cronogramasExistentes) {
+					if (cronograma.getMes() > porcentagens.size()) {
+						this.cronogramaEstimadoInterface.delete(cronograma);
+					}
+				}
 
-	            // Atualize o mês máximo do projeto
-	            projeto.setMesMaximoProjeto(porcentagens.size());
+				// Atualize o mês máximo do projeto
+				projeto.setMesMaximoProjeto(porcentagens.size());
 
-	            // Recalcule a porcentagem média por mês
-	            calcularPorcentagemMediaPorMes(request.getId_projeto());
+				// Recalcule a porcentagem média por mês
+				calcularPorcentagemMediaPorMes(request.getId_projeto());
 
-	            return ResponseEntity.ok("Cronograma atualizado com sucesso!");
-	        }
+				return ResponseEntity.ok("Cronograma atualizado com sucesso!");
+			}
 
-	        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Projeto ou subpacote não existente");
-	    } catch (Exception e) {
-	        return ResponseEntity.internalServerError().body("Um erro ocorreu: " + e);
-	    }
+			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Projeto ou subpacote não existente");
+		} catch (Exception e) {
+			return ResponseEntity.internalServerError().body("Um erro ocorreu: " + e);
+		}
 	}
 
+	@GetMapping("/cronogramaestimado/{id_subpacote}")
+	public ResponseEntity<List<CronogramaEstimadoResponse>> getCronogramaEstimadoBySubpacoteId(
+			@PathVariable("id_subpacote") Long id_subpacote) {
+		try {
+			List<CronogramaEstimado> cronogramas = this.cronogramaEstimadoInterface.findBySubpacoteId(id_subpacote);
+
+			if (cronogramas.isEmpty()) {
+				return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Collections.emptyList());
+			}
+
+			// Mapeie os objetos CronogramaEstimado para um DTO (Data Transfer Object)
+			// personalizado
+			List<CronogramaEstimadoResponse> responseList = cronogramas.stream()
+					.map(cronograma -> new CronogramaEstimadoResponse(cronograma.getMes(), cronograma.getPorcentagem()))
+					.collect(Collectors.toList());
+
+			return ResponseEntity.ok(responseList);
+		} catch (Exception e) {
+			return ResponseEntity.internalServerError().body(Collections.emptyList());
+		}
+
+	}
+	
+	@GetMapping("/cronogramaprojetoestimado/{id_projeto}")
+	public ResponseEntity<List<CronogramaProjetoEstimadoResponse>> getCronogramaProjetoEstimadoByProjetoId(@PathVariable("id_projeto") Long id_projeto) {
+	    try {
+	        List<CronogramaProjetoEstimado> cronogramasProjetoEstimado = this.CronogramaProjetoEstimadoInterface.findByProjetoId(id_projeto);
+
+	        if (cronogramasProjetoEstimado.isEmpty()) {
+	            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Collections.emptyList());
+	        }
+
+	        // Mapeie os objetos CronogramaProjetoEstimado para um DTO (Data Transfer Object) personalizado
+	        List<CronogramaProjetoEstimadoResponse> responseList = cronogramasProjetoEstimado.stream()
+	            .map(cronogramaProjeto -> new CronogramaProjetoEstimadoResponse(cronogramaProjeto.getMes(), cronogramaProjeto.getPorcentagem()))
+	            .collect(Collectors.toList());
+
+	        return ResponseEntity.ok(responseList);
+	    } catch (Exception e) {
+	        return ResponseEntity.internalServerError().body(Collections.emptyList());
+	    }
+	}
 
 }
