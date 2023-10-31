@@ -5,15 +5,19 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import com.example.fatec.ninetech.models.LoggerSubpacotesPorcentagensReais;
 import com.example.fatec.ninetech.models.Pacotes;
 import com.example.fatec.ninetech.models.Projeto;
 import com.example.fatec.ninetech.models.Subpacotes;
 import com.example.fatec.ninetech.models.Tarefas;
+import com.example.fatec.ninetech.repositories.LoggerProjetoInterface;
+import com.example.fatec.ninetech.repositories.LoggerSubpacotesInterface;
 import com.example.fatec.ninetech.repositories.PacotesInterface;
 import com.example.fatec.ninetech.repositories.ProjetoInterface;
 import com.example.fatec.ninetech.repositories.SubpacotesInterface;
 import com.example.fatec.ninetech.repositories.TarefasInterface;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
@@ -32,6 +36,12 @@ public class TarefasController {
 
 	@Autowired
 	private ProjetoInterface interfaceProjeto;
+
+	@Autowired
+	private LoggerProjetoInterface interfaceLoggerProjeto;
+
+	@Autowired
+	private LoggerSubpacotesInterface interfaceLoggerSubpacotes;
 
 	@PostMapping
 	public ResponseEntity<Object> cadastrar(@RequestBody Tarefas tarefas) {
@@ -112,9 +122,16 @@ public class TarefasController {
 			Optional<Subpacotes> subpacoteOptional = interfaceSubpacotes.findById(subpacoteId);
 
 			Subpacotes subpacote = subpacoteOptional.get();
+
 			subpacote.setValor_total(valorTotalCalculado);
 			subpacote.setPorcentagem(porcentagemSubpacote);
 			interfaceSubpacotes.save(subpacote);
+			LoggerSubpacotesPorcentagensReais loggerSubpacote = new LoggerSubpacotesPorcentagensReais();
+			loggerSubpacote.setData(LocalDate.now());
+			loggerSubpacote.setPorcentagem(porcentagemSubpacote);
+			loggerSubpacote.setProjeto(projeto);
+			loggerSubpacote.setSubpacotes(subpacote);
+			interfaceLoggerSubpacotes.save(loggerSubpacote);
 
 			// Atualizar Valores do Pacote////////////////////////////////////
 			double somaValoresPacote = 0.0;
