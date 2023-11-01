@@ -1,23 +1,21 @@
 package com.example.fatec.ninetech.controllers;
 
-import java.util.List;
-import java.util.Optional;
+import java.text.ParseException;
+import java.time.LocalDate;
+import java.time.YearMonth;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
+import java.util.*;
+import java.text.SimpleDateFormat;
 
 import com.example.fatec.ninetech.helpers.HomemHoraPostRequest;
-import com.example.fatec.ninetech.models.Pacotes;
-import com.example.fatec.ninetech.models.Subpacotes;
-import com.example.fatec.ninetech.models.Tarefas;
-import com.example.fatec.ninetech.repositories.PacotesInterface;
-import com.example.fatec.ninetech.repositories.SubpacotesInterface;
-import com.example.fatec.ninetech.repositories.TarefasInterface;
+import com.example.fatec.ninetech.models.*;
+import com.example.fatec.ninetech.repositories.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import com.example.fatec.ninetech.models.Projeto;
-import com.example.fatec.ninetech.repositories.ProjetoInterface;
 
 @RestController
 @RequestMapping("/projeto")
@@ -34,6 +32,9 @@ public class ProjetoController {
 
     @Autowired
     private TarefasInterface tarefasInterface;
+
+    @Autowired
+    private CronogramaProjetoEstimadoInterface cronogramaProjetoEstimadoInterface;
 
     @PostMapping
     public ResponseEntity<Projeto> criarProjeto(@RequestBody Projeto projeto) {
@@ -186,4 +187,36 @@ public class ProjetoController {
         }
     }
 
+    @PutMapping("/data_final/{id_projeto}")
+    public ResponseEntity<?> postDataFinal(
+            @PathVariable Long id_projeto,
+            @RequestBody DataFimRequest dataFim) {
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MMM/yyyy", Locale.ENGLISH);
+
+
+        LocalDate data_fim;
+        try {
+            YearMonth yearMonth = YearMonth.parse(dataFim.getData_fim(), formatter);
+            data_fim = yearMonth.atDay(1);
+        } catch (DateTimeParseException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Não foi possível converter a data");
+        }
+
+        LocalDate data_inicio = LocalDate.now();
+
+        if (data_inicio.isAfter(data_fim)) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("A data de início é maior que a data de fim");
+        }
+
+        Optional<Projeto> query_projeto = this.projetoInterface.findById(id_projeto);
+
+        if (query_projeto.isPresent()) {
+            Projeto projeto = query_projeto.get();
+            projeto.setData_final(data_fim);
+            this.projetoInterface.save(projeto);
+        } else {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Projeto não encontrado");
+        }
+        return ResponseEntity.status(HttpStatus.OK).body("");
+    }
 }
