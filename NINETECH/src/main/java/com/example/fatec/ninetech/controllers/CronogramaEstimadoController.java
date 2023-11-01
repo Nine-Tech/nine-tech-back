@@ -281,27 +281,60 @@ public class CronogramaEstimadoController {
 		} catch (Exception e) {
 			return ResponseEntity.internalServerError().body(Collections.emptyList());
 		}
-
 	}
-	
+
 	@GetMapping("/cronogramaprojetoestimado/{id_projeto}")
-	public ResponseEntity<List<CronogramaProjetoEstimadoResponse>> getCronogramaProjetoEstimadoByProjetoId(@PathVariable("id_projeto") Long id_projeto) {
-	    try {
-	        List<CronogramaProjetoEstimado> cronogramasProjetoEstimado = this.CronogramaProjetoEstimadoInterface.findByProjetoId(id_projeto);
+	public ResponseEntity<List<CronogramaProjetoEstimadoResponse>> getCronogramaProjetoEstimadoByProjetoId(
+			@PathVariable("id_projeto") Long id_projeto) {
+		try {
+			List<CronogramaProjetoEstimado> cronogramasProjetoEstimado = this.CronogramaProjetoEstimadoInterface
+					.findByProjetoId(id_projeto);
 
-	        if (cronogramasProjetoEstimado.isEmpty()) {
-	            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Collections.emptyList());
-	        }
+			if (cronogramasProjetoEstimado.isEmpty()) {
+				return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Collections.emptyList());
+			}
 
-	        // Mapeie os objetos CronogramaProjetoEstimado para um DTO (Data Transfer Object) personalizado
-	        List<CronogramaProjetoEstimadoResponse> responseList = cronogramasProjetoEstimado.stream()
-	            .map(cronogramaProjeto -> new CronogramaProjetoEstimadoResponse(cronogramaProjeto.getMes(), cronogramaProjeto.getPorcentagem()))
-	            .collect(Collectors.toList());
+			// Mapeie os objetos CronogramaProjetoEstimado para um DTO (Data Transfer
+			// Object) personalizado
+			List<CronogramaProjetoEstimadoResponse> responseList = cronogramasProjetoEstimado.stream()
+					.map(cronogramaProjeto -> new CronogramaProjetoEstimadoResponse(cronogramaProjeto.getMes(),
+							cronogramaProjeto.getPorcentagem()))
+					.collect(Collectors.toList());
 
-	        return ResponseEntity.ok(responseList);
-	    } catch (Exception e) {
-	        return ResponseEntity.internalServerError().body(Collections.emptyList());
-	    }
+			return ResponseEntity.ok(responseList);
+		} catch (Exception e) {
+			return ResponseEntity.internalServerError().body(Collections.emptyList());
+		}
 	}
+
+	/* @GetMapping("/{idSubpacote}")
+	public ResponseEntity<Map<String, Double>> getLastPercentageBySubpacoteId(@PathVariable Long idSubpacote) {
+		// Obtém o subpacote
+		LoggerSubpacotesPorcentagensReais subpacote = repository.findById(idSubpacote).orElseThrow();
+
+		// Obtém as atualizações do subpacote
+		List<LoggerSubpacotesPorcentagensReais> atualizações = repository.findBySubpacotesId(idSubpacote);
+
+		// Cria um mapa para armazenar as porcentagens
+		Map<String, Double> porcentagens = new HashMap<>();
+
+		// Percorre as atualizações
+		for (LoggerSubpacotesPorcentagensReais atualização : atualizações) {
+			// Obtém o mês da atualização
+			String mês = atualização.getData().getMonth().name();
+
+			// Verifica se a porcentagem já existe no mapa
+			if (!porcentagens.containsKey(mês)) {
+				// Adiciona a porcentagem ao mapa
+				porcentagens.put(mês, atualização.getPorcentagem());
+			} else {
+				// Atualiza a porcentagem no mapa
+				porcentagens.put(mês, Math.max(porcentagens.get(mês), atualização.getPorcentagem()));
+			}
+		}
+
+		// Retorna o mapa de porcentagens
+		return ResponseEntity.ok(porcentagens);
+	} */
 
 }
