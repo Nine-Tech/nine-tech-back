@@ -218,16 +218,16 @@ public class CronogramaEstimadoController {
 	@GetMapping("/{id_subpacote}")
 	public ResponseEntity<?> getCronograma(@PathVariable("id_subpacote") Long id_subpacote) {
 		try {
-			Optional<CronogramaEstimado> cronogramaEstimado = this.cronogramaEstimadoInterface
-					.findBySubpacoteId(id_subpacote);
+			Optional<List<CronogramaEstimado>> queryCronogramasEstimados = this.cronogramaEstimadoInterface
+					.findManyBySubpacoteId(id_subpacote);
 
-			if (cronogramaEstimado.isEmpty()) {
-				return ResponseEntity.status(HttpStatus.OK).body(cronogramaEstimado);
+			if (queryCronogramasEstimados.isEmpty()) {
+				return ResponseEntity.status(HttpStatus.OK).body("Cronograma não encontrado");
+			} else {
+				List<CronogramaEstimado> cronogramasEstimados = queryCronogramasEstimados.get();
+				return ResponseEntity.status(HttpStatus.OK).body(cronogramasEstimados);
+
 			}
-
-			System.out.println(cronogramaEstimado);
-
-			return ResponseEntity.status(HttpStatus.OK).body(cronogramaEstimado);
 		} catch (Exception e) {
 			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Erro: " + e);
 		}

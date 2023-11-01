@@ -41,6 +41,8 @@ public interface CronogramaEstimadoInterface extends JpaRepository<CronogramaEst
 	void deleteByMesAndSubpacoteAndProjeto(Integer mesExistente, Subpacotes subpacote, Projeto projeto);
 	List<CronogramaEstimado> findByProjetoIdAndSubpacoteId(Long id, Long id2);
 
+    Optional<List<CronogramaEstimado>> findManyBySubpacoteId(Long idSubpacote);
+
 
     // boolean existsByProjetoAndWbeId(Projeto projeto, Long wbeId);
 }
