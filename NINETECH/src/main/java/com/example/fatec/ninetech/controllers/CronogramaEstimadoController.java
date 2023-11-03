@@ -3,10 +3,10 @@ package com.example.fatec.ninetech.controllers;
 import com.example.fatec.ninetech.helpers.CronogramaEstimadoPostRequest;
 import com.example.fatec.ninetech.helpers.CronogramaEstimadoRequest;
 import com.example.fatec.ninetech.helpers.CronogramaEstimadoResponse;
+import com.example.fatec.ninetech.helpers.CronogramaEstimadoResponseDTO;
 import com.example.fatec.ninetech.helpers.CronogramaProjetoEstimadoResponse;
 import com.example.fatec.ninetech.models.Projeto;
 import com.example.fatec.ninetech.models.Subpacotes;
-import com.example.fatec.ninetech.repositories.SubpacotesInterface;
 
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
@@ -24,11 +24,13 @@ import org.springframework.web.bind.annotation.*;
 
 import com.example.fatec.ninetech.models.CronogramaEstimado;
 import com.example.fatec.ninetech.models.CronogramaProjetoEstimado;
-import com.example.fatec.ninetech.repositories.CronogramaEstimadoInterface;
-import com.example.fatec.ninetech.repositories.ProjetoInterface;
-import com.example.fatec.ninetech.repositories.PacotesInterface;
+import com.example.fatec.ninetech.models.LoggerProjetoPorcentagensReais;
+import com.example.fatec.ninetech.models.LoggerSubpacotesPorcentagensReais;
+import com.example.fatec.ninetech.models.Pacotes;
 import com.example.fatec.ninetech.repositories.*;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -37,6 +39,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Transactional
@@ -61,6 +64,12 @@ public class CronogramaEstimadoController {
 
 	@Autowired
 	private CronogramaProjetoEstimadoInterface CronogramaProjetoEstimadoInterface;
+
+	@Autowired
+	private LoggerSubpacotesInterface interfaceLoggerSubpacotes;
+
+	@Autowired
+	private LoggerProjetoInterface interfaceLoggerProjeto;
 
 	@Transactional
 	@PostMapping("/{id_subpacote}")
@@ -261,6 +270,27 @@ public class CronogramaEstimadoController {
 		}
 	}
 
+	/* @GetMapping("/{id_subpacote}")
+	public ResponseEntity<CronogramaEstimadoResponseDTO> getCronograma(
+			@PathVariable("id_subpacote") Long id_subpacote) {
+		try {
+			List<CronogramaEstimado> cronogramas = this.cronogramaEstimadoInterface.findBySubpacoteId(id_subpacote);
+
+			if (cronogramas.isEmpty()) {
+				return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+			}
+
+			// Mapeie os objetos CronogramaEstimado para CronogramaEstimadoResponseDTO
+			CronogramaEstimadoResponseDTO responseDTO = new CronogramaEstimadoResponseDTO(
+					cronogramas.get(0).getIdProjeto(),
+					cronogramas.stream().map(cronograma -> cronograma.getPorcentagem()).collect(Collectors.toList()));
+
+			return ResponseEntity.ok(responseDTO);
+		} catch (Exception e) {
+			return ResponseEntity.internalServerError().build();
+		}
+	} */
+
 	@GetMapping("/cronogramaestimado/{id_subpacote}")
 	public ResponseEntity<List<CronogramaEstimadoResponse>> getCronogramaEstimadoBySubpacoteId(
 			@PathVariable("id_subpacote") Long id_subpacote) {
@@ -307,34 +337,90 @@ public class CronogramaEstimadoController {
 		}
 	}
 
-	/* @GetMapping("/{idSubpacote}")
-	public ResponseEntity<Map<String, Double>> getLastPercentageBySubpacoteId(@PathVariable Long idSubpacote) {
-		// Obtém o subpacote
-		LoggerSubpacotesPorcentagensReais subpacote = repository.findById(idSubpacote).orElseThrow();
+	/*
+	 * @GetMapping("/{id_subpacote}")
+	 * public ResponseEntity<?> getCronograma(
+	 * 
+	 * @PathVariable("id_subpacote") Long id_subpacote
+	 * ) {
+	 * try {
+	 * List<CronogramaEstimado> cronogramaEstimado =
+	 * this.cronogramaEstimadoInterface.findBySubpacoteId(id_subpacote);
+	 * 
+	 * if (cronogramaEstimado.isEmpty()) {
+	 * return ResponseEntity.status(HttpStatus.OK).body(cronogramaEstimado);
+	 * }
+	 * 
+	 * System.out.println(cronogramaEstimado);
+	 * 
+	 * return ResponseEntity.status(HttpStatus.OK).body(cronogramaEstimado);
+	 * } catch (Exception e) {
+	 * return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Erro: "
+	 * + e);
+	 * }
+	 * };
+	 */
 
-		// Obtém as atualizações do subpacote
-		List<LoggerSubpacotesPorcentagensReais> atualizações = repository.findBySubpacotesId(idSubpacote);
+	@GetMapping("/cronogramaestimado/ultimosdias/{id_subpacote}")
+	public ResponseEntity<List<CronogramaEstimadoResponse>> getUltimosDiasCronogramaEstimadoBySubpacoteId(
+			@PathVariable("id_subpacote") Long id_subpacote) {
+		try {
+			List<LoggerSubpacotesPorcentagensReais> cronogramas = this.interfaceLoggerSubpacotes
+					.findBySubpacotesId(id_subpacote);
 
-		// Cria um mapa para armazenar as porcentagens
-		Map<String, Double> porcentagens = new HashMap<>();
-
-		// Percorre as atualizações
-		for (LoggerSubpacotesPorcentagensReais atualização : atualizações) {
-			// Obtém o mês da atualização
-			String mês = atualização.getData().getMonth().name();
-
-			// Verifica se a porcentagem já existe no mapa
-			if (!porcentagens.containsKey(mês)) {
-				// Adiciona a porcentagem ao mapa
-				porcentagens.put(mês, atualização.getPorcentagem());
-			} else {
-				// Atualiza a porcentagem no mapa
-				porcentagens.put(mês, Math.max(porcentagens.get(mês), atualização.getPorcentagem()));
+			if (cronogramas.isEmpty()) {
+				return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Collections.emptyList());
 			}
-		}
 
-		// Retorna o mapa de porcentagens
-		return ResponseEntity.ok(porcentagens);
-	} */
+			// Agrupe os registros por mês e selecione o último registro de cada mês
+			Map<LocalDate, LoggerSubpacotesPorcentagensReais> ultimoRegistroPorMes = cronogramas.stream()
+					.collect(Collectors.toMap(
+							LoggerSubpacotesPorcentagensReais::getData,
+							Function.identity(),
+							(existing, replacement) -> existing.getData().isAfter(replacement.getData()) ? existing
+									: replacement));
+
+			// Mapeie os registros agrupados para o DTO personalizado
+			List<CronogramaEstimadoResponse> responseList = ultimoRegistroPorMes.values().stream()
+					.map(cronograma -> new CronogramaEstimadoResponse(cronograma.getData().getMonthValue(),
+							cronograma.getPorcentagem()))
+					.collect(Collectors.toList());
+
+			return ResponseEntity.ok(responseList);
+		} catch (Exception e) {
+			return ResponseEntity.internalServerError().body(Collections.emptyList());
+		}
+	}
+
+	@GetMapping("/cronogramaprojetoestimado/ultimosdias/{id_projeto}")
+	public ResponseEntity<List<CronogramaEstimadoResponse>> getUltimosDiasCronogramaEstimadoByProjetoId(
+			@PathVariable("id_projeto") Long id_projeto) {
+		try {
+			List<LoggerProjetoPorcentagensReais> cronogramas = this.interfaceLoggerProjeto
+					.findByProjetoId(id_projeto);
+
+			if (cronogramas.isEmpty()) {
+				return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Collections.emptyList());
+			}
+
+			// Agrupe os registros por mês e selecione o último registro de cada mês
+			Map<LocalDate, LoggerProjetoPorcentagensReais> ultimoRegistroPorMes = cronogramas.stream()
+					.collect(Collectors.toMap(
+							LoggerProjetoPorcentagensReais::getData,
+							Function.identity(),
+							(existing, replacement) -> existing.getData().isAfter(replacement.getData()) ? existing
+									: replacement));
+
+			// Mapeie os registros agrupados para o DTO personalizado
+			List<CronogramaEstimadoResponse> responseList = ultimoRegistroPorMes.values().stream()
+					.map(cronograma -> new CronogramaEstimadoResponse(cronograma.getData().getMonthValue(),
+							cronograma.getPorcentagem()))
+					.collect(Collectors.toList());
+
+			return ResponseEntity.ok(responseList);
+		} catch (Exception e) {
+			return ResponseEntity.internalServerError().body(Collections.emptyList());
+		}
+	}
 
 }

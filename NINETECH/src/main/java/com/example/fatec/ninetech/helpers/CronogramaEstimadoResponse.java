@@ -2,10 +2,10 @@ package com.example.fatec.ninetech.helpers;
 
 public class CronogramaEstimadoResponse {
 	private int mes;
-    private int porcentagem;
+    private double porcentagem;
     
 
-    public CronogramaEstimadoResponse(int mes, int porcentagem) {
+    public CronogramaEstimadoResponse(int mes, double porcentagem) {
         this.mes = mes;
         this.porcentagem = porcentagem;
         
@@ -19,11 +19,11 @@ public class CronogramaEstimadoResponse {
 		this.mes = mes;
 	}
 
-	public int getPorcentagem() {
+	public double getPorcentagem() {
 		return porcentagem;
 	}
 
-	public void setPorcentagem(int porcentagem) {
+	public void setPorcentagem(double porcentagem) {
 		this.porcentagem = porcentagem;
 	}
 

@@ -1,6 +1,9 @@
 package com.example.fatec.ninetech.models;
 
 import java.util.List;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import jakarta.persistence.*;
 import lombok.Data;
 
@@ -56,5 +59,9 @@ public class CronogramaEstimado {
         this.porcentagem = porcentagem;
         this.projeto = projeto;
         this.subpacote = subpacote;
+    }
+
+    public Long getIdProjeto() {
+        return this.projeto.getId();
     }
 }

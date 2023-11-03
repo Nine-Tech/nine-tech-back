@@ -179,7 +179,7 @@ public class TarefasController {
 
 			// Calcular valor_total e porcentagem no Pacote
 			double valorTotalCalculadoProjeto = somaValoresProjeto;
-			double porcentagemSubpacoteProjeto = (somaPesosProjeto / somaPesosTotalProjeto) * valor_homem_hora;
+			double porcentagemSubpacoteProjeto = (somaPesosProjeto / somaPesosTotalProjeto) * 100.0;
 
 			// Atualizar o Pacote com os novos valores
 			Optional<Projeto> projetoOptional = interfaceProjeto.findById(projetoId);
@@ -191,7 +191,7 @@ public class TarefasController {
 
 			LoggerProjetoPorcentagensReais loggerProjeto = new LoggerProjetoPorcentagensReais();
 			loggerProjeto.setData(LocalDate.now());
-			loggerProjeto.setPorcentagem(porcentagemSubpacote);
+			loggerProjeto.setPorcentagem(porcentagemSubpacoteProjeto);
 			loggerProjeto.setProjeto(projeto1);
 			interfaceLoggerProjeto.save(loggerProjeto);
 
@@ -371,7 +371,7 @@ public class TarefasController {
 
 				LoggerProjetoPorcentagensReais loggerProjeto = new LoggerProjetoPorcentagensReais();
 				loggerProjeto.setData(LocalDate.now());
-				loggerProjeto.setPorcentagem(porcentagemSubpacote);
+				loggerProjeto.setPorcentagem(porcentagemSubpacoteProjeto);
 				loggerProjeto.setProjeto(projeto1);
 				interfaceLoggerProjeto.save(loggerProjeto);
 

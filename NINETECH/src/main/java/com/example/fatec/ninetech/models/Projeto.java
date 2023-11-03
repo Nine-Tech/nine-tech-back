@@ -102,8 +102,8 @@ public class Projeto {
 		return data_final;
 	}
 
-	public void setData_final(LocalDate data_final) {
-		this.data_final = data_final;
+	public void setData_final(LocalDate dataTermino) {
+		this.data_final = dataTermino;
 	}
 
 	@Override
