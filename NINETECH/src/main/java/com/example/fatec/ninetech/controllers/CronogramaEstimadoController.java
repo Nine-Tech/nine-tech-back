@@ -223,6 +223,8 @@ public class CronogramaEstimadoController {
 				Subpacotes subpacote = subpacote_query.get();
 				Projeto projeto = projeto_query.get();
 				List<Integer> porcentagens = request.getPorcentagens();
+				System.out.println("lista" + porcentagens);
+				System.out.println("lista" + porcentagens.toString());
 
 				// Consulte os cronogramas existentes para o id_subpacote
 				List<CronogramaEstimado> cronogramasExistentes = this.cronogramaEstimadoInterface
@@ -231,6 +233,7 @@ public class CronogramaEstimadoController {
 				// Atualiza os cronogramas existentes com base nos novos valores
 				for (int mes = 1; mes <= porcentagens.size(); mes++) {
 					int porcentagem = porcentagens.get(mes - 1);
+					System.out.println("porcent" + porcentagem);
 
 					int finalMes = mes; // Criar uma cópia efetivamente final de mes
 					Optional<CronogramaEstimado> cronogramaExistente = cronogramasExistentes.stream()
@@ -270,7 +273,7 @@ public class CronogramaEstimadoController {
 		}
 	}
 
-	/* @GetMapping("/{id_subpacote}")
+	@GetMapping("/{id_subpacote}")
 	public ResponseEntity<CronogramaEstimadoResponseDTO> getCronograma(
 			@PathVariable("id_subpacote") Long id_subpacote) {
 		try {
@@ -280,16 +283,23 @@ public class CronogramaEstimadoController {
 				return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
 			}
 
-			// Mapeie os objetos CronogramaEstimado para CronogramaEstimadoResponseDTO
+			// Obtenha o Projeto e o Subpacote associados aos cronogramas
+			Projeto projeto = cronogramas.get(0).getProjeto();
+			Subpacotes subpacote = cronogramas.get(0).getSubpacote();
+
+			// Construa o objeto CronogramaEstimadoResponseDTO com os valores dos meses
+			// dinâmicos
 			CronogramaEstimadoResponseDTO responseDTO = new CronogramaEstimadoResponseDTO(
-					cronogramas.get(0).getIdProjeto(),
-					cronogramas.stream().map(cronograma -> cronograma.getPorcentagem()).collect(Collectors.toList()));
+					cronogramas.get(0).getId(),
+					projeto,
+					subpacote,
+					cronogramas);
 
 			return ResponseEntity.ok(responseDTO);
 		} catch (Exception e) {
 			return ResponseEntity.internalServerError().build();
 		}
-	} */
+	}
 
 	@GetMapping("/cronogramaestimado/{id_subpacote}")
 	public ResponseEntity<List<CronogramaEstimadoResponse>> getCronogramaEstimadoBySubpacoteId(
