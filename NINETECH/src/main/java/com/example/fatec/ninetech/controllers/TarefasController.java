@@ -5,15 +5,20 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import com.example.fatec.ninetech.models.LoggerProjetoPorcentagensReais;
+import com.example.fatec.ninetech.models.LoggerSubpacotesPorcentagensReais;
 import com.example.fatec.ninetech.models.Pacotes;
 import com.example.fatec.ninetech.models.Projeto;
 import com.example.fatec.ninetech.models.Subpacotes;
 import com.example.fatec.ninetech.models.Tarefas;
+import com.example.fatec.ninetech.repositories.LoggerProjetoInterface;
+import com.example.fatec.ninetech.repositories.LoggerSubpacotesInterface;
 import com.example.fatec.ninetech.repositories.PacotesInterface;
 import com.example.fatec.ninetech.repositories.ProjetoInterface;
 import com.example.fatec.ninetech.repositories.SubpacotesInterface;
 import com.example.fatec.ninetech.repositories.TarefasInterface;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
@@ -33,18 +38,15 @@ public class TarefasController {
 	@Autowired
 	private ProjetoInterface interfaceProjeto;
 
+	@Autowired
+	private LoggerProjetoInterface interfaceLoggerProjeto;
+
+	@Autowired
+	private LoggerSubpacotesInterface interfaceLoggerSubpacotes;
+
 	@PostMapping
 	public ResponseEntity<Object> cadastrar(@RequestBody Tarefas tarefas) {
 		try {
-			// Calcular o valor com base na fórmula
-			double valorCalculado = (tarefas.getHh() * 100) + tarefas.getMaterial();
-			tarefas.setValor(valorCalculado);
-
-			// Calcular a porcentagem com base na fórmula
-			double execucaoNumerica = tarefas.getExecucao() ? 1 : 0; // 1 se for true, 0 se for false
-			double porcentagemCalculada = ((execucaoNumerica * tarefas.getPeso()) / tarefas.getPeso()) * 100;
-			tarefas.setPorcentagem(porcentagemCalculada);
-
 			// Obter o ID do Subpacote da Tarefa
 			Long subpacoteId = tarefas.getSubpacotes().getId();
 
@@ -75,17 +77,21 @@ public class TarefasController {
 			Long projetoId = projeto.getId();
 			/////////////// ---------------------------------------------
 
+			Double valor_homem_hora = this.interfaceProjeto.findById(projetoId).get().getValor_homem_hora();
+
+			// Calcular o valor com base na fórmula
+			double valorCalculado = (tarefas.getHh() * valor_homem_hora) + tarefas.getMaterial();
+			tarefas.setValor(valorCalculado);
+			// Calcular a porcentagem com base na fórmula
+			double execucaoNumerica = tarefas.getExecucao() ? 1 : 0; // 1 se for true, 0 se for false
+			double porcentagemCalculada = ((execucaoNumerica * tarefas.getPeso()) / tarefas.getPeso()) * 100;
+			tarefas.setPorcentagem(porcentagemCalculada);
+
 			// salvando nova tarefa
 			Tarefas novaTarefa = interfaceTarefas.save(tarefas);
 
 			// Obter as tarefas relacionadas ao Subpacote indicado
 			List<Tarefas> tarefasRelacionadas = interfaceTarefas.findBySubpacotes_Id(subpacoteId);
-
-			// Obter os Subpacotes relacionado ao Pacote achado no SubPacote
-			List<Subpacotes> subpacotesRelacionados = interfaceSubpacotes.findByPacotesId(pacoteId);
-
-			// Obter os Pacotes relacionados ao Projeto achado no Pacote
-			List<Pacotes> pacotesRelacionados = interfacePacotes.findByProjeto_Id(projetoId);
 
 			// Obter Tarefas Relacionadas ao Pacote
 			List<Tarefas> tarefasDoPacote = interfaceTarefas.findBySubpacotes_Pacotes_Id(pacoteId);
@@ -117,9 +123,17 @@ public class TarefasController {
 			Optional<Subpacotes> subpacoteOptional = interfaceSubpacotes.findById(subpacoteId);
 
 			Subpacotes subpacote = subpacoteOptional.get();
+
 			subpacote.setValor_total(valorTotalCalculado);
 			subpacote.setPorcentagem(porcentagemSubpacote);
 			interfaceSubpacotes.save(subpacote);
+
+			LoggerSubpacotesPorcentagensReais loggerSubpacote = new LoggerSubpacotesPorcentagensReais();
+			loggerSubpacote.setData(LocalDate.now());
+			loggerSubpacote.setPorcentagem(porcentagemSubpacote);
+			loggerSubpacote.setProjeto(projeto);
+			loggerSubpacote.setSubpacotes(subpacote);
+			interfaceLoggerSubpacotes.save(loggerSubpacote);
 
 			// Atualizar Valores do Pacote////////////////////////////////////
 			double somaValoresPacote = 0.0;
@@ -138,7 +152,7 @@ public class TarefasController {
 
 			// Calcular valor_total e porcentagem no Pacote
 			double valorTotalCalculadoPacote = somaValoresPacote;
-			double porcentagemSubpacotePacote = (somaPesosPacote / somaPesosTotalPacote) * 100.0;
+			double porcentagemSubpacotePacote = (somaPesosPacote / somaPesosTotalPacote) * valor_homem_hora;
 
 			// Atualizar o Pacote com os novos valores
 			Optional<Pacotes> pacoteOptional = interfacePacotes.findById(pacoteId);
@@ -175,6 +189,12 @@ public class TarefasController {
 			projeto1.setPorcentagem(porcentagemSubpacoteProjeto);
 			interfaceProjeto.save(projeto1);
 
+			LoggerProjetoPorcentagensReais loggerProjeto = new LoggerProjetoPorcentagensReais();
+			loggerProjeto.setData(LocalDate.now());
+			loggerProjeto.setPorcentagem(porcentagemSubpacoteProjeto);
+			loggerProjeto.setProjeto(projeto1);
+			interfaceLoggerProjeto.save(loggerProjeto);
+
 			return new ResponseEntity<>(novaTarefa, HttpStatus.CREATED);
 		} catch (Exception e) {
 			return new ResponseEntity<>("Erro ao processar a requisição: " + e.getMessage(),
@@ -200,10 +220,6 @@ public class TarefasController {
 				tarefa.setMaterial(tarefaAtualizada.getMaterial());
 				tarefa.setNome(tarefaAtualizada.getNome());
 				tarefa.setPeso(tarefaAtualizada.getPeso());
-
-				// Calcular o valor com base na fórmula
-				double valorCalculado = (tarefaAtualizada.getHh() * 100) + tarefaAtualizada.getMaterial();
-				tarefa.setValor(valorCalculado);
 
 				// Calcular a porcentagem com base na fórmula
 				double execucaoNumerica = tarefaAtualizada.getExecucao() ? 1 : 0; // 1 se for true, 0 se for false
@@ -242,6 +258,12 @@ public class TarefasController {
 
 				Long projetoId = projeto.getId();
 				/////////////// ---------------------------------------------
+
+				Double valor_homem_hora = this.interfaceProjeto.findById(projetoId).get().getValor_homem_hora();
+
+				// Calcular o valor com base na fórmula
+				double valorCalculado = (tarefaAtualizada.getHh() * valor_homem_hora) + tarefaAtualizada.getMaterial();
+				tarefa.setValor(valorCalculado);
 
 				// Obter as tarefas relacionadas ao Subpacote indicado
 				List<Tarefas> tarefasRelacionadas = interfaceTarefas.findBySubpacotes_Id(subpacoteId);
@@ -285,6 +307,13 @@ public class TarefasController {
 				subpacote.setValor_total(valorTotalCalculado);
 				subpacote.setPorcentagem(porcentagemSubpacote);
 				interfaceSubpacotes.save(subpacote);
+
+				LoggerSubpacotesPorcentagensReais loggerSubpacote = new LoggerSubpacotesPorcentagensReais();
+				loggerSubpacote.setData(LocalDate.now());
+				loggerSubpacote.setPorcentagem(porcentagemSubpacote);
+				loggerSubpacote.setProjeto(projeto);
+				loggerSubpacote.setSubpacotes(subpacote);
+				interfaceLoggerSubpacotes.save(loggerSubpacote);
 
 				// Atualizar Valores do Pacote////////////////////////////////////
 				double somaValoresPacote = 0.0;
@@ -340,6 +369,12 @@ public class TarefasController {
 				projeto1.setPorcentagem(porcentagemSubpacoteProjeto);
 				interfaceProjeto.save(projeto1);
 
+				LoggerProjetoPorcentagensReais loggerProjeto = new LoggerProjetoPorcentagensReais();
+				loggerProjeto.setData(LocalDate.now());
+				loggerProjeto.setPorcentagem(porcentagemSubpacoteProjeto);
+				loggerProjeto.setProjeto(projeto1);
+				interfaceLoggerProjeto.save(loggerProjeto);
+
 				return new ResponseEntity<>(tarefaAtualizadaNoBanco, HttpStatus.OK);
 			} else {
 				return new ResponseEntity<>(HttpStatus.NOT_FOUND);
@@ -359,8 +394,6 @@ public class TarefasController {
 			if (tarefaOptional.isPresent()) {
 				Tarefas tarefa = tarefaOptional.get();
 				Long subpacoteId = tarefa.getSubpacotes().getId();
-
-				
 
 				Optional<Subpacotes> subpacoteRelacionado = interfaceSubpacotes.findById(subpacoteId);
 
@@ -384,8 +417,8 @@ public class TarefasController {
 
 				Long projetoId = projeto.getId();
 				/////////////// ---------------------------------------------
-				
-				
+
+				interfaceTarefas.deleteById(id);
 
 				// Buscar todas as tarefas relacionadas ao subpacote
 				List<Tarefas> tarefasRelacionadas = interfaceTarefas.findBySubpacotes_Id(subpacoteId);
@@ -398,8 +431,6 @@ public class TarefasController {
 
 				// ----------------------------------------------------------------------------------------------------------
 
-				interfaceTarefas.deleteById(id);
-				
 				// Calcular a soma dos valores e pesos das tarefas relacionadas ao
 				// Subpacote///////////////////////
 				double somaValores = 0.0;
@@ -492,32 +523,32 @@ public class TarefasController {
 		}
 	}
 
-//    // Método para obter todas as tarefas
-//    @GetMapping
-//    public ResponseEntity<List<Tarefas>> listarTodasTarefas() {
-//        try {
-//            List<Tarefas> tarefas = interfaceTarefas.findAll();
-//            return new ResponseEntity<>(tarefas, HttpStatus.OK);
-//        } catch (Exception e) {
-//            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
-//        }
-//    }
+	// // Método para obter todas as tarefas
+	// @GetMapping
+	// public ResponseEntity<List<Tarefas>> listarTodasTarefas() {
+	// try {
+	// List<Tarefas> tarefas = interfaceTarefas.findAll();
+	// return new ResponseEntity<>(tarefas, HttpStatus.OK);
+	// } catch (Exception e) {
+	// return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+	// }
+	// }
 
-//    // Método para obter uma tarefa pelo ID
-//    @GetMapping("/{id}")
-//    public ResponseEntity<Object> obterTarefaPorId(@PathVariable Long id) {
-//        try {
-//            Optional<Tarefas> tarefa = interfaceTarefas.findById(id);
-//
-//            if (tarefa.isPresent()) {
-//                return new ResponseEntity<>(tarefa.get(), HttpStatus.OK);
-//            } else {
-//                return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-//            }
-//        } catch (Exception e) {
-//            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
-//        }
-//    }
+	// // Método para obter uma tarefa pelo ID
+	// @GetMapping("/{id}")
+	// public ResponseEntity<Object> obterTarefaPorId(@PathVariable Long id) {
+	// try {
+	// Optional<Tarefas> tarefa = interfaceTarefas.findById(id);
+	//
+	// if (tarefa.isPresent()) {
+	// return new ResponseEntity<>(tarefa.get(), HttpStatus.OK);
+	// } else {
+	// return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+	// }
+	// } catch (Exception e) {
+	// return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+	// }
+	// }
 
 	// PEGAR TODAS AS TAREFAS RELACIONADAS AO SUBPACOTE ID
 

@@ -17,6 +17,7 @@ import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -63,7 +64,9 @@ public class ExcelUploadController {
 	private LiderDeProjetoInterface interfaceLiderDeProjeto;
 
 	@PostMapping
-	public ResponseEntity<List<Pacotes>> processarExcel(@RequestParam("file") MultipartFile file) {
+	public ResponseEntity<List<Pacotes>> processarExcel(@RequestParam("file") MultipartFile file,
+			@RequestParam("dataTermino") LocalDate dataTermino,
+			@RequestParam("hhValue") double hhValue) {
 		try (InputStream is = file.getInputStream();
 				XSSFWorkbook workbook = new XSSFWorkbook(is)) {
 
@@ -114,9 +117,9 @@ public class ExcelUploadController {
 
 							LocalDate dataInicioAgora = LocalDate.now();
 							dadosProjeto.setData_inicio(dataInicioAgora);
-
-							LocalDate dataFinalSomado11Meses = dataInicioAgora.plusMonths(12);
-							dadosProjeto.setData_final(dataFinalSomado11Meses);
+							
+							dadosProjeto.setData_final(dataTermino);
+							dadosProjeto.setValor_homem_hora(hhValue);
 
 							projetoRecemCriado = interfaceProjeto.save(dadosProjeto);
 						}
