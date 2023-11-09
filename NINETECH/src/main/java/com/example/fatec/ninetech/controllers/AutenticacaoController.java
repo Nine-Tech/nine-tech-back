@@ -24,6 +24,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.example.fatec.ninetech.config.UsuarioRole;
 import com.example.fatec.ninetech.helpers.AutenticacaoDTOServico;
 import com.example.fatec.ninetech.helpers.LoginResponseDTOServico;
+import com.example.fatec.ninetech.helpers.RegistroDTOServico;
 import com.example.fatec.ninetech.helpers.TokenServico;
 import com.example.fatec.ninetech.models.EngenheiroChefe;
 import com.example.fatec.ninetech.models.LiderDeProjeto;
@@ -82,6 +83,33 @@ public class AutenticacaoController {
 
         // Agora você pode usar as informações do usuário conforme necessário
         return ResponseEntity.ok(userInfo);
+    }
+    
+    @PostMapping("/registro")
+    public ResponseEntity registro(@RequestBody @Valid RegistroDTOServico data) {
+        // Obtém a quantidade atual de líderes de projeto
+        int quantidadeLiderDeProjeto = this.repository.findAll().size();
+
+        // Cria o nome do usuário com o número após
+        String login = "lider" + (quantidadeLiderDeProjeto + 1);
+        String nome = "Líder de Projeto" + (quantidadeLiderDeProjeto + 1);
+
+        // Verifica se o nome do usuário já existe
+        if (this.repository.findByLogin(login) != null) {
+            return ResponseEntity.badRequest().build();
+        }
+
+        // Encripta a senha
+        String senhaEncriptada = new BCryptPasswordEncoder().encode(data.senha());
+
+        // Cria o novo usuário
+        LiderDeProjeto novoUsuario = new LiderDeProjeto(login, nome, senhaEncriptada, data.role());
+
+        // Salva o novo usuário no banco de dados
+        this.repository.save(novoUsuario);
+
+        // Retorna o status 200
+        return ResponseEntity.ok().build();
     }
     
 }
