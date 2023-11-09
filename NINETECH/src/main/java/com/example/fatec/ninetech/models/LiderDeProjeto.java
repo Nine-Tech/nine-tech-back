@@ -160,9 +160,9 @@ public class LiderDeProjeto implements UserDetails {
 		return nome;
 	}
 
-	public String getSenhaAtual() {
-	    String senhaCriptografada = BCrypt.hashpw(senha, BCrypt.gensalt(10));
-	    return senhaCriptografada;
+	public String getNovaSenha() {
+		// TODO Auto-generated method stub
+		return senha;
 	}
 
 }

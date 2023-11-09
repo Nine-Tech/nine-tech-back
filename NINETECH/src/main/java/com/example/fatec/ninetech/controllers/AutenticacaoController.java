@@ -148,53 +148,45 @@ public class AutenticacaoController {
     }
     
     @PutMapping("/atualizar/{id}")
-    public ResponseEntity<? extends Object> atualizarLiderProjeto(@PathVariable Long id, @RequestBody LiderDeProjeto lideratualizado) {
+    public ResponseEntity<?> atualizarLiderProjeto(@PathVariable Long id, @RequestBody LiderDeProjeto liderAtualizado, AutenticacaoDTOServico data) {
         try {
             return repository.findById(id)
                     .map(lider -> {
-                        if (!StringUtils.isEmptyOrWhitespaceOnly(lideratualizado.getNome())) {
-                            lider.setNome(lideratualizado.getNome());
+                        if (liderAtualizado.getNome() != null && !liderAtualizado.getNome().trim().isEmpty()) {
+                            lider.setNome(liderAtualizado.getNome());
                         }
 
-                        if (!StringUtils.isEmptyOrWhitespaceOnly(lideratualizado.getLogin())) {
-                            lider.setLogin(lideratualizado.getLogin());
+                        if (liderAtualizado.getLogin() != null && !liderAtualizado.getLogin().trim().isEmpty()) {
+                            lider.setLogin(liderAtualizado.getLogin());
                         }
 
-                        // Verifica se a senha atual está presente
-                        if (!StringUtils.isEmptyOrWhitespaceOnly(lideratualizado.getSenhaAtual())) {
-                            String senhaAtualDescriptografada = lideratualizado.getSenhaAtual();
-
-                            // Verifica se a senha atual está correta
-                            if (!BCrypt.checkpw(senhaAtualDescriptografada, lider.getSenha())) {
-                                return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+                        if (liderAtualizado.getSenha() != null && !liderAtualizado.getSenha().isEmpty() &&
+                                liderAtualizado.getNovaSenha() != null && !liderAtualizado.getNovaSenha().isEmpty()) {
+                            // Compara a senha digitada com a senha criptografada
+                            BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
+                            if (passwordEncoder.matches(liderAtualizado.getSenha(), lider.getSenha())) {
+                                // As senhas são iguais
+                                // Encripta a nova senha
+                                String novaSenha = liderAtualizado.getNovaSenha();
+                                String novaSenhaCriptografada = passwordEncoder.encode(novaSenha);
+                                lider.setSenha(novaSenhaCriptografada);
+                            } else {
+                                // As senhas são diferentes
+                                return new ResponseEntity<>("Senha atual incorreta", HttpStatus.BAD_REQUEST);
                             }
-                        } else {
-                            // Senha atual não fornecida, então a senha não é atualizada
-                        }
-
-                        // Verifica se a nova senha está presente
-                        if (!StringUtils.isEmptyOrWhitespaceOnly(lideratualizado.getSenha())) {
-                            // Criptografa a nova senha
-                            String novaSenhaCriptografada = BCrypt.hashpw(lideratualizado.getSenha(), BCrypt.gensalt(10));
-
-                            lider.setSenha(novaSenhaCriptografada);
                         }
 
                         LiderDeProjeto liderAtualizadoSalvo = repository.save(lider);
 
                         // Retorna o líder atualizado salvo
-                        if (liderAtualizadoSalvo != null) {
-                            return new ResponseEntity<>(liderAtualizadoSalvo, HttpStatus.OK);
-                        } else {
-                            // Retorna um código de erro se o líder não for atualizado
-                            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
-                        }
+                        return new ResponseEntity<>(liderAtualizadoSalvo, HttpStatus.OK);
                     })
                     .orElse(new ResponseEntity<>(HttpStatus.NOT_FOUND));
         } catch (Exception e) {
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
+
     
     @DeleteMapping("{id}")
     public ResponseEntity<LiderDeProjeto> excluirlider(@PathVariable Long id) {
@@ -205,6 +197,7 @@ public class AutenticacaoController {
         // Verifica se o líder de projeto está em um gerenciamento de subpacote
         List<Subpacotes> subpacotes = subpacotesInterface.findByLiderDeProjetoId(id);
         if (!subpacotes.isEmpty()) {
+        	//Não pode deletar, há um subpacote atrelado à ele
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
 
