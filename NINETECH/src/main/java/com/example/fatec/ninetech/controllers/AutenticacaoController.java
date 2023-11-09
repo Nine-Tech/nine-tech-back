@@ -15,6 +15,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCrypt;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -32,8 +33,11 @@ import com.example.fatec.ninetech.helpers.TokenServico;
 import com.example.fatec.ninetech.models.EngenheiroChefe;
 import com.example.fatec.ninetech.models.LiderDeProjeto;
 import com.example.fatec.ninetech.models.Projeto;
+import com.example.fatec.ninetech.models.Subpacotes;
 import com.example.fatec.ninetech.repositories.EngenheiroChefeInterface;
 import com.example.fatec.ninetech.repositories.LiderDeProjetoInterface;
+import com.example.fatec.ninetech.repositories.SubpacotesInterface;
+import com.mysql.cj.util.StringUtils;
 
 import jakarta.validation.Valid;
 import jakarta.websocket.server.PathParam;
@@ -55,6 +59,9 @@ public class AutenticacaoController {
     
     @Autowired
     private UserDetailsService userDetailsService;
+    
+    @Autowired
+    private SubpacotesInterface subpacotesInterface;
 
     @PostMapping("/login")
     public ResponseEntity login(@RequestBody @Valid AutenticacaoDTOServico data) {
@@ -141,51 +148,71 @@ public class AutenticacaoController {
     }
     
     @PutMapping("/atualizar/{id}")
-    public ResponseEntity<LiderDeProjeto> atualizarLiderProjeto(@PathVariable Long id, @RequestBody LiderDeProjeto lideratualizado) {
+    public ResponseEntity<? extends Object> atualizarLiderProjeto(@PathVariable Long id, @RequestBody LiderDeProjeto lideratualizado) {
+        try {
+            return repository.findById(id)
+                    .map(lider -> {
+                        if (!StringUtils.isEmptyOrWhitespaceOnly(lideratualizado.getNome())) {
+                            lider.setNome(lideratualizado.getNome());
+                        }
 
-        // Validar os parâmetros da solicitação
-        if (id == null || lideratualizado == null) {
-            return ResponseEntity.badRequest().build();
+                        if (!StringUtils.isEmptyOrWhitespaceOnly(lideratualizado.getLogin())) {
+                            lider.setLogin(lideratualizado.getLogin());
+                        }
+
+                        // Verifica se a senha atual está presente
+                        if (!StringUtils.isEmptyOrWhitespaceOnly(lideratualizado.getSenhaAtual())) {
+                            String senhaAtualDescriptografada = lideratualizado.getSenhaAtual();
+
+                            // Verifica se a senha atual está correta
+                            if (!BCrypt.checkpw(senhaAtualDescriptografada, lider.getSenha())) {
+                                return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+                            }
+                        } else {
+                            // Senha atual não fornecida, então a senha não é atualizada
+                        }
+
+                        // Verifica se a nova senha está presente
+                        if (!StringUtils.isEmptyOrWhitespaceOnly(lideratualizado.getSenha())) {
+                            // Criptografa a nova senha
+                            String novaSenhaCriptografada = BCrypt.hashpw(lideratualizado.getSenha(), BCrypt.gensalt(10));
+
+                            lider.setSenha(novaSenhaCriptografada);
+                        }
+
+                        LiderDeProjeto liderAtualizadoSalvo = repository.save(lider);
+
+                        // Retorna o líder atualizado salvo
+                        if (liderAtualizadoSalvo != null) {
+                            return new ResponseEntity<>(liderAtualizadoSalvo, HttpStatus.OK);
+                        } else {
+                            // Retorna um código de erro se o líder não for atualizado
+                            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+                        }
+                    })
+                    .orElse(new ResponseEntity<>(HttpStatus.NOT_FOUND));
+        } catch (Exception e) {
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+    
+    @DeleteMapping("{id}")
+    public ResponseEntity<LiderDeProjeto> excluirlider(@PathVariable Long id) {
+    	LiderDeProjeto liderDeProjeto = repository.findById(id).orElse(null);
+    	if (liderDeProjeto == null) {
+    	    // O líder de projeto não existe
+    	}
+        // Verifica se o líder de projeto está em um gerenciamento de subpacote
+        List<Subpacotes> subpacotes = subpacotesInterface.findByLiderDeProjetoId(id);
+        if (!subpacotes.isEmpty()) {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
 
-        // Verificar se a senha foi fornecida
-        if (lideratualizado.getSenha() == null || lideratualizado.getSenha().isEmpty()) {
-            return ResponseEntity.badRequest().build();
+        try {
+            repository.deleteById(id);
+            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+        } catch (Exception e) {
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
-
-        // Obter o líder de projeto existente
-        LiderDeProjeto lider = repository.findById(id).orElse(null);
-
-        if (lider == null) {
-            return ResponseEntity.notFound().build();
-        }
-
-        // Validar se a senha atual é a mesma do usuário
-        if (!lideratualizado.getSenhaAtual().isEmpty()) {
-            String senhaAtualNoBanco = lider.getSenha();
-            boolean senhasIguais = BCrypt.checkpw(lideratualizado.getSenhaAtual(), senhaAtualNoBanco);
-
-            if (!senhasIguais) {
-                return ResponseEntity.badRequest().build();
-            }
-        }
-
-        // Atualizar os dados do líder de projeto
-        lider.setNome(lideratualizado.getNome());
-        lider.setLogin(lideratualizado.getLogin());
-
-        // Se a senha atual foi digitada, atualizar a senha
-        if (!lideratualizado.getSenha().isEmpty()) {
-            // Criptografar a nova senha
-            String senhaCriptografada = BCrypt.hashpw(lideratualizado.getSenha(), BCrypt.gensalt(10));
-
-            lider.setSenha(senhaCriptografada);
-        }
-
-        // Salvar as alterações no banco de dados
-        repository.save(lider);
-
-        // Retornar o líder de projeto atualizado
-        return ResponseEntity.ok(lider);
     }
 }
