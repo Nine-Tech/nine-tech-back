@@ -1,5 +1,6 @@
 package com.example.fatec.ninetech.controllers;
 
+import java.util.List;
 import java.util.Map;
 
 import javax.naming.AuthenticationException;
@@ -12,10 +13,12 @@ import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.crypto.bcrypt.BCrypt;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -28,10 +31,12 @@ import com.example.fatec.ninetech.helpers.RegistroDTOServico;
 import com.example.fatec.ninetech.helpers.TokenServico;
 import com.example.fatec.ninetech.models.EngenheiroChefe;
 import com.example.fatec.ninetech.models.LiderDeProjeto;
+import com.example.fatec.ninetech.models.Projeto;
 import com.example.fatec.ninetech.repositories.EngenheiroChefeInterface;
 import com.example.fatec.ninetech.repositories.LiderDeProjetoInterface;
 
 import jakarta.validation.Valid;
+import jakarta.websocket.server.PathParam;
 @RestController
 @RequestMapping("auth")
 public class AutenticacaoController {
@@ -87,12 +92,18 @@ public class AutenticacaoController {
     
     @PostMapping("/registro")
     public ResponseEntity registro(@RequestBody @Valid RegistroDTOServico data) {
-        // Obtém a quantidade atual de líderes de projeto
-        int quantidadeLiderDeProjeto = this.repository.findAll().size();
+        // Obtém a lista de todos os líderes de projeto
+        List<LiderDeProjeto> lideresDeProjeto = this.repository.findAll();
+
+        // Pega o último elemento da lista
+        LiderDeProjeto ultimoLiderDeProjeto = lideresDeProjeto.get(lideresDeProjeto.size() - 1);
+
+        // Obtém o ID desse elemento
+        Long idUltimoLiderDeProjeto = ultimoLiderDeProjeto.getId();
 
         // Cria o nome do usuário com o número após
-        String login = "lider" + (quantidadeLiderDeProjeto + 1);
-        String nome = "Líder de Projeto" + (quantidadeLiderDeProjeto + 1);
+        String login = "lider" + (idUltimoLiderDeProjeto + 1);
+        String nome = "Líder de Projeto" + (idUltimoLiderDeProjeto + 1);
 
         // Verifica se o nome do usuário já existe
         if (this.repository.findByLogin(login) != null) {
@@ -112,4 +123,69 @@ public class AutenticacaoController {
         return ResponseEntity.ok().build();
     }
     
+    @GetMapping("/lideres")
+    public ResponseEntity<List<LiderDeProjeto>> visualizarLideresProjeto() {
+    	List<LiderDeProjeto> lideres = repository.findAll();
+        return new ResponseEntity<>(lideres, HttpStatus.OK);
+    }
+    
+    @GetMapping("/lideres/{id}")
+    public ResponseEntity<LiderDeProjeto> visualizarlider(@PathVariable Long id) {
+        try {
+            return repository.findById(id)
+                .map(lider -> new ResponseEntity<>(lider, HttpStatus.OK))
+                .orElse(new ResponseEntity<>(HttpStatus.NOT_FOUND));
+        } catch (Exception e) {
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+    
+    @PutMapping("/atualizar/{id}")
+    public ResponseEntity<LiderDeProjeto> atualizarLiderProjeto(@PathVariable Long id, @RequestBody LiderDeProjeto lideratualizado) {
+
+        // Validar os parâmetros da solicitação
+        if (id == null || lideratualizado == null) {
+            return ResponseEntity.badRequest().build();
+        }
+
+        // Verificar se a senha foi fornecida
+        if (lideratualizado.getSenha() == null || lideratualizado.getSenha().isEmpty()) {
+            return ResponseEntity.badRequest().build();
+        }
+
+        // Obter o líder de projeto existente
+        LiderDeProjeto lider = repository.findById(id).orElse(null);
+
+        if (lider == null) {
+            return ResponseEntity.notFound().build();
+        }
+
+        // Validar se a senha atual é a mesma do usuário
+        if (!lideratualizado.getSenhaAtual().isEmpty()) {
+            String senhaAtualNoBanco = lider.getSenha();
+            boolean senhasIguais = BCrypt.checkpw(lideratualizado.getSenhaAtual(), senhaAtualNoBanco);
+
+            if (!senhasIguais) {
+                return ResponseEntity.badRequest().build();
+            }
+        }
+
+        // Atualizar os dados do líder de projeto
+        lider.setNome(lideratualizado.getNome());
+        lider.setLogin(lideratualizado.getLogin());
+
+        // Se a senha atual foi digitada, atualizar a senha
+        if (!lideratualizado.getSenha().isEmpty()) {
+            // Criptografar a nova senha
+            String senhaCriptografada = BCrypt.hashpw(lideratualizado.getSenha(), BCrypt.gensalt(10));
+
+            lider.setSenha(senhaCriptografada);
+        }
+
+        // Salvar as alterações no banco de dados
+        repository.save(lider);
+
+        // Retornar o líder de projeto atualizado
+        return ResponseEntity.ok(lider);
+    }
 }

@@ -7,6 +7,7 @@ import java.util.List;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.crypto.bcrypt.BCrypt;
 
 import com.example.fatec.ninetech.config.UsuarioRole;
 
@@ -157,6 +158,11 @@ public class LiderDeProjeto implements UserDetails {
 	public String findNomeById(Long id) {
 		// TODO Auto-generated method stub
 		return nome;
+	}
+
+	public String getSenhaAtual() {
+	    String senhaCriptografada = BCrypt.hashpw(senha, BCrypt.gensalt(10));
+	    return senhaCriptografada;
 	}
 
 }
