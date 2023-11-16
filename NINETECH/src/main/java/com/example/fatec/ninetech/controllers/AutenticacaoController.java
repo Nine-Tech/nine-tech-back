@@ -110,11 +110,21 @@ public class AutenticacaoController {
 
         // Cria o nome do usuário com o número após
         String login = "lider" + (idUltimoLiderDeProjeto + 1);
-        String nome = "Líder de Projeto" + (idUltimoLiderDeProjeto + 1);
+        
+        String nome = data.nome();
+        if (nome == null || nome.trim().isEmpty()) {
+            return ResponseEntity.badRequest().body("O campo 'nome' é obrigatório.");
+        }
 
-        // Verifica se o nome do usuário já existe
+        // Verifica se o login do usuário já existe
         if (this.repository.findByLogin(login) != null) {
             return ResponseEntity.badRequest().build();
+        }
+        
+        // Verifica se o nome do usuário já existe se já existir, ele aparece erro
+        if (this.repository.findByNome(nome) != null) {
+            String mensagemErro = "O nome '" + nome + "' já está em uso. Escolha um nome diferente.";
+            return ResponseEntity.badRequest().body(mensagemErro);        
         }
 
         // Encripta a senha
@@ -160,20 +170,11 @@ public class AutenticacaoController {
                             lider.setLogin(liderAtualizado.getLogin());
                         }
 
-                        if (liderAtualizado.getSenha() != null && !liderAtualizado.getSenha().isEmpty() &&
-                                liderAtualizado.getNovaSenha() != null && !liderAtualizado.getNovaSenha().isEmpty()) {
-                            // Compara a senha digitada com a senha criptografada
+                        if (liderAtualizado.getSenha() != null && !liderAtualizado.getSenha().isEmpty()) {
                             BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
-                            if (passwordEncoder.matches(liderAtualizado.getSenha(), lider.getSenha())) {
-                                // As senhas são iguais
-                                // Encripta a nova senha
-                                String novaSenha = liderAtualizado.getNovaSenha();
-                                String novaSenhaCriptografada = passwordEncoder.encode(novaSenha);
+                                String senha = liderAtualizado.getSenha();
+                                String novaSenhaCriptografada = passwordEncoder.encode(senha);
                                 lider.setSenha(novaSenhaCriptografada);
-                            } else {
-                                // As senhas são diferentes
-                                return new ResponseEntity<>("Senha atual incorreta", HttpStatus.BAD_REQUEST);
-                            }
                         }
 
                         LiderDeProjeto liderAtualizadoSalvo = repository.save(lider);
@@ -186,7 +187,6 @@ public class AutenticacaoController {
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
-
     
     @DeleteMapping("{id}")
     public ResponseEntity<LiderDeProjeto> excluirlider(@PathVariable Long id) {

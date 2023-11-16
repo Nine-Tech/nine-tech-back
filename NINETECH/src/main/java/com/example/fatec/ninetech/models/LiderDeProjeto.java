@@ -160,9 +160,4 @@ public class LiderDeProjeto implements UserDetails {
 		return nome;
 	}
 
-	public String getNovaSenha() {
-		// TODO Auto-generated method stub
-		return senha;
-	}
-
 }
