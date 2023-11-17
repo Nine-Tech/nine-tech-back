@@ -195,6 +195,16 @@ public class TarefasController {
 			loggerProjeto.setProjeto(projeto1);
 			interfaceLoggerProjeto.save(loggerProjeto);
 
+			// Verifica se a data da nova tarefa é maior que a data_final do projeto
+			LocalDate dataTarefa = tarefas.getData();
+			LocalDate dataFinalProjeto = projeto1.getData_final();
+
+			if (dataTarefa.isAfter(dataFinalProjeto)) {
+				// Atualiza a data_final do projeto com a data da nova tarefa
+				projeto1.setData_final(dataTarefa);
+				interfaceProjeto.save(projeto1);
+			}
+
 			return new ResponseEntity<>(novaTarefa, HttpStatus.CREATED);
 		} catch (Exception e) {
 			return new ResponseEntity<>("Erro ao processar a requisição: " + e.getMessage(),
@@ -374,6 +384,16 @@ public class TarefasController {
 				loggerProjeto.setPorcentagem(porcentagemSubpacoteProjeto);
 				loggerProjeto.setProjeto(projeto1);
 				interfaceLoggerProjeto.save(loggerProjeto);
+
+				// Verifica se a nova data é maior que a data final do projeto
+				LocalDate dataTarefaAtualizada = tarefaAtualizada.getData();
+				LocalDate dataFinalProjeto = projeto1.getData_final();
+
+				if (dataTarefaAtualizada.isAfter(dataFinalProjeto)) {
+					// Atualizar a data_final do projeto com a data da tarefa atualizada
+					projeto1.setData_final(dataTarefaAtualizada);
+					interfaceProjeto.save(projeto1);
+				}
 
 				return new ResponseEntity<>(tarefaAtualizadaNoBanco, HttpStatus.OK);
 			} else {
