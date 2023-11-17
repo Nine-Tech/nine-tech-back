@@ -1,5 +1,6 @@
 package com.example.fatec.ninetech.models;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
@@ -78,14 +79,21 @@ public class EngenheiroChefe implements UserDetails {
 	
 	@Override
 	public Collection<? extends GrantedAuthority> getAuthorities() {
-        // Use os valores do enum em letras maiúsculas
-        if (this.role == UsuarioRole.ENGENHEIRO_CHEFE) {
-            return List.of(new SimpleGrantedAuthority("ROLE_ENGENHEIRO_CHEFE"), new SimpleGrantedAuthority("ROLE_LIDER_DE_PROJETO_1"), new SimpleGrantedAuthority("ROLE_LIDER_DE_PROJETO_2"));
-        } else if (this.role == UsuarioRole.LIDER_DE_PROJETO_1) {
-            return List.of(new SimpleGrantedAuthority("ROLE_LIDER_DE_PROJETO_1"));
-        } else {
-            return List.of(new SimpleGrantedAuthority("ROLE_LIDER_DE_PROJETO_2"));
-        }
+	    // Use os valores do enum em letras maiúsculas
+	    List<GrantedAuthority> authorities = new ArrayList<>();
+
+	    if (this.role == UsuarioRole.ENGENHEIRO_CHEFE) {
+	        authorities.add(new SimpleGrantedAuthority("ROLE_ENGENHEIRO_CHEFE"));
+	    }
+
+	    // Percorre todos os líderes de projeto
+	    for (UsuarioRole liderDeProjeto : UsuarioRole.values()) {
+	        if (liderDeProjeto.name().startsWith("LIDER_DE_PROJETO")) {
+	            authorities.add(new SimpleGrantedAuthority("ROLE_" + liderDeProjeto.name()));
+	        }
+	    }
+
+	    return authorities;
 	}
 	@Override
 	public String getPassword() {
