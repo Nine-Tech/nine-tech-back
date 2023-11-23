@@ -4,6 +4,8 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import com.fasterxml.jackson.annotation.JsonGetter;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import jakarta.persistence.*;
 
 @Entity
@@ -60,6 +62,7 @@ public class Projeto {
 
 	@ManyToOne
 	@JoinColumn(name = "engenheiro_chefe_id")
+	@JsonIgnore
 	private EngenheiroChefe engenheiroChefe;
 
 	public double getValor_homem_hora(){return this.valor_homem_hora;}
