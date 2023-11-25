@@ -26,6 +26,9 @@ public class Tarefas {
 	private LocalDate data;
 
 	@Column
+	private LocalDate baseline;
+
+	@Column
 	private double hh;
 
 	@Column
@@ -80,6 +83,14 @@ public class Tarefas {
 
 	public void setData(LocalDate data) {
 		this.data = data;
+	}
+
+	public LocalDate getBaseline() {
+		return baseline;
+	}
+
+	public void setBaseline(LocalDate baseline) {
+		this.baseline = baseline;
 	}
 
 	public double getHh() {

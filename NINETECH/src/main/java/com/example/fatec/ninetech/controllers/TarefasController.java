@@ -88,6 +88,7 @@ public class TarefasController {
 			tarefas.setPorcentagem(porcentagemCalculada);
 
 			// salvando nova tarefa
+			System.out.println(tarefas.getBaseline());
 			Tarefas novaTarefa = interfaceTarefas.save(tarefas);
 
 			// Obter as tarefas relacionadas ao Subpacote indicado
@@ -224,6 +225,7 @@ public class TarefasController {
 				// Atualizar os campos da tarefa
 				tarefa.setDescricao(tarefaAtualizada.getDescricao());
 				tarefa.setData(tarefaAtualizada.getData());
+				tarefa.setBaseline(tarefaAtualizada.getBaseline());
 				tarefa.setDescricao(tarefaAtualizada.getDescricao());
 				tarefa.setExecucao(tarefaAtualizada.getExecucao());
 				tarefa.setHh(tarefaAtualizada.getHh());

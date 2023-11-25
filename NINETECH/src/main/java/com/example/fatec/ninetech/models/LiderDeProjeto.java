@@ -50,6 +50,9 @@ public class LiderDeProjeto implements UserDetails {
     @Column
     private String senha;
 
+    @Column(nullable = false, unique = true)
+    private String cpf;
+
     @Enumerated(EnumType.STRING) // Especifique o tipo de enumeração para uso com strings
     @Column
     private UsuarioRole role;
@@ -64,6 +67,14 @@ public class LiderDeProjeto implements UserDetails {
 
     public UsuarioRole getRole() {
         return role;
+    }
+
+    public String getCpf() {
+        return cpf;
+    }
+
+    public void setCpf(String cpf) {
+        this.cpf = cpf;
     }
 
     public void setRole(UsuarioRole role) {
@@ -94,10 +105,11 @@ public class LiderDeProjeto implements UserDetails {
 		this.login = login;
 	}
 	
-	public LiderDeProjeto(String login, String nome, String senha, UsuarioRole role) {
+	public LiderDeProjeto(String login, String nome, String senha, String cpf, UsuarioRole role) {
 		this.login = login;
 		this.nome = nome;
 		this.senha = senha;
+        this.cpf = cpf;
 		this.role = role;
 	}
 

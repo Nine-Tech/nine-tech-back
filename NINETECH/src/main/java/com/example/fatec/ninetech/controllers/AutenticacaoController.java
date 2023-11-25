@@ -110,6 +110,8 @@ public class AutenticacaoController {
 
         // Cria o nome do usuário com o número após
         String login = "lider" + (idUltimoLiderDeProjeto + 1);
+
+        String cpf = data.cpf();
         
         String nome = data.nome();
         if (nome == null || nome.trim().isEmpty()) {
@@ -131,7 +133,7 @@ public class AutenticacaoController {
         String senhaEncriptada = new BCryptPasswordEncoder().encode(data.senha());
 
         // Cria o novo usuário
-        LiderDeProjeto novoUsuario = new LiderDeProjeto(login, nome, senhaEncriptada, data.role());
+        LiderDeProjeto novoUsuario = new LiderDeProjeto(login, nome, senhaEncriptada, cpf, data.role());
 
         // Salva o novo usuário no banco de dados
         this.repository.save(novoUsuario);

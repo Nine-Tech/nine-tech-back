@@ -48,6 +48,7 @@ public class NinetechApplication {
 	        LiderDeProjeto liderDeProjeto = new LiderDeProjeto();
 	        liderDeProjeto.setNome("Líder de Projeto 1");
 	        liderDeProjeto.setLogin("lider1");
+			liderDeProjeto.setCpf("123456789");
 			liderDeProjeto.setRole(UsuarioRole.LIDER_DE_PROJETO);
 	        liderDeProjeto.setSenha(senhaEncriptada);
 	        servicoLiderDeProjeto.criarLiderDeProjeto(liderDeProjeto);
