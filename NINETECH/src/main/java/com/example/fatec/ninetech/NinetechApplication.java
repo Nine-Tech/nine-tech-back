@@ -48,7 +48,8 @@ public class NinetechApplication {
 	        LiderDeProjeto liderDeProjeto = new LiderDeProjeto();
 	        liderDeProjeto.setNome("Líder de Projeto 1");
 	        liderDeProjeto.setLogin("lider1");
-			liderDeProjeto.setRole(UsuarioRole.LIDER_DE_PROJETO_1);
+			liderDeProjeto.setCpf("123456789");
+			liderDeProjeto.setRole(UsuarioRole.LIDER_DE_PROJETO);
 	        liderDeProjeto.setSenha(senhaEncriptada);
 	        servicoLiderDeProjeto.criarLiderDeProjeto(liderDeProjeto);
 	        
@@ -56,7 +57,7 @@ public class NinetechApplication {
 	        liderDeProjeto2.setNome("Líder de Projeto 2");
 	        liderDeProjeto2.setLogin("lider2");
 	        liderDeProjeto2.setSenha(senhaEncriptada);
-	        liderDeProjeto2.setRole(UsuarioRole.LIDER_DE_PROJETO_2);
+	        liderDeProjeto2.setRole(UsuarioRole.LIDER_DE_PROJETO);
 	        servicoLiderDeProjeto.criarLiderDeProjeto(liderDeProjeto2);
 
 		} 

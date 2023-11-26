@@ -14,5 +14,7 @@ public interface LiderDeProjetoInterface extends JpaRepository<LiderDeProjeto, L
     UserDetails findByLogin(String login);
     
     Optional<LiderDeProjeto> findById(Long liderDeProjetoId);
+
+	UserDetails findByNome(String nome);
 }
 

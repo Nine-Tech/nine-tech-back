@@ -1,11 +1,13 @@
 package com.example.fatec.ninetech.models;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.crypto.bcrypt.BCrypt;
 
 import com.example.fatec.ninetech.config.UsuarioRole;
 
@@ -48,6 +50,9 @@ public class LiderDeProjeto implements UserDetails {
     @Column
     private String senha;
 
+    @Column(nullable = false, unique = true)
+    private String cpf;
+
     @Enumerated(EnumType.STRING) // Especifique o tipo de enumeração para uso com strings
     @Column
     private UsuarioRole role;
@@ -62,6 +67,14 @@ public class LiderDeProjeto implements UserDetails {
 
     public UsuarioRole getRole() {
         return role;
+    }
+
+    public String getCpf() {
+        return cpf;
+    }
+
+    public void setCpf(String cpf) {
+        this.cpf = cpf;
     }
 
     public void setRole(UsuarioRole role) {
@@ -91,6 +104,14 @@ public class LiderDeProjeto implements UserDetails {
 	public void setLogin(String login) {
 		this.login = login;
 	}
+	
+	public LiderDeProjeto(String login, String nome, String senha, String cpf, UsuarioRole role) {
+		this.login = login;
+		this.nome = nome;
+		this.senha = senha;
+        this.cpf = cpf;
+		this.role = role;
+	}
 
     public LiderDeProjeto findByNome(String novoNome) {
         // TODO Auto-generated method stub
@@ -100,13 +121,20 @@ public class LiderDeProjeto implements UserDetails {
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         // Use os valores do enum em letras maiúsculas
+        List<GrantedAuthority> authorities = new ArrayList<>();
+
         if (this.role == UsuarioRole.ENGENHEIRO_CHEFE) {
-            return List.of(new SimpleGrantedAuthority("ROLE_ENGENHEIRO_CHEFE"), new SimpleGrantedAuthority("ROLE_LIDER_DE_PROJETO_1"), new SimpleGrantedAuthority("ROLE_LIDER_DE_PROJETO_2"));
-        } else if (this.role == UsuarioRole.LIDER_DE_PROJETO_1) {
-            return List.of(new SimpleGrantedAuthority("ROLE_LIDER_DE_PROJETO_1"));
-        } else {
-            return List.of(new SimpleGrantedAuthority("ROLE_LIDER_DE_PROJETO_2"));
+            authorities.add(new SimpleGrantedAuthority("ROLE_ENGENHEIRO_CHEFE"));
         }
+
+        // Percorre todos os líderes de projeto
+        for (UsuarioRole liderDeProjeto : UsuarioRole.values()) {
+            if (liderDeProjeto.name().startsWith("LIDER_DE_PROJETO")) {
+                authorities.add(new SimpleGrantedAuthority("ROLE_" + liderDeProjeto.name()));
+            }
+        }
+
+        return authorities;
     }
 
     @Override
