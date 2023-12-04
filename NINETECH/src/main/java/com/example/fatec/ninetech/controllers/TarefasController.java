@@ -117,7 +117,7 @@ public class TarefasController {
 
 			// Calcular valor_total e porcentagem no Subpacote
 			double valorTotalCalculado = somaValores;
-			double porcentagemSubpacote = (somaPesos / somaPesosTotal) * valor_homem_hora;
+			double porcentagemSubpacote = (somaPesos / somaPesosTotal) * 100.0;
 
 			// Atualizar o Subpacote com os novos valores
 			Optional<Subpacotes> subpacoteOptional = interfaceSubpacotes.findById(subpacoteId);
