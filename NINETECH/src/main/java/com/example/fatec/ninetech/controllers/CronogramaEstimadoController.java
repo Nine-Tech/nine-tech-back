@@ -31,6 +31,7 @@ import com.example.fatec.ninetech.repositories.*;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -39,6 +40,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.TreeMap;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -289,11 +291,8 @@ public class CronogramaEstimadoController {
 
 			// Construa o objeto CronogramaEstimadoResponseDTO com os valores dos meses
 			// dinâmicos
-			CronogramaEstimadoResponseDTO responseDTO = new CronogramaEstimadoResponseDTO(
-					cronogramas.get(0).getId(),
-					projeto,
-					subpacote,
-					cronogramas);
+			CronogramaEstimadoResponseDTO responseDTO = new CronogramaEstimadoResponseDTO(cronogramas.get(0).getId(),
+					projeto, subpacote, cronogramas);
 
 			return ResponseEntity.ok(responseDTO);
 		} catch (Exception e) {
@@ -348,26 +347,20 @@ public class CronogramaEstimadoController {
 	}
 
 	/*
-	 * @GetMapping("/{id_subpacote}")
-	 * public ResponseEntity<?> getCronograma(
+	 * @GetMapping("/{id_subpacote}") public ResponseEntity<?> getCronograma(
 	 * 
-	 * @PathVariable("id_subpacote") Long id_subpacote
-	 * ) {
-	 * try {
+	 * @PathVariable("id_subpacote") Long id_subpacote ) { try {
 	 * List<CronogramaEstimado> cronogramaEstimado =
 	 * this.cronogramaEstimadoInterface.findBySubpacoteId(id_subpacote);
 	 * 
-	 * if (cronogramaEstimado.isEmpty()) {
-	 * return ResponseEntity.status(HttpStatus.OK).body(cronogramaEstimado);
-	 * }
+	 * if (cronogramaEstimado.isEmpty()) { return
+	 * ResponseEntity.status(HttpStatus.OK).body(cronogramaEstimado); }
 	 * 
 	 * System.out.println(cronogramaEstimado);
 	 * 
-	 * return ResponseEntity.status(HttpStatus.OK).body(cronogramaEstimado);
-	 * } catch (Exception e) {
-	 * return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Erro: "
-	 * + e);
-	 * }
+	 * return ResponseEntity.status(HttpStatus.OK).body(cronogramaEstimado); } catch
+	 * (Exception e) { return
+	 * ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Erro: " + e); }
 	 * };
 	 */
 
@@ -382,19 +375,20 @@ public class CronogramaEstimadoController {
 				return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Collections.emptyList());
 			}
 
-			// Agrupe os registros por mês e selecione o último registro de cada mês
-			Map<LocalDate, LoggerSubpacotesPorcentagensReais> ultimoRegistroPorMes = cronogramas.stream()
-					.collect(Collectors.toMap(
-							LoggerSubpacotesPorcentagensReais::getData,
-							Function.identity(),
-							(existing, replacement) -> existing.getData().isAfter(replacement.getData()) ? existing
-									: replacement));
+			// Encontre datas únicas
+			List<String> datasUnicas = cronogramas.stream()
+					.map(cronograma -> cronograma.getData().format(DateTimeFormatter.ofPattern("yyyy-MM"))).distinct()
+					.sorted().collect(Collectors.toList());
 
-			// Mapeie os registros agrupados para o DTO personalizado
-			List<CronogramaEstimadoResponse> responseList = ultimoRegistroPorMes.values().stream()
-					.map(cronograma -> new CronogramaEstimadoResponse(cronograma.getData().getMonthValue(),
-							cronograma.getPorcentagem()))
-					.collect(Collectors.toList());
+			// Encontre a maior porcentagem para cada data única
+			List<CronogramaEstimadoResponse> responseList = new ArrayList<>();
+			for (String dataUnica : datasUnicas) {
+				Double maiorPorcentagem = cronogramas.stream()
+						.filter(cronograma -> cronograma.getData().format(DateTimeFormatter.ofPattern("yyyy-MM"))
+								.equals(dataUnica))
+						.map(LoggerSubpacotesPorcentagensReais::getPorcentagem).max(Double::compareTo).orElse(0.0);
+				responseList.add(new CronogramaEstimadoResponse(responseList.size() + 1, maiorPorcentagem));
+			}
 
 			return ResponseEntity.ok(responseList);
 		} catch (Exception e) {
@@ -406,26 +400,26 @@ public class CronogramaEstimadoController {
 	public ResponseEntity<List<CronogramaEstimadoResponse>> getUltimosDiasCronogramaEstimadoByProjetoId(
 			@PathVariable("id_projeto") Long id_projeto) {
 		try {
-			List<LoggerProjetoPorcentagensReais> cronogramas = this.interfaceLoggerProjeto
-					.findByProjetoId(id_projeto);
+			List<LoggerProjetoPorcentagensReais> cronogramas = this.interfaceLoggerProjeto.findByProjetoId(id_projeto);
 
 			if (cronogramas.isEmpty()) {
 				return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Collections.emptyList());
 			}
 
-			// Agrupe os registros por mês e selecione o último registro de cada mês
-			Map<LocalDate, LoggerProjetoPorcentagensReais> ultimoRegistroPorMes = cronogramas.stream()
-					.collect(Collectors.toMap(
-							LoggerProjetoPorcentagensReais::getData,
-							Function.identity(),
-							(existing, replacement) -> existing.getData().isAfter(replacement.getData()) ? existing
-									: replacement));
+			// Encontre datas únicas
+			List<String> datasUnicas = cronogramas.stream()
+					.map(cronograma -> cronograma.getData().format(DateTimeFormatter.ofPattern("yyyy-MM"))).distinct()
+					.sorted().collect(Collectors.toList());
 
-			// Mapeie os registros agrupados para o DTO personalizado
-			List<CronogramaEstimadoResponse> responseList = ultimoRegistroPorMes.values().stream()
-					.map(cronograma -> new CronogramaEstimadoResponse(cronograma.getData().getMonthValue(),
-							cronograma.getPorcentagem()))
-					.collect(Collectors.toList());
+			// Encontre a maior porcentagem para cada data única
+			List<CronogramaEstimadoResponse> responseList = new ArrayList<>();
+			for (String dataUnica : datasUnicas) {
+				Double maiorPorcentagem = cronogramas.stream()
+						.filter(cronograma -> cronograma.getData().format(DateTimeFormatter.ofPattern("yyyy-MM"))
+								.equals(dataUnica))
+						.map(LoggerProjetoPorcentagensReais::getPorcentagem).max(Double::compareTo).orElse(0.0);
+				responseList.add(new CronogramaEstimadoResponse(responseList.size() + 1, maiorPorcentagem));
+			}
 
 			return ResponseEntity.ok(responseList);
 		} catch (Exception e) {
